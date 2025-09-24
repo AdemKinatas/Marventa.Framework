@@ -75,7 +75,7 @@ public class TokenService : ITokenService
             };
 
             var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
-            return Task.FromResult(principal);
+            return Task.FromResult<ClaimsPrincipal?>(principal);
         }
         catch
         {

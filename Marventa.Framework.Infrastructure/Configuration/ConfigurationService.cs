@@ -27,7 +27,7 @@ public class ConfigurationService : IConfigurationService
 
     public T GetValue<T>(string key, T defaultValue)
     {
-        return _configuration.GetValue(key, defaultValue);
+        return _configuration.GetValue(key, defaultValue) ?? defaultValue;
     }
 
     public Task<T> GetValueAsync<T>(string key, CancellationToken cancellationToken = default)
