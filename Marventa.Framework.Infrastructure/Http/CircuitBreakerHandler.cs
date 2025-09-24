@@ -58,7 +58,7 @@ public class CircuitBreakerHandler : DelegatingHandler
                 return response;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             OnFailure();
             throw;
