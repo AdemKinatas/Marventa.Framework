@@ -180,4 +180,4 @@ If you encounter any issues or have questions:
 
 ---
 
-Made with ❤️ by the Marventa team
+Made with ❤️ by the Adem Kınataş
