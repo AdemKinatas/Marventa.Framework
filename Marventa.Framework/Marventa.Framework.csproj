@@ -8,21 +8,21 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <PackageVersion>1.1.0</PackageVersion>
+    <VersionPrefix>1.1.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
     <Company>Marventa</Company>
-    <Description>A comprehensive .NET framework following Clean Architecture principles with JWT authentication, CQRS, caching, rate limiting, health checks, and more.</Description>
+    <Description>A comprehensive .NET framework following Clean Architecture principles with JWT authentication, CQRS, caching, rate limiting, health checks, messaging infrastructure (RabbitMQ+MassTransit, Kafka), and more.</Description>
     <Copyright>Copyright © Marventa 2024</Copyright>
     <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;aspnetcore</PackageTags>
+    <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;messaging;rabbitmq;kafka;masstransit;aspnetcore</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>Initial release of Marventa Framework with comprehensive enterprise features.</PackageReleaseNotes>
+    <PackageReleaseNotes>v1.1.0: Added comprehensive messaging infrastructure with RabbitMQ+MassTransit and Apache Kafka support, including unified IMessageBus interface, retry policies, circuit breakers, and extensive configuration options.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
