@@ -1,0 +1,59 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Extract version from tag
+      id: get_version
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using version from tag: $VERSION"
+        else
+          VERSION="1.0.0-preview-$(date +%Y%m%d%H%M%S)"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using preview version: $VERSION"
+        fi
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test (if tests exist)
+      run: |
+        if [ -d "tests" ] || find . -name "*.Tests.csproj" -o -name "*Test*.csproj" | grep -q .; then
+          dotnet test --configuration Release --no-build --verbosity normal
+        else
+          echo "No tests found, skipping test step"
+        fi
+
+    - name: Pack NuGet package
+      run: dotnet pack Marventa.Framework/Marventa.Framework.csproj --configuration Release --no-build --output ./nupkgs -p:PackageVersion=${{ steps.get_version.outputs.VERSION }}
+
+    - name: Publish to NuGet.org
+      run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package
+        path: ./nupkgs/*.nupkg

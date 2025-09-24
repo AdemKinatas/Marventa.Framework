@@ -6,22 +6,29 @@
     <Nullable>enable</Nullable>
 
     <!-- NuGet Package Configuration -->
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
     <PackageVersion>1.0.0</PackageVersion>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
     <Company>Marventa</Company>
     <Description>A comprehensive .NET framework following Clean Architecture principles with JWT authentication, CQRS, caching, rate limiting, health checks, and more.</Description>
     <Copyright>Copyright © Marventa 2024</Copyright>
-    <PackageProjectUrl>https://github.com/marventa/framework</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;aspnetcore</PackageTags>
-    <RepositoryUrl>https://github.com/marventa/framework</RepositoryUrl>
+    <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>Initial release of Marventa Framework with comprehensive enterprise features.</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" />
