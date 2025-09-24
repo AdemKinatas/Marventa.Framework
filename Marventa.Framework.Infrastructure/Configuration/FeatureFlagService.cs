@@ -102,7 +102,7 @@ public class FeatureFlagService : IFeatureFlagService
         }
 
         var configKey = $"{FeatureFlagSection}:{featureName}:Value";
-        var value = _configuration.GetValue(configKey, defaultValue);
+        var value = _configuration.GetValue(configKey, defaultValue) ?? defaultValue;
 
         await _cacheService.SetAsync(cacheKey, value, TimeSpan.FromMinutes(5), cancellationToken);
 
