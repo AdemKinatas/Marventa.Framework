@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>1.1.1</PackageVersion>
-    <VersionPrefix>1.1.1</VersionPrefix>
+    <PackageVersion>1.1.2</PackageVersion>
+    <VersionPrefix>1.1.2</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;messaging;rabbitmq;kafka;masstransit;aspnetcore</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v1.1.1: Fixed compiler warnings - removed unused variables and async method warnings. Improved code quality without breaking changes.</PackageReleaseNotes>
+    <PackageReleaseNotes>v1.1.2: Clean build with zero warnings - upgraded to Microsoft.Data.SqlClient, fixed all nullability warnings, and improved code quality. Perfect build status achieved!</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
