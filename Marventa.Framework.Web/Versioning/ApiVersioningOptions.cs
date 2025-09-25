@@ -10,11 +10,3 @@ public class ApiVersioningOptions
     public bool EnableApiExplorer { get; set; } = true;
     public string[] SupportedVersions { get; set; } = { "1.0" };
 }
-
-public enum ApiVersionReader
-{
-    Header,
-    QueryParameter,
-    UrlSegment,
-    MediaType
-}
