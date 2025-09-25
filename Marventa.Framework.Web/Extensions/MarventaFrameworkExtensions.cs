@@ -2,7 +2,7 @@ using Marventa.Framework.Web.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Marventa.Framework;
+namespace Marventa.Framework.Web.Extensions;
 
 public static class MarventaFrameworkExtensions
 {
