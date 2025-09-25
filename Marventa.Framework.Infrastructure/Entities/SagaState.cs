@@ -3,7 +3,7 @@ using System.Text.Json;
 using Marventa.Framework.Core.Interfaces;
 using Marventa.Framework.Core.Entities;
 
-namespace Marventa.Framework.Domain.Entities;
+namespace Marventa.Framework.Infrastructure.Entities;
 
 public class SagaState : BaseEntity, ISaga
 {
