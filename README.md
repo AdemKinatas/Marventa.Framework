@@ -26,7 +26,6 @@ A comprehensive .NET 9.0 enterprise e-commerce framework with multi-tenancy, JWT
 - **HTTP Idempotency** - Correlation tracking for safe retries
 - **Read Model Projections** - MSSQL → MongoDB projections
 - **Distributed Locking** - Redis-based distributed locks
-- **Background Jobs** - Hangfire/Quartz integration
 - **Search & Analytics** - Elasticsearch/ClickHouse abstractions
 - **Storage Abstraction** - S3/Azure Blob/GCS unified interface
 
@@ -2147,6 +2146,264 @@ builder.Services.AddOpenTelemetry()
     });
 ```
 
+### 📊 Analytics & ClickHouse Integration
+
+```csharp
+// Analytics Service
+public class AnalyticsService
+{
+    private readonly IAnalyticsService _analytics;
+
+    public async Task TrackUserActivity(string userId, string action, object? data = null)
+    {
+        await _analytics.TrackEventAsync(new AnalyticsEvent
+        {
+            Name = action,
+            UserId = userId,
+            Properties = data?.ToDictionary() ?? new Dictionary<string, string>(),
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    public async Task TrackPerformanceMetric(string metricName, double value)
+    {
+        await _analytics.TrackMetricAsync(metricName, value, new Dictionary<string, string>
+        {
+            ["environment"] = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "production",
+            ["tenant"] = _tenantContext.TenantId ?? "global"
+        });
+    }
+
+    public async Task<AnalyticsReport> GetMonthlyReport()
+    {
+        return await _analytics.GetReportAsync(new AnalyticsQuery
+        {
+            StartDate = DateTime.UtcNow.AddMonths(-1),
+            EndDate = DateTime.UtcNow,
+            Metrics = new[] { "page_views", "user_sessions", "order_count" }
+        });
+    }
+}
+
+// Usage in Controller
+[HttpPost("purchase")]
+public async Task<IActionResult> CompletePurchase(PurchaseRequest request)
+{
+    var result = await _orderService.ProcessOrderAsync(request);
+
+    // Track analytics
+    await _analytics.TrackEventAsync(new AnalyticsEvent
+    {
+        Name = "purchase_completed",
+        UserId = _currentUser.UserId,
+        Properties = new Dictionary<string, string>
+        {
+            ["order_id"] = result.OrderId.ToString(),
+            ["total_amount"] = result.Total.ToString(),
+            ["currency"] = result.Currency
+        }
+    });
+
+    return Ok(result);
+}
+```
+
+### ☁️ Cloud Storage Abstraction
+
+```csharp
+// Storage Service Usage
+public class DocumentService
+{
+    private readonly IStorageService _storage;
+
+    public async Task<StorageFile> UploadDocumentAsync(IFormFile file, string folder = "documents")
+    {
+        using var stream = file.OpenReadStream();
+        return await _storage.UploadAsync(stream, file.FileName, folder);
+    }
+
+    public async Task<byte[]> DownloadDocumentAsync(string fileKey)
+    {
+        return await _storage.DownloadBytesAsync(fileKey);
+    }
+
+    public async Task<string> GeneratePreSignedUrlAsync(string fileKey, TimeSpan expiration)
+    {
+        return await _storage.GetPresignedUrlAsync(fileKey, expiration);
+    }
+}
+
+// Configuration for Different Providers
+public class StorageConfiguration
+{
+    // AWS S3
+    services.Configure<CloudStorageOptions>(options =>
+    {
+        options.Provider = StorageProvider.S3;
+        options.ConnectionString = "DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=mykey";
+        options.ContainerName = "documents";
+        options.BaseUrl = "https://mybucket.s3.amazonaws.com";
+    });
+
+    // Azure Blob Storage
+    services.Configure<CloudStorageOptions>(options =>
+    {
+        options.Provider = StorageProvider.AzureBlob;
+        options.ConnectionString = "DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=mykey";
+        options.ContainerName = "documents";
+    });
+
+    // Google Cloud Storage
+    services.Configure<CloudStorageOptions>(options =>
+    {
+        options.Provider = StorageProvider.GoogleCloud;
+        options.ConnectionString = "/path/to/service-account.json";
+        options.ContainerName = "my-bucket";
+    });
+}
+
+// Multi-tenant Storage with Tenant Isolation
+public class TenantStorageService
+{
+    private readonly IStorageService _storage;
+    private readonly ITenantContext _tenantContext;
+
+    public async Task<StorageFile> UploadTenantFileAsync(IFormFile file, string category)
+    {
+        var tenantFolder = $"tenant_{_tenantContext.TenantId}/{category}";
+        using var stream = file.OpenReadStream();
+
+        return await _storage.UploadAsync(stream, file.FileName, tenantFolder);
+    }
+
+    public async Task<IEnumerable<StorageFile>> ListTenantFilesAsync(string category)
+    {
+        var tenantFolder = $"tenant_{_tenantContext.TenantId}/{category}";
+        return await _storage.ListFilesAsync(tenantFolder);
+    }
+}
+```
+
+### 🌱 Database Seed Data
+
+```csharp
+// Program.cs - Seed database on startup
+public class Program
+{
+    public static async Task Main(string[] args)
+    {
+        var app = CreateApp(args);
+
+        // Seed database with initial data
+        await app.SeedDatabaseAsync<ApplicationDbContext>();
+
+        await app.RunAsync();
+    }
+
+    private static WebApplication CreateApp(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add Marventa services
+        builder.Services.AddMarventaV13(builder.Configuration, "MyEcommerce", "1.0.0");
+
+        // Add database seeding
+        builder.Services.AddDatabaseSeeding();
+
+        var app = builder.Build();
+        app.UseMarventaMiddleware();
+
+        return app;
+    }
+}
+
+// Custom seeder for specific entities
+public class CustomDatabaseSeeder : IDatabaseSeeder
+{
+    private readonly ILogger<CustomDatabaseSeeder> _logger;
+
+    public async Task SeedAsync<TContext>(TContext context) where TContext : DbContext
+    {
+        _logger.LogInformation("Seeding custom data");
+
+        // Seed categories
+        var categorySet = context.Set<Category>();
+        if (!await categorySet.AnyAsync())
+        {
+            var categories = new[]
+            {
+                new Category { Name = "Electronics", Description = "Electronic devices" },
+                new Category { Name = "Clothing", Description = "Fashion items" }
+            };
+
+            categorySet.AddRange(categories);
+            await context.SaveChangesAsync();
+        }
+
+        // Seed products
+        var productSet = context.Set<Product>();
+        if (!await productSet.AnyAsync())
+        {
+            var electronics = await categorySet.FirstAsync(c => c.Name == "Electronics");
+
+            var products = new[]
+            {
+                new Product
+                {
+                    Name = "Smartphone",
+                    Description = "Latest smartphone",
+                    Price = new Money(699.99m, Currency.USD),
+                    CategoryId = electronics.Id,
+                    Stock = 50
+                }
+            };
+
+            productSet.AddRange(products);
+            await context.SaveChangesAsync();
+        }
+    }
+}
+
+// Multi-tenant seeding with tenant-specific data
+public class TenantAwareSeeder
+{
+    private readonly ITenantContext _tenantContext;
+
+    public async Task SeedTenantDataAsync(string tenantId)
+    {
+        // Set tenant context
+        _tenantContext.SetTenant(tenantId);
+
+        // Tenant-specific seeding
+        var tenantProducts = GetTenantSpecificProducts(tenantId);
+        // ... seed logic
+    }
+
+    private Product[] GetTenantSpecificProducts(string tenantId)
+    {
+        return tenantId switch
+        {
+            "demo" => new[] { new Product { Name = "Demo Product" } },
+            "enterprise" => new[] { new Product { Name = "Enterprise Product" } },
+            _ => Array.Empty<Product>()
+        };
+    }
+}
+
+// Configuration for seed data
+{
+  "SeedData": {
+    "Enabled": true,
+    "DefaultTenants": [
+      {
+        "Id": "demo",
+        "Name": "Demo Company"
+      }
+    ]
+  }
+}
+```
+
 ## Architecture
 
 The framework follows Clean Architecture principles:
@@ -2177,4 +2434,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Built with ❤️ for .NET developers by [Adem Kınataş](https://github.com/AdemKinatas)
+Built with for .NET developers by [Adem Kınataş](https://github.com/AdemKinatas)
