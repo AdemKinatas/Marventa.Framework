@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>2.0.1</PackageVersion>
-    <VersionPrefix>2.0.1</VersionPrefix>
+    <PackageVersion>2.0.2</PackageVersion>
+    <VersionPrefix>2.0.2</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;messaging;rabbitmq;kafka;masstransit;aspnetcore;multitenancy;outbox;inbox;idempotency;opentelemetry;observability;saga;projections;mongodb;fluentvalidation;swagger;localization;money;domainevent;elasticsearch;s3;security;auditing;hangfire;configuration;devex</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v2.0.1: Enhanced Documentation with Complete Code Examples! Updated comprehensive README with detailed implementation examples for all framework features including Multi-Tenancy, JWT Authentication, CQRS patterns, Payment Processing, Shipping Management, Saga orchestration, Messaging (RabbitMQ+MassTransit), Outbox/Inbox patterns, Money/Currency value objects, Tenant-scoped Caching, Rate Limiting, Health Checks, API Versioning, Security &amp; Encryption, Communication services, Circuit Breaker patterns, Feature Flags, FluentValidation with RFC 7807 Problem Details, and OpenTelemetry Observability. Every feature now includes practical, production-ready code samples for immediate implementation.</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.0.2: Complete Professional Documentation with 18 Enterprise Features! Comprehensive README with detailed usage examples for Multi-Tenancy, Transactional Messaging (Outbox/Inbox), HTTP Idempotency, OpenTelemetry Observability, Entity Framework Multi-Tenant Support, Saga/Process Manager, Read Model Projections, FluentValidation Integration, Elasticsearch Search, Distributed Caching, Distributed Locking, Rate Limiting, API Versioning, Health Checks, Security Features, Circuit Breaker Pattern, Event Store, and complete v1.3 setup. Clean Architecture refactoring applied with proper layer separation and SOLID principles.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
