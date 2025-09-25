@@ -1,7 +1,7 @@
 using Marventa.Framework.Core.Interfaces;
 using Marventa.Framework.Core.Entities;
 
-namespace Marventa.Framework.Infrastructure.Entities;
+namespace Marventa.Framework.Domain.Entities;
 
 public class Tenant : BaseEntity, ITenant
 {

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 
-namespace Marventa.Framework.Application.Exceptions;
+namespace Marventa.Framework.Web.Exceptions;
 
 public class ValidationProblemDetails : ProblemDetails
 {

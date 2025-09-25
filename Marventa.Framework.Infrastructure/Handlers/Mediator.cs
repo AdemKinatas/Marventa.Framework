@@ -42,7 +42,7 @@ public class Mediator : IMediator
     public async Task<TResponse> SendAsync<TResponse>(ICommand<TResponse> command, CancellationToken cancellationToken = default)
     {
         var commandType = command.GetType();
-        var handlerType = typeof(ICommandHandler<,>).MakeGenericType(commandType, typeof(TResponse));
+        var handlerType = typeof(IRequestHandler<,>).MakeGenericType(commandType, typeof(TResponse));
 
         _logger.LogDebug("Handling command with response: {CommandType}", commandType.Name);
 
