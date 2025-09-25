@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using Marventa.Framework.Core.Interfaces;
-using Marventa.Framework.Domain.Entities;
+using Marventa.Framework.Infrastructure.Entities;
 
 namespace Marventa.Framework.Infrastructure.Projections;
 

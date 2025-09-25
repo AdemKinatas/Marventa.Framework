@@ -1,7 +1,6 @@
 using Marventa.Framework.Core.Interfaces;
 using Marventa.Framework.Core.Security;
 using Marventa.Framework.Infrastructure.Caching;
-using Marventa.Framework.Infrastructure.Configuration;
 using Marventa.Framework.Infrastructure.Data;
 using Marventa.Framework.Infrastructure.Handlers;
 using Marventa.Framework.Infrastructure.HealthChecks;
@@ -24,8 +23,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICacheService, MemoryCacheService>();
         services.AddScoped<ILoggerService, LoggerService>();
         services.AddScoped<IConnectionFactory, ConnectionFactory>();
-        services.AddScoped<IConfigurationService, ConfigurationService>();
-        services.AddScoped<IFeatureFlagService, FeatureFlagService>();
+        // services.AddScoped<IConfigurationService, ConfigurationService>();
+        // services.AddScoped<IFeatureFlagService, FeatureFlagService>();
 
         // Security services
         services.AddScoped<ITokenService, TokenService>();
