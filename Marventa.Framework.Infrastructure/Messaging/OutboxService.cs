@@ -1,5 +1,5 @@
 using Marventa.Framework.Core.Interfaces;
-using Marventa.Framework.Infrastructure.Entities;
+using Marventa.Framework.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

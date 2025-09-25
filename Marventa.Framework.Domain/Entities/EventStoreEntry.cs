@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Marventa.Framework.Core.Entities;
 
-namespace Marventa.Framework.Infrastructure.Entities;
+namespace Marventa.Framework.Domain.Entities;
 
 public class EventStoreEntry : BaseEntity
 {
