@@ -1396,6 +1396,89 @@ public class ProductV2Dto
 }
 ```
 
+### 🛡️ Central Error Handling & Logging
+
+```csharp
+// Automatic error handling with ExceptionHandlingMiddleware
+// All errors are automatically caught, logged and returned as structured responses
+
+// Custom exception types
+public class BusinessException : Exception
+{
+    public string Code { get; }
+    public BusinessException(string message, string code = "BUSINESS_ERROR")
+        : base(message) => Code = code;
+}
+
+public class ValidationException : Exception
+{
+    public Dictionary<string, string[]> Errors { get; }
+    public ValidationException(Dictionary<string, string[]> errors)
+        : base("Validation failed") => Errors = errors;
+}
+
+public class NotFoundException : Exception
+{
+    public NotFoundException(string entityName, object key)
+        : base($"{entityName} with key {key} was not found") { }
+}
+
+// Usage in services/controllers - exceptions are automatically handled
+public class ProductService
+{
+    public async Task<Product> GetProductAsync(Guid id)
+    {
+        var product = await _repository.GetByIdAsync(id);
+        if (product == null)
+            throw new NotFoundException(nameof(Product), id);
+
+        if (product.IsExpired)
+            throw new BusinessException("Product has expired", "PRODUCT_EXPIRED");
+
+        return product;
+    }
+}
+
+// Automatic response formatting
+// 404 Not Found
+{
+    "success": false,
+    "message": "Product with key 123 was not found",
+    "errorCode": "NOT_FOUND"
+}
+
+// 400 Bad Request (Business Error)
+{
+    "success": false,
+    "message": "Product has expired",
+    "errorCode": "PRODUCT_EXPIRED"
+}
+
+// 400 Bad Request (Validation Error)
+{
+    "success": false,
+    "message": "Validation failed",
+    "errors": {
+        "Name": ["Name is required"],
+        "Price": ["Price must be greater than 0"]
+    }
+}
+
+// 500 Internal Server Error (Unexpected errors)
+{
+    "success": false,
+    "message": "An internal server error occurred",
+    "errorCode": "INTERNAL_ERROR"
+}
+
+// All errors are automatically logged with full context:
+// - Exception details and stack trace
+// - Correlation ID for tracking across services
+// - Tenant context (if multi-tenant)
+// - User information
+// - Request path and method
+```
+
 ### 🔒 Security & Encryption
 
 ```csharp
