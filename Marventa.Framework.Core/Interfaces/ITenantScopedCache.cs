@@ -1,4 +1,4 @@
-namespace Marventa.Framework.Infrastructure.Caching;
+namespace Marventa.Framework.Core.Interfaces;
 
 public interface ITenantScopedCache
 {
