@@ -4,30 +4,52 @@ A comprehensive .NET 9.0 enterprise e-commerce framework with multi-tenancy, JWT
 
 ## Features
 
+### 🏗️ Core Architecture
 - **Multi-Tenancy** - Complete tenant isolation with policy-based authorization
+- **CQRS & MediatR** - Command Query Responsibility Segregation with pipeline behaviors
+- **Clean Architecture** - Domain-driven design with clear layer separation
+- **Dependency Injection** - Built-in DI container integration
+
+### 🔐 Security & Authentication
 - **JWT Authentication** - Token-based authentication and authorization
-- **CQRS & MediatR** - Command Query Responsibility Segregation
-- **Payment Processing** - Complete payment domain with events
-- **Shipping Management** - End-to-end shipping lifecycle
-- **Saga Patterns** - MassTransit state machine orchestration
-- **Messaging** - RabbitMQ+MassTransit and Kafka support
-- **Outbox/Inbox** - Reliable messaging patterns
-- **Money/Currency** - Multi-currency value objects
-- **Caching** - Redis and in-memory caching with tenant scoping
-- **Rate Limiting** - Tenant-aware rate limiting
-- **Health Checks** - Database and service monitoring
-- **API Versioning** - Multiple versioning strategies
-- **Security** - Encryption, data protection, CORS
-- **Communication** - Email and SMS services
-- **Circuit Breaker** - HTTP resilience patterns
-- **Feature Flags** - Dynamic feature toggles
-- **Validation** - FluentValidation with RFC 7807 Problem Details
-- **Observability** - OpenTelemetry tracing and metrics
-- **HTTP Idempotency** - Correlation tracking for safe retries
-- **Read Model Projections** - MSSQL → MongoDB projections
+- **Security & Encryption** - Data protection, encryption, and secure storage
+- **API Versioning** - Header, query, and URL-based versioning strategies
+- **Rate Limiting** - Tenant-aware and endpoint-specific rate limiting
+
+### 💾 Data & Persistence
+- **Entity Framework Core** - Repository pattern with tenant scoping
+- **Database Seeding** - Multi-tenant seed data management
 - **Distributed Locking** - Redis-based distributed locks
-- **Search & Analytics** - Elasticsearch/ClickHouse abstractions
-- **Storage Abstraction** - S3/Azure Blob/GCS unified interface
+- **Caching** - Redis distributed and in-memory caching with tenant isolation
+
+### 📨 Messaging & Communication
+- **RabbitMQ + MassTransit** - Reliable message bus with retry policies
+- **Kafka Integration** - High-throughput event streaming
+- **Outbox/Inbox Patterns** - Guaranteed message delivery
+- **Email & SMS Services** - Template-based communication
+
+### 💰 E-Commerce Domain
+- **Payment Processing** - Complete payment domain with events and state management
+- **Shipping Management** - End-to-end shipping lifecycle with tracking
+- **Money/Currency** - Multi-currency value objects with exchange rates
+- **Order Management** - Complete order lifecycle with domain events
+
+### 🔄 Workflow & Orchestration
+- **Saga Patterns** - Long-running business process orchestration
+- **Background Jobs** - Hangfire-based job processing
+- **HTTP Idempotency** - Correlation tracking for safe retries
+
+### 🔍 Monitoring & Observability
+- **Structured Logging** - Serilog with tenant and correlation context
+- **OpenTelemetry** - Distributed tracing and metrics
+- **Health Checks** - Database, cache, and service monitoring
+- **Feature Flags** - Dynamic feature toggles with tenant support
+
+### 🛠️ Developer Experience
+- **Validation** - FluentValidation with RFC 7807 Problem Details
+- **Circuit Breaker** - HTTP resilience patterns with fallback
+- **Search & Analytics** - Elasticsearch full-text search
+- **Cloud Storage** - S3-compatible storage abstraction
 
 ## Installation
 
@@ -626,12 +648,25 @@ public class OrderSagaStateMachine : MassTransitStateMachine<OrderSagaState>
 }
 ```
 
-### 📨 Messaging (RabbitMQ + MassTransit)
+### 📨 Messaging & Event Streaming
 
-#### Configuration
+#### RabbitMQ + MassTransit Configuration
 ```csharp
-// Startup configuration
-builder.Services.AddMassTransit(x =>
+// Configuration
+{
+  "RabbitMQ": {
+    "Host": "localhost",
+    "Port": 5672,
+    "Username": "guest",
+    "Password": "guest",
+    "VirtualHost": "/",
+    "RetryLimit": 3,
+    "RetryInterval": "00:00:30"
+  }
+}
+
+// Service Registration
+services.AddMassTransit(x =>
 {
     x.AddSagaStateMachine<OrderSagaStateMachine, OrderSagaState>()
         .InMemoryRepository();
@@ -641,20 +676,93 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        cfg.Host(configuration["RabbitMQ:Host"], h =>
         {
-            h.Username("guest");
-            h.Password("guest");
+            h.Username(configuration["RabbitMQ:Username"]);
+            h.Password(configuration["RabbitMQ:Password"]);
         });
 
         cfg.ConfigureEndpoints(context);
+
+        // Configure retry policy
+        cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(30)));
     });
 });
 ```
 
+#### Kafka Configuration
+```csharp
+// Configuration
+{
+  "Kafka": {
+    "BootstrapServers": "localhost:9092",
+    "GroupId": "marventa-consumers",
+    "AutoOffsetReset": "Earliest",
+    "EnableAutoCommit": false
+  }
+}
+
+// Kafka Producer
+public class KafkaMessageBus : IMessageBus
+{
+    private readonly IProducer<string, string> _producer;
+    private readonly KafkaOptions _options;
+
+    public async Task PublishEventAsync<T>(T eventMessage, string topic = null) where T : IIntegrationEvent
+    {
+        topic ??= typeof(T).Name.ToLowerInvariant();
+
+        var message = new Message<string, string>
+        {
+            Key = eventMessage.CorrelationId,
+            Value = JsonSerializer.Serialize(eventMessage),
+            Headers = new Headers
+            {
+                { "tenant-id", Encoding.UTF8.GetBytes(_tenantContext.TenantId ?? "global") },
+                { "event-type", Encoding.UTF8.GetBytes(typeof(T).Name) },
+                { "timestamp", Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("O")) }
+            }
+        };
+
+        await _producer.ProduceAsync(topic, message);
+    }
+}
+
+// Kafka Consumer
+public abstract class BaseKafkaHandler<T> : IKafkaHandler<T> where T : IIntegrationEvent
+{
+    private readonly ILogger<BaseKafkaHandler<T>> _logger;
+    private readonly ITenantContext _tenantContext;
+
+    public async Task HandleAsync(ConsumeResult<string, string> consumeResult, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Extract tenant context from headers
+            if (consumeResult.Message.Headers.TryGetLastBytes("tenant-id", out var tenantIdBytes))
+            {
+                var tenantId = Encoding.UTF8.GetString(tenantIdBytes);
+                _tenantContext.SetTenant(tenantId);
+            }
+
+            var eventMessage = JsonSerializer.Deserialize<T>(consumeResult.Message.Value);
+            await ProcessEventAsync(eventMessage, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing Kafka message: {Topic} {Partition} {Offset}",
+                consumeResult.Topic, consumeResult.Partition, consumeResult.Offset);
+            throw;
+        }
+    }
+
+    protected abstract Task ProcessEventAsync(T eventMessage, CancellationToken cancellationToken);
+}
+```
+
 #### Event Handlers
 ```csharp
-// Domain Event Handler
+// RabbitMQ Event Handler
 public class OrderCreatedEventHandler : IDomainEventHandler<OrderCreatedEvent>
 {
     private readonly ILogger<OrderCreatedEventHandler> _logger;
@@ -662,7 +770,8 @@ public class OrderCreatedEventHandler : IDomainEventHandler<OrderCreatedEvent>
 
     public async Task HandleAsync(OrderCreatedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Order created: {OrderId}", domainEvent.OrderId);
+        _logger.LogInformation("Processing order created event for order {OrderId} in tenant {TenantId}",
+            domainEvent.OrderId, _tenantContext.TenantId);
 
         // Convert to integration event for external systems
         var integrationEvent = new OrderCreatedIntegrationEvent
@@ -670,27 +779,28 @@ public class OrderCreatedEventHandler : IDomainEventHandler<OrderCreatedEvent>
             OrderId = domainEvent.OrderId,
             CustomerId = domainEvent.CustomerId,
             CorrelationId = Guid.NewGuid().ToString(),
-            OccurredOn = DateTime.UtcNow
+            OccurredOn = DateTime.UtcNow,
+            TenantId = _tenantContext.TenantId
         };
 
         await _eventBus.PublishIntegrationEventAsync(integrationEvent, cancellationToken);
     }
 }
 
-// Integration Event Handler
-public class PaymentProcessedEventHandler : IConsumer<PaymentProcessedIntegrationEvent>
+// Kafka Event Handler
+public class PaymentProcessedKafkaHandler : BaseKafkaHandler<PaymentProcessedIntegrationEvent>
 {
     private readonly IMediator _mediator;
 
-    public async Task Consume(ConsumeContext<PaymentProcessedIntegrationEvent> context)
+    protected override async Task ProcessEventAsync(PaymentProcessedIntegrationEvent eventMessage, CancellationToken cancellationToken)
     {
         var command = new UpdateOrderPaymentStatusCommand(
-            context.Message.OrderId,
+            eventMessage.OrderId,
             PaymentStatus.Completed,
-            context.Message.TransactionId
+            eventMessage.TransactionId
         );
 
-        await _mediator.Send(command);
+        await _mediator.Send(command, cancellationToken);
     }
 }
 ```
@@ -938,23 +1048,43 @@ public class OrderService
 }
 ```
 
-### 🗄️ Tenant-Scoped Caching
+### 🗄️ Caching (Redis & In-Memory)
 
+#### Redis Distributed Caching
 ```csharp
 // Configuration
-public class TenantCacheOptions
 {
-    public TimeSpan DefaultExpiration { get; set; } = TimeSpan.FromMinutes(5);
-    public bool EnableCompression { get; set; } = true;
-    public long MaxSizePerTenant { get; set; } = 100 * 1024 * 1024; // 100MB
+  "Redis": {
+    "ConnectionString": "localhost:6379",
+    "DatabaseId": 0,
+    "KeyPrefix": "MyApp",
+    "DefaultExpiration": "00:05:00"
+  }
 }
 
-// Implementation
+// Service Registration
+services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = configuration.GetConnectionString("Redis");
+});
+```
+
+#### In-Memory Caching
+```csharp
+// Configuration
+services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 1024; // 1GB
+    options.CompactionPercentage = 0.25;
+});
+```
+
+#### Tenant-Scoped Caching
+```csharp
 public class TenantScopedCache : ITenantScopedCache
 {
     private readonly IDistributedCache _distributedCache;
     private readonly ITenantContext _tenantContext;
-    private readonly TenantCacheOptions _options;
 
     public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
     {
@@ -974,16 +1104,10 @@ public class TenantScopedCache : ITenantScopedCache
 
         var options = new DistributedCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = expiration ?? _options.DefaultExpiration
+            AbsoluteExpirationRelativeToNow = expiration ?? TimeSpan.FromMinutes(5)
         };
 
         await _distributedCache.SetStringAsync(tenantKey, json, options, cancellationToken);
-    }
-
-    public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)
-    {
-        var tenantKey = GetTenantScopedKey(key);
-        await _distributedCache.RemoveAsync(tenantKey, cancellationToken);
     }
 
     private string GetTenantScopedKey(string key)
@@ -997,23 +1121,33 @@ public class TenantScopedCache : ITenantScopedCache
 public class ProductService
 {
     private readonly ITenantScopedCache _cache;
+    private readonly IMemoryCache _memoryCache;
     private readonly IRepository<Product> _productRepository;
 
     public async Task<Product?> GetProductAsync(Guid productId)
     {
         var cacheKey = $"product:{productId}";
 
-        // Try cache first (tenant-scoped automatically)
-        var cachedProduct = await _cache.GetAsync<Product>(cacheKey);
-        if (cachedProduct != null)
+        // Try memory cache first (fastest)
+        if (_memoryCache.TryGetValue(cacheKey, out Product? cachedProduct))
             return cachedProduct;
+
+        // Try distributed cache (tenant-scoped)
+        cachedProduct = await _cache.GetAsync<Product>(cacheKey);
+        if (cachedProduct != null)
+        {
+            // Store in memory cache for 2 minutes
+            _memoryCache.Set(cacheKey, cachedProduct, TimeSpan.FromMinutes(2));
+            return cachedProduct;
+        }
 
         // Get from database
         var product = await _productRepository.GetByIdAsync(productId);
         if (product != null)
         {
-            // Cache for 10 minutes
+            // Cache in both levels
             await _cache.SetAsync(cacheKey, product, TimeSpan.FromMinutes(10));
+            _memoryCache.Set(cacheKey, product, TimeSpan.FromMinutes(2));
         }
 
         return product;
@@ -1958,14 +2092,71 @@ public class ValidationExceptionMiddleware
 }
 ```
 
-### 🔍 Observability with OpenTelemetry
+### 📊 Structured Logging & Observability
 
+#### Serilog Configuration
 ```csharp
-// Activity Service
+// Configuration
+{
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {CorrelationId} {TenantId} {Message:lj}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/app-.log",
+          "rollingInterval": "Day",
+          "retainedFileCountLimit": 30,
+          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {CorrelationId} {TenantId} {SourceContext} {Message:lj}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "Elasticsearch",
+        "Args": {
+          "nodeUris": "http://localhost:9200",
+          "indexFormat": "marventa-logs-{0:yyyy.MM}",
+          "autoRegisterTemplate": true
+        }
+      }
+    ],
+    "Enrich": ["FromLogContext", "WithMachineName", "WithThreadId"],
+    "Properties": {
+      "Application": "Marventa.Framework"
+    }
+  }
+}
+
+// Service Registration
+services.AddSerilog((serviceProvider, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .ReadFrom.Configuration(configuration)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("Application", "Marventa.Framework")
+        .Enrich.WithProperty("Environment", environment.EnvironmentName);
+});
+```
+
+#### OpenTelemetry Integration
+```csharp
+// Activity Service with Tenant Context
 public class ActivityService : IActivityService
 {
     private static readonly ActivitySource ActivitySource = new("Marventa.Framework");
     private readonly ITenantContext _tenantContext;
+    private readonly ICorrelationContext _correlationContext;
 
     public Activity? StartActivity(string name, Dictionary<string, string>? tags = null)
     {
@@ -1980,6 +2171,10 @@ public class ActivityService : IActivityService
                 activity.SetTag("tenant.name", _tenantContext.CurrentTenant?.Name);
             }
 
+            // Add correlation context
+            activity.SetTag("correlation.id", _correlationContext.CorrelationId);
+            activity.SetTag("user.id", _correlationContext.UserId);
+
             // Add custom tags
             if (tags != null)
             {
@@ -1993,12 +2188,6 @@ public class ActivityService : IActivityService
         return activity;
     }
 
-    public void AddEvent(Activity activity, string name, Dictionary<string, string>? attributes = null)
-    {
-        var activityEvent = new ActivityEvent(name, DateTimeOffset.UtcNow, new ActivityTagsCollection(attributes));
-        activity?.AddEvent(activityEvent);
-    }
-
     public void RecordException(Activity activity, Exception exception)
     {
         activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
@@ -2008,114 +2197,52 @@ public class ActivityService : IActivityService
     }
 }
 
-// Correlation Context
-public class CorrelationContext : ICorrelationContext
-{
-    public string CorrelationId { get; private set; } = Guid.NewGuid().ToString();
-    public string? UserId { get; private set; }
-    public string? TenantId { get; private set; }
-
-    public void SetCorrelationId(string correlationId)
-    {
-        CorrelationId = correlationId;
-    }
-
-    public void SetUser(string userId)
-    {
-        UserId = userId;
-    }
-
-    public void SetTenant(string tenantId)
-    {
-        TenantId = tenantId;
-    }
-}
-
-// Correlation Middleware
-public class CorrelationMiddleware
-{
-    private readonly RequestDelegate _next;
-    private readonly ICorrelationContext _correlationContext;
-
-    public CorrelationMiddleware(RequestDelegate next, ICorrelationContext correlationContext)
-    {
-        _next = next;
-        _correlationContext = correlationContext;
-    }
-
-    public async Task InvokeAsync(HttpContext context)
-    {
-        // Get correlation ID from header or generate new one
-        var correlationId = context.Request.Headers["X-Correlation-ID"].FirstOrDefault()
-                           ?? Guid.NewGuid().ToString();
-
-        _correlationContext.SetCorrelationId(correlationId);
-
-        // Add correlation ID to response headers
-        context.Response.OnStarting(() =>
-        {
-            context.Response.Headers.Add("X-Correlation-ID", correlationId);
-            return Task.CompletedTask;
-        });
-
-        // Add to current activity
-        Activity.Current?.SetTag("correlation.id", correlationId);
-
-        await _next(context);
-    }
-}
-
-// Usage in Service
+// Structured Logging in Services
 public class OrderService
 {
-    private readonly IActivityService _activityService;
-    private readonly ICorrelationContext _correlationContext;
     private readonly ILogger<OrderService> _logger;
+    private readonly ITenantContext _tenantContext;
+    private readonly ICorrelationContext _correlationContext;
 
     public async Task<Order> CreateOrderAsync(CreateOrderCommand command)
     {
-        using var activity = _activityService.StartActivity("order.create", new Dictionary<string, string>
+        using var activity = _activityService.StartActivity("order.create");
+
+        // Structured logging with context
+        using var scope = _logger.BeginScope(new Dictionary<string, object>
         {
-            ["order.customer_id"] = command.CustomerId,
-            ["order.item_count"] = command.Items.Count.ToString(),
-            ["correlation.id"] = _correlationContext.CorrelationId
+            ["TenantId"] = _tenantContext.TenantId ?? "global",
+            ["CorrelationId"] = _correlationContext.CorrelationId,
+            ["UserId"] = _correlationContext.UserId ?? "anonymous",
+            ["OperationType"] = "CreateOrder"
         });
 
         try
         {
-            _logger.LogInformation("Creating order for customer {CustomerId} with correlation {CorrelationId}",
-                command.CustomerId, _correlationContext.CorrelationId);
+            _logger.LogInformation("Creating order for customer {CustomerId} with {ItemCount} items",
+                command.CustomerId, command.Items.Count);
 
             var order = new Order(command.CustomerId, command.Items);
 
-            _activityService.AddEvent(activity!, "order.validated", new Dictionary<string, string>
-            {
-                ["order.id"] = order.Id.ToString(),
-                ["order.total"] = order.Total.Format()
-            });
-
-            // Save order
-            await _orderRepository.AddAsync(order);
-
-            _activityService.AddEvent(activity!, "order.saved");
+            _logger.LogInformation("Order {OrderId} created successfully with total {Total}",
+                order.Id, order.Total.Format());
 
             activity?.SetTag("order.id", order.Id.ToString());
-            activity?.SetTag("order.status", order.Status.ToString());
             activity?.SetStatus(ActivityStatusCode.Ok);
 
             return order;
         }
         catch (Exception ex)
         {
-            _activityService.RecordException(activity!, ex);
             _logger.LogError(ex, "Failed to create order for customer {CustomerId}", command.CustomerId);
+            _activityService.RecordException(activity!, ex);
             throw;
         }
     }
 }
 
 // OpenTelemetry Configuration
-builder.Services.AddOpenTelemetry()
+services.AddOpenTelemetry()
     .WithTracing(builder =>
     {
         builder
@@ -2126,6 +2253,7 @@ builder.Services.AddOpenTelemetry()
                 options.EnrichWithHttpRequest = (activity, request) =>
                 {
                     activity.SetTag("http.request.size", request.ContentLength);
+                    activity.SetTag("http.client.ip", request.HttpContext.Connection.RemoteIpAddress?.ToString());
                 };
                 options.EnrichWithHttpResponse = (activity, response) =>
                 {
@@ -2134,6 +2262,7 @@ builder.Services.AddOpenTelemetry()
             })
             .AddHttpClientInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
+            .AddRedisInstrumentation()
             .AddJaegerExporter()
             .AddConsoleExporter();
     })
@@ -2142,69 +2271,138 @@ builder.Services.AddOpenTelemetry()
         builder
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation()
             .AddPrometheusExporter();
     });
 ```
 
-### 📊 Analytics & ClickHouse Integration
+### 🔍 Search with Elasticsearch
 
 ```csharp
-// Analytics Service
-public class AnalyticsService
+// Configuration
 {
-    private readonly IAnalyticsService _analytics;
+  "Elasticsearch": {
+    "Uri": "http://localhost:9200",
+    "DefaultIndex": "marventa-search",
+    "Username": "elastic",
+    "Password": "changeme",
+    "EnableDebugMode": false
+  }
+}
 
-    public async Task TrackUserActivity(string userId, string action, object? data = null)
+// Search Service Implementation
+public class ElasticsearchService : ISearchService
+{
+    private readonly HttpClient _httpClient;
+    private readonly ElasticsearchOptions _options;
+    private readonly ITenantContext _tenantContext;
+
+    public async Task<SearchResult<T>> SearchAsync<T>(SearchRequest request, CancellationToken cancellationToken = default) where T : class
     {
-        await _analytics.TrackEventAsync(new AnalyticsEvent
+        var indexName = GetTenantScopedIndex(request.IndexName ?? _options.DefaultIndex);
+
+        var searchQuery = new
         {
-            Name = action,
-            UserId = userId,
-            Properties = data?.ToDictionary() ?? new Dictionary<string, string>(),
-            Timestamp = DateTime.UtcNow
-        });
+            query = new
+            {
+                bool = new
+                {
+                    must = new[]
+                    {
+                        new { multi_match = new { query = request.Query, fields = new[] { "*" } } }
+                    },
+                    filter = new[]
+                    {
+                        new { term = new { tenant_id = _tenantContext.TenantId ?? "global" } }
+                    }
+                }
+            },
+            from = (request.Page - 1) * request.PageSize,
+            size = request.PageSize,
+            highlight = new
+            {
+                fields = new { @"*" = new { } }
+            }
+        };
+
+        var response = await _httpClient.PostAsync($"{indexName}/_search",
+            new StringContent(JsonSerializer.Serialize(searchQuery), Encoding.UTF8, "application/json"),
+            cancellationToken);
+
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        var elasticResponse = JsonSerializer.Deserialize<ElasticsearchResponse<T>>(content);
+
+        return new SearchResult<T>
+        {
+            Items = elasticResponse.Hits.Hits.Select(h => h.Source).ToList(),
+            TotalCount = elasticResponse.Hits.Total.Value,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            ExecutionTime = elasticResponse.Took
+        };
     }
 
-    public async Task TrackPerformanceMetric(string metricName, double value)
+    public async Task IndexDocumentAsync<T>(T document, string? id = null, string? indexName = null, CancellationToken cancellationToken = default) where T : class
     {
-        await _analytics.TrackMetricAsync(metricName, value, new Dictionary<string, string>
+        indexName = GetTenantScopedIndex(indexName ?? _options.DefaultIndex);
+        id ??= Guid.NewGuid().ToString();
+
+        // Add tenant context to document
+        var documentWithContext = new
         {
-            ["environment"] = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "production",
-            ["tenant"] = _tenantContext.TenantId ?? "global"
-        });
+            tenant_id = _tenantContext.TenantId ?? "global",
+            indexed_at = DateTime.UtcNow,
+            document = document
+        };
+
+        var response = await _httpClient.PutAsync($"{indexName}/_doc/{id}",
+            new StringContent(JsonSerializer.Serialize(documentWithContext), Encoding.UTF8, "application/json"),
+            cancellationToken);
+
+        response.EnsureSuccessStatusCode();
     }
 
-    public async Task<AnalyticsReport> GetMonthlyReport()
+    private string GetTenantScopedIndex(string baseIndex)
     {
-        return await _analytics.GetReportAsync(new AnalyticsQuery
-        {
-            StartDate = DateTime.UtcNow.AddMonths(-1),
-            EndDate = DateTime.UtcNow,
-            Metrics = new[] { "page_views", "user_sessions", "order_count" }
-        });
+        var tenantId = _tenantContext.TenantId ?? "global";
+        return $"{baseIndex}-{tenantId}";
     }
 }
 
-// Usage in Controller
-[HttpPost("purchase")]
-public async Task<IActionResult> CompletePurchase(PurchaseRequest request)
+// Usage Example
+public class ProductSearchService
 {
-    var result = await _orderService.ProcessOrderAsync(request);
+    private readonly ISearchService _searchService;
 
-    // Track analytics
-    await _analytics.TrackEventAsync(new AnalyticsEvent
+    public async Task<SearchResult<ProductSearchDto>> SearchProductsAsync(string query, int page = 1, int pageSize = 20)
     {
-        Name = "purchase_completed",
-        UserId = _currentUser.UserId,
-        Properties = new Dictionary<string, string>
+        var searchRequest = new SearchRequest
         {
-            ["order_id"] = result.OrderId.ToString(),
-            ["total_amount"] = result.Total.ToString(),
-            ["currency"] = result.Currency
-        }
-    });
+            Query = query,
+            Page = page,
+            PageSize = pageSize,
+            IndexName = "products"
+        };
 
-    return Ok(result);
+        return await _searchService.SearchAsync<ProductSearchDto>(searchRequest);
+    }
+
+    public async Task IndexProductAsync(Product product)
+    {
+        var searchDto = new ProductSearchDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price.Amount,
+            Currency = product.Price.Currency.Code,
+            CategoryName = product.Category?.Name,
+            Tags = product.Tags,
+            CreatedAt = product.CreatedDate
+        };
+
+        await _searchService.IndexDocumentAsync(searchDto, product.Id.ToString(), "products");
+    }
 }
 ```
 
