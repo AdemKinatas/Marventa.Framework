@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>2.0.0</PackageVersion>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <PackageVersion>2.0.1</PackageVersion>
+    <VersionPrefix>2.0.1</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;messaging;rabbitmq;kafka;masstransit;aspnetcore;multitenancy;outbox;inbox;idempotency;opentelemetry;observability;saga;projections;mongodb;fluentvalidation;swagger;localization;money;domainevent;elasticsearch;s3;security;auditing;hangfire;configuration;devex</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v2.0.0: COMPLETE PRODUCTION-READY E-COMMERCE FRAMEWORK! Added Saga/Process Manager infrastructure, Read Model Projections with MongoDB, comprehensive FluentValidation pipeline with RFC 7807 Problem Details, enhanced API versioning with Swagger/OpenAPI documentation, complete localization framework with Money/Currency value objects, sophisticated Domain Events with Integration Events layering, Search &amp; Analytics abstractions for Elasticsearch/ClickHouse, unified Storage abstraction for S3/Azure Blob/GCS, advanced Security hardening with Data Protection and CSP, global Auditing &amp; Soft-delete filters, Background jobs integration with Hangfire/Quartz, enhanced Configuration &amp; Secrets management with strongly-typed options, comprehensive DevEx tools including templates and Directory.Packages.props, plus e-commerce domain modules for Cargo/Payment/Fraud. Complete enterprise ecosystem for production-ready microservices following Clean Architecture and SOLID principles!</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.0.1: Enhanced Documentation with Complete Code Examples! Updated comprehensive README with detailed implementation examples for all framework features including Multi-Tenancy, JWT Authentication, CQRS patterns, Payment Processing, Shipping Management, Saga orchestration, Messaging (RabbitMQ+MassTransit), Outbox/Inbox patterns, Money/Currency value objects, Tenant-scoped Caching, Rate Limiting, Health Checks, API Versioning, Security &amp; Encryption, Communication services, Circuit Breaker patterns, Feature Flags, FluentValidation with RFC 7807 Problem Details, and OpenTelemetry Observability. Every feature now includes practical, production-ready code samples for immediate implementation.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
