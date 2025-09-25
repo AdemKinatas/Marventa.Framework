@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Marventa.Framework.Core.Interfaces;
-using Marventa.Framework.Domain.Entities;
+using Marventa.Framework.Infrastructure.Entities;
 using Marventa.Framework.Infrastructure.Idempotency;
 using Marventa.Framework.Infrastructure.Messaging;
 using Marventa.Framework.Infrastructure.Multitenancy;

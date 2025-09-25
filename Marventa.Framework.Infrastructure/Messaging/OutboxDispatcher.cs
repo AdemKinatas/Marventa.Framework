@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MassTransit;
 using Marventa.Framework.Core.Interfaces;
-using Marventa.Framework.Domain.Entities;
+using Marventa.Framework.Infrastructure.Entities;
 using System.Text.Json;
 
 namespace Marventa.Framework.Infrastructure.Messaging;

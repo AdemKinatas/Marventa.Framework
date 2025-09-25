@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Marventa.Framework.Core.Entities;
 using Marventa.Framework.Core.Interfaces;
 
-namespace Marventa.Framework.Domain.Entities;
+namespace Marventa.Framework.Infrastructure.Entities;
 
 public class SagaStepExecution : BaseEntity
 {
