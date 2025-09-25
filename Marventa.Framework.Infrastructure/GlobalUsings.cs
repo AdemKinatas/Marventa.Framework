@@ -1,0 +1,12 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading;
+global using System.Threading.Tasks;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;
+global using Marventa.Framework.Core.Interfaces;
+global using Marventa.Framework.Infrastructure.Options;
+global using Marventa.Framework.Domain.Entities;

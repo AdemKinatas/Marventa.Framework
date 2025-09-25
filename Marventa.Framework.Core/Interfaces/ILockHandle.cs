@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Marventa.Framework.Infrastructure.Locking;
+namespace Marventa.Framework.Core.Interfaces;
 
 public interface ILockHandle : IAsyncDisposable
 {
