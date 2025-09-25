@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>2.0.3</PackageVersion>
-    <VersionPrefix>2.0.3</VersionPrefix>
+    <PackageVersion>2.0.4</PackageVersion>
+    <VersionPrefix>2.0.4</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;messaging;rabbitmq;kafka;masstransit;aspnetcore;multitenancy;outbox;inbox;idempotency;opentelemetry;observability;saga;projections;mongodb;fluentvalidation;swagger;localization;money;domainevent;elasticsearch;s3;security;auditing;hangfire;configuration;devex</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v2.0.3: Database Seed Data Support! Added comprehensive database seeding functionality with multi-tenant support, automatic tenant creation, flexible entity seeding, migration handling, and extension methods for easy integration. Professional documentation updated with detailed usage examples for Analytics, Cloud Storage, and Database Seed Data features. All 25+ enterprise features now fully documented and implemented.</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.0.4: Fixed FluentValidation warning by replacing obsolete ScalePrecision with PrecisionScale method. Clean build with zero warnings. Database Seed Data functionality with multi-tenant support, comprehensive documentation with 25+ enterprise features fully implemented and documented.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
