@@ -26,21 +26,18 @@ public static class DatabaseSeedingExtensions
             // Ensure database is created
             await context.Database.EnsureCreatedAsync();
 
-            // Try to apply migrations if available
             try
             {
-                logger.LogInformation("Checking for database migrations...");
-                // Use reflection to check if migrations are available
-                var migrationsAssembly = context.Database.GetType().Assembly;
-                if (migrationsAssembly != null)
+                if (context.Database.GetPendingMigrations().Any())
                 {
                     logger.LogInformation("Applying database migrations...");
-                    // context.Database.MigrateAsync() requires EF migrations package
+                    await context.Database.MigrateAsync();
+                    logger.LogInformation("Database migrations applied successfully");
                 }
             }
             catch (Exception migrationEx)
             {
-                logger.LogWarning(migrationEx, "Could not apply migrations, database may not support migrations");
+                logger.LogWarning(migrationEx, "Could not apply migrations, falling back to EnsureCreated");
             }
 
             // Seed data
