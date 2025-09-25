@@ -8,21 +8,21 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>1.1.2</PackageVersion>
-    <VersionPrefix>1.1.2</VersionPrefix>
+    <PackageVersion>2.0.0</PackageVersion>
+    <VersionPrefix>2.0.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
     <Company>Marventa</Company>
-    <Description>A comprehensive .NET framework following Clean Architecture principles with JWT authentication, CQRS, caching, rate limiting, health checks, messaging infrastructure (RabbitMQ+MassTransit, Kafka), and more.</Description>
+    <Description>A comprehensive .NET framework following Clean Architecture principles with JWT authentication, CQRS, caching, rate limiting, health checks, messaging infrastructure (RabbitMQ+MassTransit, Kafka), multi-tenancy, outbox/inbox patterns, HTTP idempotency, OpenTelemetry observability, Saga/Process Manager, MongoDB projections, FluentValidation pipeline, enhanced Swagger/OpenAPI, localization, money value objects, domain events, search abstractions, storage abstraction, security hardening, auditing, background jobs, configuration management, and DevEx tools.</Description>
     <Copyright>Copyright © Marventa 2024</Copyright>
     <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;messaging;rabbitmq;kafka;masstransit;aspnetcore</PackageTags>
+    <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;messaging;rabbitmq;kafka;masstransit;aspnetcore;multitenancy;outbox;inbox;idempotency;opentelemetry;observability;saga;projections;mongodb;fluentvalidation;swagger;localization;money;domainevent;elasticsearch;s3;security;auditing;hangfire;configuration;devex</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v1.1.2: Clean build with zero warnings - upgraded to Microsoft.Data.SqlClient, fixed all nullability warnings, and improved code quality. Perfect build status achieved!</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.0.0: COMPLETE PRODUCTION-READY E-COMMERCE FRAMEWORK! Added Saga/Process Manager infrastructure, Read Model Projections with MongoDB, comprehensive FluentValidation pipeline with RFC 7807 Problem Details, enhanced API versioning with Swagger/OpenAPI documentation, complete localization framework with Money/Currency value objects, sophisticated Domain Events with Integration Events layering, Search &amp; Analytics abstractions for Elasticsearch/ClickHouse, unified Storage abstraction for S3/Azure Blob/GCS, advanced Security hardening with Data Protection and CSP, global Auditing &amp; Soft-delete filters, Background jobs integration with Hangfire/Quartz, enhanced Configuration &amp; Secrets management with strongly-typed options, comprehensive DevEx tools including templates and Directory.Packages.props, plus e-commerce domain modules for Cargo/Payment/Fraud. Complete enterprise ecosystem for production-ready microservices following Clean Architecture and SOLID principles!</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
