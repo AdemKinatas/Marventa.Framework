@@ -3,7 +3,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Marventa.Framework.Application.Exceptions;
+using Marventa.Framework.Web.Exceptions;
 using System.Diagnostics;
 
 namespace Marventa.Framework.Web.Middleware;
