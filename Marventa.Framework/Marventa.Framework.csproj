@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>2.0.2</PackageVersion>
-    <VersionPrefix>2.0.2</VersionPrefix>
+    <PackageVersion>2.0.3</PackageVersion>
+    <VersionPrefix>2.0.3</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;messaging;rabbitmq;kafka;masstransit;aspnetcore;multitenancy;outbox;inbox;idempotency;opentelemetry;observability;saga;projections;mongodb;fluentvalidation;swagger;localization;money;domainevent;elasticsearch;s3;security;auditing;hangfire;configuration;devex</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v2.0.2: Complete Professional Documentation with 18 Enterprise Features! Comprehensive README with detailed usage examples for Multi-Tenancy, Transactional Messaging (Outbox/Inbox), HTTP Idempotency, OpenTelemetry Observability, Entity Framework Multi-Tenant Support, Saga/Process Manager, Read Model Projections, FluentValidation Integration, Elasticsearch Search, Distributed Caching, Distributed Locking, Rate Limiting, API Versioning, Health Checks, Security Features, Circuit Breaker Pattern, Event Store, and complete v1.3 setup. Clean Architecture refactoring applied with proper layer separation and SOLID principles.</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.0.3: Database Seed Data Support! Added comprehensive database seeding functionality with multi-tenant support, automatic tenant creation, flexible entity seeding, migration handling, and extension methods for easy integration. Professional documentation updated with detailed usage examples for Analytics, Cloud Storage, and Database Seed Data features. All 25+ enterprise features now fully documented and implemented.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
