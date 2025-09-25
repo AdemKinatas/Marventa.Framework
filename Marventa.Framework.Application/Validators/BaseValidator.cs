@@ -73,7 +73,7 @@ public abstract class BaseValidator<T> : AbstractValidator<T>
         RuleFor(x => GetDecimalPropertyValue(x, propertyName))
             .GreaterThanOrEqualTo(0)
             .WithMessage($"{propertyName} must be greater than or equal to 0")
-            .ScalePrecision(2, 18)
+            .PrecisionScale(18, 2, true)
             .WithMessage($"{propertyName} can have maximum 2 decimal places");
     }
 
