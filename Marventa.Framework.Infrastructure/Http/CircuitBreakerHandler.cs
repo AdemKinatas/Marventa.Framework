@@ -77,15 +77,3 @@ public class CircuitBreakerHandler : DelegatingHandler
         }
     }
 }
-
-public enum CircuitState
-{
-    Closed,
-    Open,
-    HalfOpen
-}
-
-public class CircuitBreakerOpenException : Exception
-{
-    public CircuitBreakerOpenException(string message) : base(message) { }
-}

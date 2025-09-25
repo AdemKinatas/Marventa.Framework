@@ -1,14 +1,44 @@
-# Marventa.Framework
+# Marventa.Framework v2.0.0
 
-A comprehensive .NET framework following Clean Architecture principles with JWT authentication, CQRS, caching, rate limiting, health checks, and more.
+A comprehensive .NET 9.0 enterprise e-commerce framework following Clean Architecture and SOLID principles with multi-tenancy, JWT authentication, CQRS, Saga patterns, messaging infrastructure, and complete e-commerce domain modules.
 
-## Features
+## ✨ What's New in v2.0.0 - SOLID Compliant Enterprise Framework
 
+### 🏗️ **SOLID Principles Architecture**
+- **Single Responsibility** - Each class/interface has one focused responsibility
+- **Open/Closed** - Extensible design without modifying existing code
+- **Liskov Substitution** - Proper inheritance and polymorphism
+- **Interface Segregation** - Small, focused interfaces
+- **Dependency Inversion** - Proper dependency injection patterns
+
+### 🏢 **Enterprise Features**
+- ✅ **Multi-Tenancy** - Complete tenant isolation with policy-based authorization
+- ✅ **Saga/Process Manager** - MassTransit state machine orchestration
+- ✅ **Outbox/Inbox Patterns** - Reliable messaging with eventual consistency
+- ✅ **Read Model Projections** - MSSQL → MongoDB projections
+- ✅ **Domain Events** - Rich domain event system with integration events
+- ✅ **Money/Currency** - Value objects with multi-currency support
+- ✅ **HTTP Idempotency** - Correlation tracking for safe retries
+- ✅ **OpenTelemetry** - Complete observability and tracing
+- ✅ **Background Jobs** - Hangfire/Quartz integration
+- ✅ **Search & Analytics** - Elasticsearch/ClickHouse abstractions
+- ✅ **Storage Abstraction** - S3/Azure Blob/GCS unified interface
+- ✅ **Security Hardening** - Data Protection, CSP, and audit logging
+- ✅ **FluentValidation** - RFC 7807 Problem Details pipeline
+
+### 🛒 **E-Commerce Domain Modules**
+- ✅ **Payment Aggregate** - Payment processing with domain events
+- ✅ **Shipping Aggregate** - Complete shipping lifecycle management
+- ✅ **Order Saga** - End-to-end order orchestration
+- ✅ **Cargo Domain** - Logistics and tracking
+- ✅ **Fraud Detection** - Risk assessment patterns
+
+### 🔧 **Core Features**
 - ✅ **Clean Architecture** - Proper separation of concerns with Core, Domain, Application, Infrastructure, and Web layers
 - ✅ **JWT Authentication** - Complete token-based authentication and authorization
-- ✅ **CQRS Pattern** - Command Query Responsibility Segregation implementation
-- ✅ **Caching** - Memory caching with Redis interface support
-- ✅ **Rate Limiting** - Advanced rate limiting middleware
+- ✅ **CQRS Pattern** - Command Query Responsibility Segregation with MediatR
+- ✅ **Tenant-Scoped Caching** - Multi-tenant Redis/Memory caching
+- ✅ **Rate Limiting** - Tenant-aware rate limiting middleware
 - ✅ **Health Checks** - Database and cache health monitoring
 - ✅ **API Versioning** - Multiple versioning strategies support
 - ✅ **Exception Handling** - Global exception handling middleware
@@ -19,6 +49,94 @@ A comprehensive .NET framework following Clean Architecture principles with JWT 
 - ✅ **Feature Flags** - Dynamic feature toggle support
 - ✅ **Logging** - Comprehensive logging infrastructure
 - ✅ **Messaging** - RabbitMQ+MassTransit and Kafka message queue infrastructure
+
+## 🏗️ SOLID Architecture
+
+The framework strictly follows SOLID principles with proper separation of concerns:
+
+### 📁 Project Structure
+```
+Marventa.Framework/
+├── 📁 Marventa.Framework.Core/           # Core abstractions and interfaces
+│   ├── 📁 Events/                        # Domain & Integration event contracts
+│   │   ├── IDomainEvent.cs              # Domain event interface
+│   │   ├── IIntegrationEvent.cs         # Integration event interface
+│   │   ├── IDomainEventHandler.cs       # Domain event handler
+│   │   └── IEventBus.cs                 # Event bus abstraction
+│   ├── 📁 Interfaces/                   # Core service contracts
+│   │   ├── ITenant.cs                   # Tenant entity contract
+│   │   ├── ITenantContext.cs            # Tenant context operations
+│   │   ├── ITenantResolver.cs           # Tenant resolution logic
+│   │   └── ITenantStore.cs              # Tenant persistence
+│   └── 📁 Security/                     # Security abstractions
+│       ├── ITokenService.cs             # Token service contract
+│       └── TokenInfo.cs                 # Token data structure
+│
+├── 📁 Marventa.Framework.Domain/         # Domain entities and business logic
+│   ├── 📁 ECommerce/                    # E-commerce domain modules
+│   │   ├── Payment/PaymentAggregate.cs  # Payment domain logic
+│   │   └── Shipping/ShippingAggregate.cs # Shipping domain logic
+│   ├── 📁 Entities/                     # Domain entities
+│   │   ├── OutboxMessage.cs             # Outbox pattern implementation
+│   │   └── InboxMessage.cs              # Inbox pattern implementation
+│   └── 📁 Events/                       # Domain event implementations
+│       └── DomainEvent.cs               # Base domain event class
+│
+├── 📁 Marventa.Framework.Application/    # Application services and CQRS
+│   ├── 📁 Commands/                     # Command pattern
+│   │   ├── ICommand.cs                  # Command contracts
+│   │   └── ICommandHandler.cs           # Command handlers
+│   └── 📁 Queries/                      # Query pattern
+│       ├── IQuery.cs                    # Query contracts
+│       └── IQueryHandler.cs             # Query handlers
+│
+├── 📁 Marventa.Framework.Infrastructure/ # External concerns implementation
+│   ├── 📁 Caching/                      # Caching implementations
+│   │   ├── ITenantScopedCache.cs       # Tenant cache contract
+│   │   ├── TenantScopedCache.cs        # Tenant cache implementation
+│   │   └── TenantCacheOptions.cs       # Cache configuration
+│   ├── 📁 Sagas/                       # Process manager implementations
+│   └── 📁 Messaging/                   # Messaging infrastructure
+│
+└── 📁 Marventa.Framework.Web/           # Web layer and middleware
+    ├── 📁 RateLimiting/                # Rate limiting middleware
+    │   ├── RateLimitingMiddleware.cs   # Rate limit implementation
+    │   └── RateLimitOptions.cs         # Rate limit configuration
+    └── 📁 Versioning/                  # API versioning
+        ├── ApiVersioningOptions.cs    # Versioning configuration
+        └── ApiVersionReader.cs         # Version reader enum
+```
+
+### 🎯 SOLID Principles Applied
+
+#### 🔹 Single Responsibility Principle (SRP)
+- Each class/interface has **ONE** focused responsibility
+- Interfaces separated by concern (ITenant, ITenantContext, ITenantStore)
+- Commands and Queries have separate handlers
+- Configuration classes separated from implementation
+
+#### 🔹 Open/Closed Principle (OCP)
+- Framework is **open for extension**, **closed for modification**
+- Plugin architecture for custom implementations
+- Strategy pattern for different tenant resolution methods
+- Extensible event system
+
+#### 🔹 Liskov Substitution Principle (LSP)
+- All implementations are fully substitutable
+- Proper inheritance hierarchies (BaseEntity, DomainEvent)
+- Interface contracts respected by all implementations
+
+#### 🔹 Interface Segregation Principle (ISP)
+- **Small, focused interfaces** instead of large ones
+- ITenant, ITenantContext, ITenantResolver are separate
+- Command/Query handlers separated
+- Event interfaces segregated by responsibility
+
+#### 🔹 Dependency Inversion Principle (DIP)
+- **Depend on abstractions, not concretions**
+- All dependencies injected via interfaces
+- Infrastructure depends on Core abstractions
+- Web layer depends on Application contracts
 
 ## Installation
 
