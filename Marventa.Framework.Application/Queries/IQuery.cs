@@ -1,13 +1,7 @@
-using System.Threading;
-using System.Threading.Tasks;
+using Marventa.Framework.Core.Interfaces;
 
 namespace Marventa.Framework.Application.Queries;
 
-public interface IQuery<out TResponse>
+public interface IQuery<out TResponse> : IValidatable
 {
-}
-
-public interface IQueryHandler<in TQuery, TResponse> where TQuery : IQuery<TResponse>
-{
-    Task<TResponse> HandleAsync(TQuery query, CancellationToken cancellationToken = default);
 }
