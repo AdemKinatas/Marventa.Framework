@@ -1,13 +1,16 @@
-# Marventa.Framework
+# Marventa.Framework v2.0.9
 
-A comprehensive .NET 9.0 enterprise e-commerce framework with multi-tenancy, JWT authentication, CQRS, messaging infrastructure, and complete e-commerce domain modules.
+A comprehensive .NET 8.0/.NET 9.0 enterprise e-commerce framework with multi-tenancy, JWT authentication, CQRS, messaging infrastructure, and complete e-commerce domain modules.
+
+> **Latest:** v2.0.9 - User-friendly documentation with "nokta atışı" guidance - every feature in 30s-1min setup!
 
 ## Features
 
 ### 🏗️ Core Architecture
+- **Clean Architecture** - Domain-driven design with clear layer separation
+- **SOLID Principles** - Single Responsibility, proper class organization
 - **Multi-Tenancy** - Complete tenant isolation with policy-based authorization
 - **CQRS & MediatR** - Command Query Responsibility Segregation with pipeline behaviors
-- **Clean Architecture** - Domain-driven design with clear layer separation
 - **Dependency Injection** - Built-in DI container integration
 
 ### 🔐 Security & Authentication
@@ -57,173 +60,365 @@ A comprehensive .NET 9.0 enterprise e-commerce framework with multi-tenancy, JWT
 dotnet add package Marventa.Framework
 ```
 
-## Quick Start
+## 🚀 Getting Started in 5 Minutes
 
+**Want to see it working immediately?** Here's the fastest way:
+
+### Step 1: Create a new ASP.NET Core project
+```bash
+dotnet new webapi -n MyApp
+cd MyApp
+dotnet add package Marventa.Framework
+```
+
+### Step 2: Replace Program.cs content
 ```csharp
-// Program.cs
-using Marventa.Framework;
+using Marventa.Framework.Web.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Marventa Framework services
-builder.Services.AddMarventa();
+// Add Marventa Framework (everything included) - v2.0.8
+builder.Services.AddMarventaV13(builder.Configuration, "MyApp", "1.0.0");
 
 var app = builder.Build();
 
-// Use Marventa Framework middleware
-app.UseMarventa();
+// Use Marventa middleware pipeline
+app.UseMarventaMiddleware();
 
 app.Run();
 ```
 
-## Complete Feature Guide
+### Step 3: Run and test
+```bash
+dotnet run
+```
+
+**🎉 That's it!** Your app now has:
+- ✅ Central error handling with structured logging
+- ✅ Health checks at `/health`
+- ✅ API versioning support
+- ✅ Caching and validation ready
+- ✅ Multi-tenancy infrastructure
+- ✅ And 20+ more enterprise features!
+
+---
+
+## ⚡ Quick Start Guide
+
+### 🎯 Method 1: Start Small (Recommended for beginners)
+
+**Need just basic features?** Start with essentials:
+
+```csharp
+// Program.cs
+using Marventa.Framework.Web.Extensions;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ✅ Essential features only (health checks, logging, validation)
+builder.Services.AddMarventaCore(builder.Configuration, "MyApp", "1.0.0");
+
+var app = builder.Build();
+app.UseMarventaMiddleware();
+app.Run();
+```
+
+✅ **You get:** Health checks at `/health`, error handling, logging, validation
+⏱️ **Setup time:** 2 minutes
+
+---
+
+### 🚀 Method 2: All Features (Recommended for production)
+
+**Need everything for enterprise app?** Get all features:
+
+```csharp
+// Program.cs
+using Marventa.Framework.Web.Extensions;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// 🎯 Everything included - enterprise ready
+builder.Services.AddMarventaV13(builder.Configuration, "MyApp", "1.0.0");
+
+var app = builder.Build();
+app.UseMarventaMiddleware();
+app.Run();
+```
+
+✅ **You get:** All 25+ features including multi-tenancy, messaging, caching, JWT
+⏱️ **Setup time:** 2 minutes
+
+---
+
+### 🎛️ Method 3: Pick & Choose (Advanced users)
+
+**Need specific features only?** Cherry-pick what you need:
+
+```csharp
+// Program.cs
+using Marventa.Framework.Web.Extensions;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMarventaCore(builder.Configuration, "MyApp", "1.0.0", options =>
+{
+    options.UseMultiTenancy();    // 🏢 Multi-tenant support
+    options.UseObservability();   // 📊 Logging + tracing
+    options.UseValidation();      // ✅ FluentValidation
+    // Add only what you need
+});
+
+var app = builder.Build();
+app.UseMarventaMiddleware();
+app.Run();
+```
+
+✅ **Perfect for:** Microservices, specific use cases
+⏱️ **Setup time:** 3-5 minutes
+
+## 🎯 Feature Guides - Just What You Need
+
+> **💡 Pro Tip:** Each feature has 3 sections: ⚡ Quick Setup, 🎛️ Configuration, 📝 Usage Example
 
 ### 🏢 Multi-Tenancy
 
-#### Configuration
-```json
+> **What it does:** Isolates data between different customers/tenants automatically
+
+#### ⚡ Quick Setup (30 seconds)
+```csharp
+// 1. Add to Program.cs
+builder.Services.AddMarventaCore(config, "MyApp", "1.0", opts => opts.UseMultiTenancy());
+
+// 2. Add to appsettings.json
 {
   "MultiTenancy": {
-    "ResolutionStrategy": "Header", // Header, Subdomain, Claim
-    "HeaderName": "X-Tenant-Id",
-    "DefaultTenant": "default"
+    "HeaderName": "X-Tenant-Id"  // Client sends: X-Tenant-Id: customer1
   }
 }
 ```
 
-#### Implementation
+#### 📝 Usage (Copy & paste this)
 ```csharp
-// Tenant Entity
-public class Tenant : ITenant
+// Controllers automatically filter by tenant - no extra code needed!
+[ApiController]
+public class ProductController : ControllerBase
 {
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public string ConnectionString { get; set; }
-    public Dictionary<string, object> Properties { get; set; }
-}
-
-// Tenant Context Usage
-public class ProductService
-{
-    private readonly ITenantContext _tenantContext;
     private readonly IRepository<Product> _repository;
 
-    public async Task<Product> CreateProductAsync(CreateProductRequest request)
+    [HttpGet]
+    public async Task<List<Product>> GetProducts()
     {
-        var product = new Product
-        {
-            Name = request.Name,
-            TenantId = _tenantContext.TenantId // Automatically set
-        };
+        // ✅ Only returns products for current tenant automatically
+        return await _repository.GetAllAsync();
+    }
 
+    [HttpPost]
+    public async Task<Product> CreateProduct(CreateProductRequest request)
+    {
+        var product = new Product { Name = request.Name };
+        // ✅ TenantId set automatically
         await _repository.AddAsync(product);
         return product;
     }
 }
-
-// Tenant Authorization
-[TenantAuthorize("products:read")]
-public class ProductController : ControllerBase
-{
-    [HttpGet]
-    public async Task<IActionResult> GetProducts()
-    {
-        // Only products for current tenant will be returned
-        return Ok(await _productService.GetProductsAsync());
-    }
-}
 ```
+
+**🎯 Result:** Send `X-Tenant-Id: customer1` header → only see customer1's data. That's it!
 
 ### 🔐 JWT Authentication
 
-#### Configuration
-```json
+> **What it does:** Secure your API with JWT tokens - handles login, logout, token refresh automatically
+
+#### ⚡ Quick Setup (1 minute)
+```csharp
+// 1. Add to Program.cs
+builder.Services.AddMarventaCore(config, "MyApp", "1.0", opts => opts.UseJwtAuthentication());
+
+// 2. Add to appsettings.json
 {
   "JWT": {
-    "SecretKey": "your-super-secret-key-at-least-32-characters-long",
-    "Issuer": "your-app-name",
-    "Audience": "your-app-users",
-    "ExpiryInMinutes": 60,
-    "RefreshTokenExpiryInDays": 7
+    "SecretKey": "your-super-secret-key-minimum-32-characters-long-please",
+    "Issuer": "MyApp"
   }
 }
 ```
 
-#### Implementation
+#### 📝 Usage (Ready-to-use login)
 ```csharp
-// Token Service Usage
+[ApiController]
 public class AuthController : ControllerBase
 {
     private readonly ITokenService _tokenService;
-    private readonly ICurrentUserService _currentUser;
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        // Validate user credentials here
-        var user = await ValidateUserAsync(request);
-
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim("tenant_id", user.TenantId)
-        };
-
-        var accessToken = await _tokenService.GenerateAccessTokenAsync(claims);
-        var refreshToken = await _tokenService.GenerateRefreshTokenAsync();
-
-        return Ok(new TokenInfo
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(60),
-            TokenType = "Bearer"
-        });
-    }
-
-    [HttpPost("refresh")]
-    public async Task<IActionResult> RefreshToken(RefreshTokenRequest request)
-    {
-        var principal = await _tokenService.ValidateTokenAsync(request.RefreshToken);
-        if (principal == null)
+        // 1. Validate your user (your existing logic)
+        if (!await IsValidUser(request.Email, request.Password))
             return Unauthorized();
 
-        var newToken = await _tokenService.GenerateAccessTokenAsync(principal.Claims);
-        return Ok(new { Token = newToken });
-    }
+        // 2. Create token - framework handles everything
+        var token = await _tokenService.GenerateAccessTokenAsync(new[]
+        {
+            new Claim(ClaimTypes.Email, request.Email),
+            new Claim("tenant", "customer1") // Optional
+        });
 
-    [HttpPost("logout")]
-    [Authorize]
-    public async Task<IActionResult> Logout()
-    {
-        var token = HttpContext.Request.Headers.Authorization
-            .FirstOrDefault()?.Split(" ").Last();
-
-        if (!string.IsNullOrEmpty(token))
-            await _tokenService.RevokeTokenAsync(token);
-
-        return Ok();
+        return Ok(new { Token = token });
     }
 }
 
-// Current User Service
-public class OrderService
+// Use in any controller
+[Authorize] // ✅ Now protected!
+public class ProductController : ControllerBase
 {
-    private readonly ICurrentUserService _currentUser;
+    private readonly ICurrentUserService _user;
 
-    public async Task CreateOrderAsync(CreateOrderRequest request)
+    [HttpGet]
+    public IActionResult GetMyProfile()
     {
-        var order = new Order
-        {
-            UserId = _currentUser.UserId, // Automatically from JWT
-            UserName = _currentUser.UserName,
-            TenantId = _currentUser.TenantId
-        };
+        // ✅ Automatically available from JWT
+        return Ok(new {
+            Email = _user.Email,
+            UserId = _user.UserId
+        });
     }
 }
 ```
+
+**🎯 Result:** Your API is secured! Send `Authorization: Bearer {token}` header to access protected endpoints.
+
+---
+
+### ⚡ Caching (Redis/Memory)
+
+> **What it does:** Speed up your app with automatic caching - works with Redis or in-memory
+
+#### ⚡ Quick Setup (30 seconds)
+```csharp
+// 1. Add to Program.cs
+builder.Services.AddMarventaCore(config, "MyApp", "1.0", opts => opts.UseCaching());
+
+// 2. Add Redis connection (optional - uses memory cache if not provided)
+{
+  "ConnectionStrings": {
+    "Redis": "localhost:6379"  // Remove this line to use memory cache
+  }
+}
+```
+
+#### 📝 Usage (One line caching)
+```csharp
+public class ProductService
+{
+    private readonly ICacheService _cache;
+
+    public async Task<List<Product>> GetProductsAsync()
+    {
+        // ✅ Caches for 5 minutes automatically
+        return await _cache.GetOrSetAsync(
+            "products",
+            () => _repository.GetAllAsync(),
+            TimeSpan.FromMinutes(5)
+        );
+    }
+
+    public async Task UpdateProductAsync(Product product)
+    {
+        await _repository.UpdateAsync(product);
+
+        // ✅ Clear cache after update
+        await _cache.RemoveAsync("products");
+    }
+}
+```
+
+**🎯 Result:** Your expensive database calls are now cached automatically!
+
+---
+
+### 📨 Messaging (RabbitMQ/Kafka)
+
+> **What it does:** Send reliable messages between services with automatic retries
+
+#### ⚡ Quick Setup (1 minute)
+```csharp
+// 1. Add to Program.cs
+builder.Services.AddMarventaMessaging(config, opts => opts.UseRabbitMq());
+
+// 2. Add connection string
+{
+  "ConnectionStrings": {
+    "RabbitMQ": "amqp://guest:guest@localhost:5672/"
+  }
+}
+```
+
+#### 📝 Usage (Send & receive messages)
+```csharp
+// Send message
+public class OrderService
+{
+    private readonly IMessageBus _bus;
+
+    public async Task CreateOrderAsync(CreateOrderRequest request)
+    {
+        var order = new Order { Id = Guid.NewGuid(), Total = request.Total };
+        await _repository.AddAsync(order);
+
+        // ✅ Send message to other services
+        await _bus.PublishAsync(new OrderCreatedEvent { OrderId = order.Id });
+    }
+}
+
+// Receive message
+public class EmailService : IMessageHandler<OrderCreatedEvent>
+{
+    public async Task HandleAsync(OrderCreatedEvent message)
+    {
+        // ✅ Automatically called when OrderCreatedEvent is published
+        await SendConfirmationEmail(message.OrderId);
+    }
+}
+```
+
+**🎯 Result:** Your services communicate reliably with automatic retries and dead letter queues!
+
+---
+
+### 🏥 Health Checks
+
+> **What it does:** Monitor your app's health automatically - database, cache, services
+
+#### ⚡ Quick Setup (Automatic!)
+```csharp
+// Health checks are included automatically in all setups!
+// Just visit: https://yourapp.com/health
+```
+
+#### 📝 Custom Health Check
+```csharp
+public class CustomHealthCheck : IHealthCheck
+{
+    public async Task<HealthCheckResult> CheckHealthAsync()
+    {
+        // Check external API, database, etc.
+        var isHealthy = await CheckExternalServiceAsync();
+
+        return isHealthy
+            ? HealthCheckResult.Healthy("Service is running")
+            : HealthCheckResult.Unhealthy("Service is down");
+    }
+}
+
+// Register in Program.cs
+builder.Services.AddScoped<IHealthCheck, CustomHealthCheck>();
+```
+
+**🎯 Result:** Visit `/health` to see real-time status of all your services!
+
+---
 
 ### 📋 CQRS & MediatR
 
@@ -1479,6 +1674,349 @@ public class ProductService
 // - Request path and method
 ```
 
+### 📝 Entity Auditing
+
+```csharp
+// Inherit from BaseEntity for automatic audit trails
+public class Product : BaseEntity
+{
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+}
+
+// Multi-tenant auditable entity
+public class Order : TenantBaseEntity
+{
+    public string CustomerId { get; set; }
+    public decimal Total { get; set; }
+}
+
+// Configure auditing in DbContext
+public class ApplicationDbContext : DbContext
+{
+    private readonly IServiceProvider _serviceProvider;
+
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IServiceProvider serviceProvider)
+        : base(options)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseMarventaAuditing(_serviceProvider);
+    }
+
+    public DbSet<Product> Products { get; set; }
+    public DbSet<Order> Orders { get; set; }
+}
+
+// Enable auditing in Program.cs
+builder.Services.AddMarventaCore(builder.Configuration, "MyService", options =>
+{
+    options.UseAuditing(); // Automatically tracks CreatedBy/UpdatedBy
+});
+
+// Automatic audit fields populated
+var product = new Product
+{
+    Name = "Laptop",
+    Price = 1299.99m
+};
+
+await context.Products.AddAsync(product);
+await context.SaveChangesAsync();
+
+// Result:
+// product.CreatedBy = "user@company.com" (from JWT token)
+// product.CreatedDate = DateTime.UtcNow
+// product.UpdatedBy = null
+// product.UpdatedDate = null
+
+// Update example
+product.Price = 1199.99m;
+await context.SaveChangesAsync();
+
+// Result:
+// product.CreatedBy = "user@company.com" (unchanged)
+// product.CreatedDate = original date (unchanged)
+// product.UpdatedBy = "user@company.com" (auto-populated)
+// product.UpdatedDate = DateTime.UtcNow (auto-populated)
+```
+
+### 🔄 JWT Key Rotation
+
+```csharp
+// Configuration in appsettings.json
+{
+  "JwtKeyRotation": {
+    "RotationInterval": "7.00:00:00",      // 7 days
+    "ActiveKeyLifetime": "1.00:00:00",     // 1 day
+    "KeyValidityPeriod": "30.00:00:00",    // 30 days
+    "Algorithm": "HS512",
+    "EnableAutomaticRotation": true
+  }
+}
+
+// Enable JWT Key Rotation in Program.cs
+builder.Services.AddMarventaCore(builder.Configuration, "MyService", options =>
+{
+    options.UseJwtKeyRotation(); // Automatic key rotation every 7 days
+});
+
+// Using JWT Key Rotation Service
+public class TokenService
+{
+    private readonly IJwtKeyRotationService _keyRotationService;
+    private readonly ILogger<TokenService> _logger;
+
+    public async Task<string> GenerateTokenAsync(ClaimsPrincipal user)
+    {
+        // Always use the current signing key
+        var signingKey = await _keyRotationService.GetCurrentSigningKeyAsync();
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(signingKey);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(user.Claims),
+            Expires = DateTime.UtcNow.AddHours(1),
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha512Signature)
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
+
+    public async Task<bool> ValidateTokenAsync(string token)
+    {
+        // Use all valid keys for validation (current + previous)
+        var validationKeys = await _keyRotationService.GetValidationKeysAsync();
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        foreach (var key in validationKeys)
+        {
+            try
+            {
+                var keyBytes = Encoding.UTF8.GetBytes(key);
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                tokenHandler.ValidateToken(token, validationParameters, out _);
+                return true; // Valid with this key
+            }
+            catch
+            {
+                // Try next key
+                continue;
+            }
+        }
+
+        return false; // No valid key found
+    }
+}
+
+// Manual key rotation (if needed)
+public class KeyManagementController : ControllerBase
+{
+    private readonly IJwtKeyRotationService _keyRotationService;
+
+    [HttpPost("rotate")]
+    public async Task<IActionResult> RotateKeys()
+    {
+        await _keyRotationService.RotateKeysAsync();
+        return Ok(new { Message = "Keys rotated successfully" });
+    }
+
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrentKey()
+    {
+        var currentKey = await _keyRotationService.GetCurrentSigningKeyAsync();
+        return Ok(new { KeyHash = ComputeKeyHash(currentKey) });
+    }
+
+    private string ComputeKeyHash(string key)
+    {
+        using var sha256 = SHA256.Create();
+        var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(key));
+        return Convert.ToBase64String(hash)[0..8]; // First 8 chars for identification
+    }
+}
+
+// Background rotation happens automatically:
+// - Keys rotate every 7 days (configurable)
+// - Old keys remain valid for 30 days (configurable)
+// - Expired keys are cleaned up automatically
+// - Zero-downtime rotation - tokens stay valid during rotation
+```
+
+### 🔁 Advanced Idempotency Patterns
+
+```csharp
+// 1. Attribute-based idempotency for MediatR commands
+[Idempotent(KeyTemplate = "create-order-{CustomerId}-{ProductId}", ExpirationHours = 24)]
+public class CreateOrderCommand : IRequest<Order>
+{
+    public string CustomerId { get; set; }
+    public string ProductId { get; set; }
+    public decimal Amount { get; set; }
+}
+
+// Handler automatically becomes idempotent
+public class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Order>
+{
+    public async Task<Order> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+    {
+        // This operation will only run once per unique key
+        var order = new Order
+        {
+            CustomerId = request.CustomerId,
+            ProductId = request.ProductId,
+            Amount = request.Amount
+        };
+
+        await _repository.AddAsync(order);
+        return order;
+    }
+}
+
+// 2. Controller-level idempotency with attributes
+[Idempotent(ExpirationHours = 1, RequireKey = true)]
+public class PaymentController : ControllerBase
+{
+    [HttpPost("process")]
+    public async Task<IActionResult> ProcessPayment(ProcessPaymentRequest request)
+    {
+        // All actions in this controller are automatically idempotent
+        // Client must provide X-Idempotency-Key header
+        var payment = await _paymentService.ProcessAsync(request);
+        return Ok(payment);
+    }
+
+    [HttpPost("refund")]
+    [Idempotent(KeyTemplate = "refund-{paymentId}", HeaderName = "X-Request-ID")]
+    public async Task<IActionResult> RefundPayment(string paymentId)
+    {
+        // Method-level attribute overrides controller-level
+        var refund = await _paymentService.RefundAsync(paymentId);
+        return Ok(refund);
+    }
+}
+
+// 3. Manual idempotency service usage
+public class OrderService
+{
+    private readonly IIdempotencyService _idempotencyService;
+
+    public async Task<Order> CreateOrderAsync(CreateOrderRequest request)
+    {
+        var idempotencyKey = $"create-order-{request.CustomerId}-{DateTime.UtcNow:yyyyMMdd}";
+
+        var result = await _idempotencyService.ProcessAsync(
+            idempotencyKey,
+            async () =>
+            {
+                // This expensive operation runs only once
+                var order = new Order(request.CustomerId, request.Items);
+                await _repository.SaveAsync(order);
+                await _emailService.SendConfirmationAsync(order);
+                return order;
+            },
+            TimeSpan.FromHours(24)
+        );
+
+        if (result.IsFromCache)
+        {
+            _logger.LogInformation("Order creation was idempotent for key: {Key}", idempotencyKey);
+        }
+
+        return result.Result!;
+    }
+}
+
+// 4. Configuration and setup
+{
+  "Idempotency": {
+    "KeyPrefix": "idempotency",
+    "DefaultExpiration": "1.00:00:00",
+    "HeaderName": "X-Idempotency-Key",
+    "RequireIdempotencyKey": false,
+    "IdempotentMethods": [ "POST", "PUT", "PATCH" ],
+    "IgnoredPaths": [ "/health", "/metrics" ]
+  }
+}
+
+// Enable in Program.cs
+builder.Services.AddMarventaCore(builder.Configuration, "MyService", options =>
+{
+    options.UseIdempotency(); // Automatic idempotency via middleware
+});
+
+// Add global filter for all controllers (optional)
+builder.Services.AddGlobalIdempotency();
+
+// 5. Response headers indicate cache status
+HTTP/1.1 200 OK
+X-Idempotency-Cache: HIT  // or MISS
+Content-Type: application/json
+
+{
+    "orderId": "12345",
+    "status": "created",
+    "total": 99.99
+}
+
+// 6. Advanced patterns with distributed locking
+public class InventoryService
+{
+    public async Task<bool> ReserveItemsAsync(string orderId, List<Item> items)
+    {
+        // Distributed locking prevents race conditions
+        var lockAcquired = await _idempotencyService.TryLockAsync(
+            $"reserve-inventory-{orderId}",
+            TimeSpan.FromMinutes(5)
+        );
+
+        if (!lockAcquired)
+        {
+            throw new InvalidOperationException("Could not acquire inventory lock");
+        }
+
+        try
+        {
+            // Check and reserve inventory
+            foreach (var item in items)
+            {
+                await _inventoryRepository.ReserveAsync(item.ProductId, item.Quantity);
+            }
+            return true;
+        }
+        finally
+        {
+            await _idempotencyService.ReleaseLockAsync($"reserve-inventory-{orderId}");
+        }
+    }
+}
+
+// Benefits:
+// ✅ Prevents duplicate payments, orders, emails
+// ✅ Handles network retries gracefully
+// ✅ Distributed locking for race conditions
+// ✅ Automatic cleanup of expired keys
+// ✅ Multi-tenant aware
+// ✅ Works with both HTTP and non-HTTP scenarios
+```
+
 ### 🔒 Security & Encryption
 
 ```csharp
@@ -2687,13 +3225,35 @@ public class TenantAwareSeeder
 
 ## Architecture
 
-The framework follows Clean Architecture principles:
+The framework follows Clean Architecture and SOLID principles with perfect organization:
 
+### 🏛️ Layer Structure
 - **Core** - Domain entities, interfaces, and shared abstractions
+  - `Analytics/` - Analytics domain models (AnalyticsEvent, PageView, MetricData)
+  - `Interfaces/` - Core interfaces and contracts
+  - `Security/` - Security abstractions and models
 - **Domain** - Business logic, aggregates, and domain events
+  - `ValueObjects/` - Money, Currency value objects
+  - `ECommerce/` - Payment, Shipping domain modules
 - **Application** - CQRS handlers, validators, and application services
-- **Infrastructure** - External service implementations (database, messaging, caching)
+  - `Behaviors/` - MediatR pipeline behaviors
+  - `Commands/Queries/` - CQRS implementation
+- **Infrastructure** - External service implementations
+  - `Analytics/` - ClickHouse analytics implementation
+  - `Storage/` - Cloud storage services (CloudStorageService, CloudStorageOptions)
+  - `HealthChecks/` - Database and cache health checks
+  - `Messaging/` - RabbitMQ, Kafka implementations
 - **Web** - Controllers, middleware, and API concerns
+  - `HealthChecks/` - Health check endpoints (HealthReport, HealthCheckEntry)
+  - `Middleware/` - Custom middleware components
+  - `Extensions/` - Service collection extensions
+
+### 🎯 SOLID Compliance
+- ✅ **Single Responsibility** - Each class has one reason to change
+- ✅ **Open/Closed** - Open for extension, closed for modification
+- ✅ **Liskov Substitution** - Interfaces properly implemented
+- ✅ **Interface Segregation** - Small, focused interfaces
+- ✅ **Dependency Inversion** - Depend on abstractions, not concretions
 
 ## Contributing
 
@@ -2702,6 +3262,76 @@ The framework follows Clean Architecture principles:
 3. Commit your changes: `git commit -am 'Add my feature'`
 4. Push to the branch: `git push origin feature/my-feature`
 5. Submit a pull request
+
+## Troubleshooting
+
+### Common Issues
+
+**❓ Build errors about missing dependencies?**
+```bash
+# Clear NuGet cache and restore
+dotnet nuget locals all --clear
+dotnet restore
+```
+
+**❓ Multi-targeting errors (.NET 8 vs .NET 9)?**
+```bash
+# Clear all build artifacts and restore
+find . -name "bin" -type d -exec rm -rf {} +
+find . -name "obj" -type d -exec rm -rf {} +
+dotnet restore
+dotnet build
+
+# In Visual Studio:
+# 1. Restart Visual Studio
+# 2. Build > Clean Solution
+# 3. Tools > NuGet > Clear All Caches
+# 4. Build > Rebuild Solution
+```
+
+**❓ Database connection issues?**
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=MyApp;Trusted_Connection=true;TrustServerCertificate=true;"
+  }
+}
+```
+
+**❓ JWT authentication not working?**
+```json
+{
+  "JWT": {
+    "SecretKey": "your-super-secret-key-at-least-32-characters-long",
+    "Issuer": "MyApp",
+    "Audience": "MyApp-Users"
+  }
+}
+```
+
+**❓ RabbitMQ connection problems?**
+```json
+{
+  "ConnectionStrings": {
+    "RabbitMQ": "amqp://guest:guest@localhost:5672/"
+  }
+}
+```
+
+**❓ Redis caching issues?**
+```json
+{
+  "ConnectionStrings": {
+    "Redis": "localhost:6379"
+  }
+}
+```
+
+### Getting Help
+
+- Check our [Examples](https://github.com/AdemKinatas/Marventa.Framework/tree/main/examples) folder
+- Search existing [Issues](https://github.com/AdemKinatas/Marventa.Framework/issues)
+- Ask questions in [Discussions](https://github.com/AdemKinatas/Marventa.Framework/discussions)
 
 ## License
 
@@ -2715,4 +3345,46 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Built with for .NET developers by [Adem Kınataş](https://github.com/AdemKinatas)
+## 🚀 Quick Reference Card
+
+### Most Common Setups
+
+| Need | Code | Time |
+|------|------|------|
+| **Basic API** | `AddMarventaCore(config, "MyApp", "1.0")` | 30s |
+| **All Features** | `AddMarventaV13(config, "MyApp", "1.0")` | 30s |
+| **Multi-tenant** | `opts => opts.UseMultiTenancy()` | +30s |
+| **JWT Auth** | `opts => opts.UseJwtAuthentication()` | +1min |
+| **Caching** | `opts => opts.UseCaching()` | +30s |
+| **Messaging** | `AddMarventaMessaging(config, opts => opts.UseRabbitMq())` | +1min |
+
+### Essential Endpoints (Available automatically)
+- 🏥 **Health**: `/health` - Check app status
+- 📊 **Metrics**: `/metrics` - Application metrics
+- 📋 **OpenAPI**: `/swagger` - API documentation
+
+### Connection Strings You'll Need
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=MyApp;Trusted_Connection=true;",
+    "Redis": "localhost:6379",
+    "RabbitMQ": "amqp://guest:guest@localhost:5672/"
+  },
+  "JWT": {
+    "SecretKey": "your-32-char-secret-key-here-minimum",
+    "Issuer": "MyApp"
+  }
+}
+```
+
+### 📞 Need Help?
+- 📖 **Examples**: Check the `/examples` folder in the repo
+- 🐛 **Issues**: [GitHub Issues](https://github.com/AdemKinatas/Marventa.Framework/issues)
+- 💬 **Questions**: [GitHub Discussions](https://github.com/AdemKinatas/Marventa.Framework/discussions)
+
+---
+
+Built with ❤️ for .NET developers by [Adem Kınataş](https://github.com/AdemKinatas)
+
+<!-- Documentation improvements and SOLID refactoring assistance provided -->
