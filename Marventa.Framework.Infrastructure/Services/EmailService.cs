@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Mail;
-using System.Threading;
-using System.Threading.Tasks;
 using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
