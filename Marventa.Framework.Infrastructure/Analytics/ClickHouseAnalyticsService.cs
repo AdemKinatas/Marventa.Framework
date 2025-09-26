@@ -1,3 +1,4 @@
+using Marventa.Framework.Core.Analytics;
 using Marventa.Framework.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 

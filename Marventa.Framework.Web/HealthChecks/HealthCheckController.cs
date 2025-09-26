@@ -122,19 +122,3 @@ public class HealthController : BaseController
         return HealthStatus.Healthy;
     }
 }
-
-public class HealthReport
-{
-    public string Status { get; set; } = string.Empty;
-    public TimeSpan TotalDuration { get; set; }
-    public List<HealthCheckEntry> Entries { get; set; } = new();
-}
-
-public class HealthCheckEntry
-{
-    public string Name { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public TimeSpan Duration { get; set; }
-    public Dictionary<string, object> Data { get; set; } = new();
-}

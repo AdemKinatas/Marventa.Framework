@@ -26,21 +26,18 @@ public class IdempotencyMiddleware
 
     public async Task InvokeAsync(HttpContext context, IIdempotencyService idempotencyService)
     {
-        // Skip if not an idempotent method
         if (!_options.IdempotentMethods.Contains(context.Request.Method))
         {
             await _next(context);
             return;
         }
 
-        // Skip ignored paths
         if (_options.IgnoredPaths.Any(path => context.Request.Path.StartsWithSegments(path)))
         {
             await _next(context);
             return;
         }
 
-        // Get idempotency key from header
         if (!context.Request.Headers.TryGetValue(_options.HeaderName, out var idempotencyKeyValues))
         {
             if (_options.RequireIdempotencyKey)
@@ -64,23 +61,19 @@ public class IdempotencyMiddleware
 
         try
         {
-            // Build comprehensive key including path, method, and tenant
             var contextKey = BuildIdempotencyKey(context, idempotencyKey);
 
             var result = await idempotencyService.ProcessAsync(contextKey, async () =>
             {
-                // Capture the response
                 var originalBodyStream = context.Response.Body;
                 using var responseBodyStream = new MemoryStream();
                 context.Response.Body = responseBodyStream;
 
                 await _next(context);
 
-                // Read the response
                 responseBodyStream.Seek(0, SeekOrigin.Begin);
                 var responseBody = await new StreamReader(responseBodyStream).ReadToEndAsync();
 
-                // Copy to original stream
                 responseBodyStream.Seek(0, SeekOrigin.Begin);
                 await responseBodyStream.CopyToAsync(originalBodyStream);
 
@@ -97,18 +90,15 @@ public class IdempotencyMiddleware
             {
                 _logger.LogDebug("Returning cached response for idempotency key: {Key}", idempotencyKey);
 
-                // Add idempotency header to indicate cached response
                 context.Response.Headers["X-Idempotency-Replayed"] = "true";
                 context.Response.Headers["X-Idempotency-Processed-At"] = result.ProcessedAt.ToString("O");
             }
 
-            // Apply the result
             if (result.Result is IdempotentResponse response)
             {
                 context.Response.StatusCode = response.StatusCode;
                 context.Response.ContentType = response.ContentType;
 
-                // Apply headers (but don't override existing ones)
                 foreach (var header in response.Headers)
                 {
                     if (!context.Response.Headers.ContainsKey(header.Key))
@@ -123,7 +113,6 @@ public class IdempotencyMiddleware
                 }
                 else if (!string.IsNullOrEmpty(response.Body))
                 {
-                    // For cached responses, write directly to avoid double processing
                     var bytes = Encoding.UTF8.GetBytes(response.Body);
                     await context.Response.Body.WriteAsync(bytes);
                 }
@@ -144,7 +133,6 @@ public class IdempotencyMiddleware
         keyBuilder.Append($"{context.Request.Method}:");
         keyBuilder.Append($"{context.Request.Path}:");
 
-        // Include query parameters for GET requests
         if (context.Request.Method == "GET" && context.Request.Query.Count > 0)
         {
             var sortedQuery = context.Request.Query
