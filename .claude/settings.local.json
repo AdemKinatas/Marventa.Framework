@@ -46,7 +46,10 @@
       "Bash(dotnet build:*)",
       "Bash(dotnet clean:*)",
       "Bash(dotnet restore:*)",
-      "Bash(dotnet nuget locals:*)"
+      "Bash(dotnet nuget locals:*)",
+      "Bash(git show:*)",
+      "Bash(git stash:*)",
+      "Bash(dotnet list package:*)"
     ],
     "deny": [],
     "ask": []

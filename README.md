@@ -1,8 +1,8 @@
-# Marventa.Framework v2.1.0
+# Marventa.Framework v2.1.1
 
 A comprehensive .NET 8.0/.NET 9.0 enterprise e-commerce framework with multi-tenancy, JWT authentication, CQRS, messaging infrastructure, and complete e-commerce domain modules.
 
-> **Latest:** v2.1.0 - User-friendly documentation with "nokta atışı" guidance - every feature in 30s-1min setup!
+> **Latest:** v2.1.1 - Code refactoring: Clean Architecture compliance, Redis cache implementation, Serilog integration, and SOLID principles applied
 
 ## Features
 
@@ -23,7 +23,7 @@ A comprehensive .NET 8.0/.NET 9.0 enterprise e-commerce framework with multi-ten
 - **Entity Framework Core** - Repository pattern with tenant scoping
 - **Database Seeding** - Multi-tenant seed data management
 - **Distributed Locking** - Redis-based distributed locks
-- **Caching** - Redis distributed and in-memory caching with tenant isolation
+- **Caching** - **NEW:** Complete Redis cache implementation with tenant isolation, performance monitoring, and multiple cache patterns
 
 ### 📨 Messaging & Communication
 - **RabbitMQ + MassTransit** - Reliable message bus with retry policies
@@ -43,7 +43,7 @@ A comprehensive .NET 8.0/.NET 9.0 enterprise e-commerce framework with multi-ten
 - **HTTP Idempotency** - Correlation tracking for safe retries
 
 ### 🔍 Monitoring & Observability
-- **Structured Logging** - Serilog with tenant and correlation context
+- **Structured Logging** - **NEW:** Complete Serilog integration with enrichers, performance monitoring, and multiple sinks (Console, File, Elasticsearch, Seq)
 - **OpenTelemetry** - Distributed tracing and metrics
 - **Health Checks** - Database, cache, and service monitoring
 - **Feature Flags** - Dynamic feature toggles with tenant support
