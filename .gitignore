@@ -362,8 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# Claude Code configuration
-.claude/
 
 # Local NuGet packages output
 nupkgs/
