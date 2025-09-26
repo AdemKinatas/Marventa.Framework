@@ -8,6 +8,8 @@ using Marventa.Framework.Infrastructure.Multitenancy;
 using Marventa.Framework.Infrastructure.Observability;
 using Marventa.Framework.Infrastructure.Sagas;
 using Marventa.Framework.Infrastructure.Projections;
+using Marventa.Framework.Infrastructure.Extensions;
+using Marventa.Framework.Web.Options;
 using MongoDB.Driver;
 using Marventa.Framework.Web.Middleware;
 using Microsoft.EntityFrameworkCore;
@@ -22,11 +24,97 @@ using FluentValidation;
 using MediatR;
 using System.Reflection;
 using Marventa.Framework.Application.Behaviors;
+using Marventa.Framework.Web.Filters;
 
 namespace Marventa.Framework.Web.Extensions;
 
 public static class MarventaExtensions
 {
+    /// <summary>
+    /// Adds Marventa Framework core services with modular configuration
+    /// </summary>
+    public static IServiceCollection AddMarventaCore(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string serviceName,
+        string? serviceVersion = null,
+        Action<MarventaCoreOptions>? configure = null)
+    {
+        var options = new MarventaCoreOptions(configuration, serviceName, serviceVersion);
+        configure?.Invoke(options);
+
+        if (options.MultiTenancyEnabled)
+        {
+            services.AddMarventaMultitenancy(configuration);
+        }
+
+        if (options.IdempotencyEnabled)
+        {
+            services.AddMarventaIdempotency(configuration);
+        }
+
+        if (options.ObservabilityEnabled)
+        {
+            services.AddMarventaObservability(configuration, serviceName, serviceVersion);
+        }
+
+        if (options.ValidationEnabled)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !a.IsDynamic && a.Location.Contains("Marventa"))
+                .ToArray();
+            services.AddMarventaValidation(assemblies);
+        }
+
+        if (options.JwtAuthenticationEnabled)
+        {
+        }
+
+        if (options.JwtKeyRotationEnabled)
+        {
+            services.AddJwtKeyRotation(configuration);
+        }
+
+        if (options.AuditingEnabled)
+        {
+            services.AddMarventaAuditing();
+        }
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds Marventa Framework messaging services with modular configuration
+    /// </summary>
+    public static IServiceCollection AddMarventaMessaging(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Action<MarventaMessagingOptions>? configure = null)
+    {
+        var options = new MarventaMessagingOptions(configuration);
+        configure?.Invoke(options);
+
+        if (options.OutboxPatternEnabled)
+        {
+            services.AddMarventaTransactionalMessaging();
+        }
+
+        if (options.SagasEnabled)
+        {
+            services.AddMarventaSagas();
+        }
+
+        if (options.RabbitMqEnabled)
+        {
+        }
+
+        if (options.KafkaEnabled)
+        {
+        }
+
+        return services;
+    }
+
     /// <summary>
     /// Adds Multi-tenancy support with configurable tenant resolution strategies
     /// </summary>
@@ -112,7 +200,6 @@ public static class MarventaExtensions
         services.AddSingleton<ICorrelationContext, CorrelationContext>();
         services.AddSingleton<IActivityService, ActivityService>();
 
-        // Add OpenTelemetry
         services.AddOpenTelemetry()
             .ConfigureResource(resource => resource
                 .AddService(serviceName, serviceVersion: serviceVersion)
@@ -184,7 +271,6 @@ public static class MarventaExtensions
     /// </summary>
     public static IApplicationBuilder UseMarventaMiddleware(this IApplicationBuilder app)
     {
-        // Order is important!
         app.UseMarventaValidation();
         app.UseMiddleware<CorrelationMiddleware>();
         app.UseMiddleware<TenantMiddleware>();
@@ -277,11 +363,12 @@ public static class MarventaExtensions
         // Register FluentValidation
         services.AddValidatorsFromAssemblies(assemblies);
 
-        // Register MediatR with validation behavior
+        // Register MediatR with validation and idempotency behaviors
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssemblies(assemblies);
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(IdempotencyBehavior<,>));
         });
 
         return services;

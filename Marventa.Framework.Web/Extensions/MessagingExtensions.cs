@@ -34,26 +34,20 @@ public static class MessagingExtensions
         string serviceName = "marventa-service",
         params Assembly[] assemblies)
     {
-        // Register message bus service
         services.AddScoped<IMessageBus, RabbitMqMessageBus>();
 
-        // Get assemblies to scan for consumers
         var assembliesToScan = assemblies?.Any() == true
             ? assemblies
             : new[] { Assembly.GetExecutingAssembly(), Assembly.GetCallingAssembly() };
 
-        // Configure MassTransit
         services.AddMassTransit(x =>
         {
-            // Add consumers from specified assemblies
             x.AddConsumers(assembliesToScan);
 
-            // Configure RabbitMQ
             x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(connectionString);
 
-                // Configure retries
                 cfg.UseMessageRetry(r =>
                 {
                     r.Incremental(
@@ -62,17 +56,14 @@ public static class MessagingExtensions
                         intervalIncrement: TimeSpan.FromSeconds(1));
                 });
 
-                // Configure delayed redelivery
                 cfg.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromMinutes(5)));
 
-                // Configure circuit breaker
                 cfg.UseCircuitBreaker(cb =>
                 {
                     cb.TripThreshold = 5;
                     cb.ResetInterval = TimeSpan.FromMinutes(1);
                 });
 
-                // Configure endpoints
                 cfg.ConfigureEndpoints(context, new DefaultEndpointNameFormatter(serviceName, false));
             });
         });
@@ -90,7 +81,6 @@ public static class MessagingExtensions
         services.Configure<KafkaOptions>(options =>
             configuration.GetSection(KafkaOptions.SectionName).Bind(options));
 
-        // Register message bus service
         services.AddSingleton<IMessageBus, KafkaMessageBus>();
 
         return services;

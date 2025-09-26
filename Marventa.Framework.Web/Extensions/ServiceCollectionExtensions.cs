@@ -2,7 +2,6 @@ using Marventa.Framework.Core.Interfaces;
 using Marventa.Framework.Core.Security;
 using Marventa.Framework.Infrastructure.Caching;
 using Marventa.Framework.Infrastructure.Data;
-using Marventa.Framework.Infrastructure.Handlers;
 using Marventa.Framework.Infrastructure.HealthChecks;
 using Marventa.Framework.Infrastructure.Http;
 using Marventa.Framework.Infrastructure.Security;
@@ -30,8 +29,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ISmsService, SmsService>();
         services.AddScoped<IHttpClientService, HttpClientService>();
-
-        services.AddScoped<Application.Handlers.IMediator, Mediator>();
 
         services.AddScoped<IHealthCheck, DatabaseHealthCheck>();
         services.AddScoped<IHealthCheck, CacheHealthCheck>();
