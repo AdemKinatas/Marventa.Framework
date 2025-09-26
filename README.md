@@ -1,8 +1,8 @@
-# Marventa.Framework v2.1.1
+# Marventa.Framework v2.1.2
 
 A comprehensive .NET 8.0/.NET 9.0 enterprise e-commerce framework with multi-tenancy, JWT authentication, CQRS, messaging infrastructure, and complete e-commerce domain modules.
 
-> **Latest:** v2.1.1 - Code refactoring: Clean Architecture compliance, Redis cache implementation, Serilog integration, and SOLID principles applied
+> **Latest:** v2.1.2 - Code refactoring, Redis cache implementation, Serilog integration, package updates, and GitHub Actions improvements
 
 ## Features
 
