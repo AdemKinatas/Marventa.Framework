@@ -384,21 +384,18 @@ public static class MarventaExtensions
     }
 
     /// <summary>
-    /// Adds complete Marventa v1.3 infrastructure
+    /// Adds complete Marventa Enterprise infrastructure with all features
     /// </summary>
-    public static IServiceCollection AddMarventaV13(
+    public static IServiceCollection AddMarventaEnterprise(
         this IServiceCollection services,
         IConfiguration configuration,
         string serviceName,
         string? serviceVersion = null)
     {
-        // v1.2 features
         services.AddMarventaMultitenancy(configuration);
         services.AddMarventaTransactionalMessaging();
         services.AddMarventaIdempotency(configuration);
         services.AddMarventaObservability(configuration, serviceName, serviceVersion);
-
-        // v1.3 features
         services.AddMarventaSagas();
         services.AddMarventaProjections(configuration);
 
@@ -406,15 +403,14 @@ public static class MarventaExtensions
     }
 
     /// <summary>
-    /// Adds complete Marventa v1.2 infrastructure
+    /// Adds Marventa Standard infrastructure with core enterprise features
     /// </summary>
-    public static IServiceCollection AddMarventaV12(
+    public static IServiceCollection AddMarventaStandard(
         this IServiceCollection services,
         IConfiguration configuration,
         string serviceName,
         string? serviceVersion = null)
     {
-        // Core features
         services.AddMarventaMultitenancy(configuration);
         services.AddMarventaTransactionalMessaging();
         services.AddMarventaIdempotency(configuration);
