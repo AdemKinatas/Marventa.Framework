@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>2.0.9</PackageVersion>
-    <VersionPrefix>2.0.9</VersionPrefix>
+    <PackageVersion>2.1.0</PackageVersion>
+    <VersionPrefix>2.1.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;messaging;rabbitmq;kafka;masstransit;aspnetcore;multitenancy;outbox;inbox;idempotency;opentelemetry;observability;saga;projections;mongodb;fluentvalidation;swagger;localization;money;domainevent;elasticsearch;s3;security;auditing;hangfire;configuration;devex</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v2.0.9: User-friendly documentation overhaul! Complete rewrite with "nokta atışı" (precise targeting) guidance. Added Quick Setup sections (30s-1min), copy-paste examples, Quick Reference Card, and practical tutorials. Every feature now has 3 sections: Quick Setup, Configuration, Usage. Perfect user experience for enterprise .NET developers.</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.1.0: API refactoring for better developer experience! Replaced versioned method names (AddMarventaV13/V12) with semantic names (AddMarventaEnterprise/Standard). Improved naming conventions following .NET best practices. Clean, professional API design with enterprise-grade features and perfect documentation.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

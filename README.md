@@ -1,8 +1,8 @@
-# Marventa.Framework v2.0.9
+# Marventa.Framework v2.1.0
 
 A comprehensive .NET 8.0/.NET 9.0 enterprise e-commerce framework with multi-tenancy, JWT authentication, CQRS, messaging infrastructure, and complete e-commerce domain modules.
 
-> **Latest:** v2.0.9 - User-friendly documentation with "nokta atışı" guidance - every feature in 30s-1min setup!
+> **Latest:** v2.1.0 - User-friendly documentation with "nokta atışı" guidance - every feature in 30s-1min setup!
 
 ## Features
 
@@ -78,7 +78,7 @@ using Marventa.Framework.Web.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Marventa Framework (everything included) - v2.0.8
-builder.Services.AddMarventaV13(builder.Configuration, "MyApp", "1.0.0");
+builder.Services.AddMarventaEnterprise(builder.Configuration, "MyApp", "1.0.0");
 
 var app = builder.Build();
 
@@ -139,7 +139,7 @@ using Marventa.Framework.Web.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // 🎯 Everything included - enterprise ready
-builder.Services.AddMarventaV13(builder.Configuration, "MyApp", "1.0.0");
+builder.Services.AddMarventaEnterprise(builder.Configuration, "MyApp", "1.0.0");
 
 var app = builder.Build();
 app.UseMarventaMiddleware();
@@ -3124,7 +3124,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add Marventa services
-        builder.Services.AddMarventaV13(builder.Configuration, "MyEcommerce", "1.0.0");
+        builder.Services.AddMarventaEnterprise(builder.Configuration, "MyEcommerce", "1.0.0");
 
         // Add database seeding
         builder.Services.AddDatabaseSeeding();
@@ -3352,7 +3352,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 | Need | Code | Time |
 |------|------|------|
 | **Basic API** | `AddMarventaCore(config, "MyApp", "1.0")` | 30s |
-| **All Features** | `AddMarventaV13(config, "MyApp", "1.0")` | 30s |
+| **All Features** | `AddMarventaEnterprise(config, "MyApp", "1.0")` | 30s |
 | **Multi-tenant** | `opts => opts.UseMultiTenancy()` | +30s |
 | **JWT Auth** | `opts => opts.UseJwtAuthentication()` | +1min |
 | **Caching** | `opts => opts.UseCaching()` | +30s |
@@ -3387,4 +3387,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Built with ❤️ for .NET developers by [Adem Kınataş](https://github.com/AdemKinatas)
 
-<!-- Documentation improvements and SOLID refactoring assistance provided -->
