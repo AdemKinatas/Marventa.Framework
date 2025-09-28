@@ -8,21 +8,21 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>2.1.0</PackageVersion>
-    <VersionPrefix>2.1.0</VersionPrefix>
+    <PackageVersion>2.2.0</PackageVersion>
+    <VersionPrefix>2.2.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
     <Company>Marventa</Company>
-    <Description>A comprehensive .NET 8.0/.NET 9.0 enterprise framework following Clean Architecture principles with JWT authentication, CQRS, caching, rate limiting, health checks, messaging infrastructure (RabbitMQ+MassTransit, Kafka), multi-tenancy, outbox/inbox patterns, HTTP idempotency, OpenTelemetry observability, Saga/Process Manager, MongoDB projections, FluentValidation pipeline, enhanced Swagger/OpenAPI, localization, money value objects, domain events, search abstractions, storage abstraction, security hardening, auditing, background jobs, configuration management, and DevEx tools.</Description>
+    <Description>Enterprise-ready modular file management framework for .NET 8.0/9.0. Provides intelligent file processing, multi-provider storage (Azure Blob, AWS S3), CDN integration, AI-powered content analysis, and comprehensive metadata management. Built with Clean Architecture and SOLID principles. Pay-as-you-use modular design - enable only the features you need. Perfect for modern applications requiring robust file handling capabilities.</Description>
     <Copyright>Copyright © Marventa 2024</Copyright>
     <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageTags>framework;clean-architecture;jwt;cqrs;caching;rate-limiting;health-checks;messaging;rabbitmq;kafka;masstransit;aspnetcore;multitenancy;outbox;inbox;idempotency;opentelemetry;observability;saga;projections;mongodb;fluentvalidation;swagger;localization;money;domainevent;elasticsearch;s3;security;auditing;hangfire;configuration;devex</PackageTags>
+    <PackageTags>file-management;image-processing;storage;cdn;ai-ml;content-analysis;azure-blob;aws-s3;clean-architecture;modular;file-upload;image-optimization;metadata;search;analytics;aspnetcore;enterprise;solid-principles;pay-as-you-use</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v2.1.0: API refactoring for better developer experience! Replaced versioned method names (AddMarventaV13/V12) with semantic names (AddMarventaEnterprise/Standard). Improved naming conventions following .NET best practices. Clean, professional API design with enterprise-grade features and perfect documentation.</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.2.0: Major refactoring for perfect SOLID compliance! Eliminated all multi-class files - now 29 focused, single-responsibility files. Added FileAnalytics system, BulkProcessingResult, progressive JPEG support, enhanced validation with format detection. Complete test coverage with MockFileProcessorTests and MockStorageServiceTests. Professional NuGet-optimized documentation. Zero build errors, production-ready architecture.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
