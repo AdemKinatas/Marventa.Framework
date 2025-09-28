@@ -4,14 +4,15 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![NuGet](https://img.shields.io/badge/NuGet-v2.3.0-blue)](https://www.nuget.org/packages/Marventa.Framework)
 
-> **Complete enterprise-grade .NET framework with 40+ modular features including file management, security, multi-tenancy, messaging, analytics, e-commerce, and more**
+> **Complete enterprise-grade .NET framework with 47 modular features including file management, security, multi-tenancy, messaging, analytics, e-commerce, and more**
 
 ## 📋 Table of Contents
 
 1. [Quick Start](#-quick-start)
-2. [Core Philosophy](#-core-philosophy)
-3. [Architecture](#️-architecture)
-4. [Features](#-features)
+2. [Available Features](#️-available-features)
+3. [Core Philosophy](#-core-philosophy)
+4. [Architecture](#️-architecture)
+5. [Features](#-features)
    - [Storage Management](#-storage-management)
    - [Image Processing](#️-image-processing)
    - [CDN Integration](#-cdn-integration)
@@ -96,6 +97,119 @@ public class FilesController : ControllerBase
 
 ---
 
+## 🎛️ Available Features
+
+**47 modular features - enable only what you need!**
+
+### 🗄️ File & Storage (4 features)
+```csharp
+options.EnableStorage = true;          // Multi-provider storage (Azure, AWS, Local)
+options.EnableFileProcessor = true;    // Image processing & optimization
+options.EnableCDN = true;             // Content delivery networks
+options.EnableMetadata = true;        // File metadata management
+```
+
+### 🔐 Security & Authentication (4 features)
+```csharp
+options.EnableSecurity = true;        // Basic security framework
+options.EnableJWT = true;             // JWT token management
+options.EnableApiKeys = true;         // API key authentication
+options.EnableEncryption = true;      // Data encryption services
+```
+
+### 🏢 Multi-Tenancy & Architecture (5 features)
+```csharp
+options.EnableMultiTenancy = true;    // Complete tenant isolation
+options.EnableEventDriven = true;     // Domain & integration events
+options.EnableCQRS = true;            // Command Query separation
+options.EnableSagas = true;           // Long-running processes
+options.EnableRepository = true;      // Data access abstraction
+```
+
+### ⚡ Performance & Scalability (5 features)
+```csharp
+options.EnableCaching = true;         // Distributed caching
+options.EnableRateLimiting = true;    // API protection
+options.EnableDistributedLocking = true; // Critical section locks
+options.EnableIdempotency = true;     // Safe operation retries
+options.EnableCircuitBreaker = true;  // Circuit breaker pattern
+```
+
+### 📊 Analytics & Monitoring (5 features)
+```csharp
+options.EnableAnalytics = true;       // Event & metric tracking
+options.EnableHealthChecks = true;    // System health monitoring
+options.EnableObservability = true;   // Distributed tracing
+options.EnableLogging = true;         // Structured logging
+options.EnableTracking = true;        // Advanced tracking features
+```
+
+### 📧 Messaging & Communication (4 features)
+```csharp
+options.EnableMessaging = true;       // Message bus integration
+options.EnableEmail = true;           // Email notifications
+options.EnableSMS = true;             // SMS notifications
+options.EnableDeadLetterQueue = true; // Dead letter queue handling
+```
+
+### 🔍 Search & AI/ML (2 features)
+```csharp
+options.EnableSearch = true;          // Elasticsearch integration
+options.EnableML = true;              // AI/ML content analysis
+```
+
+### ⏱️ Background & Data Processing (5 features)
+```csharp
+options.EnableBackgroundJobs = true;  // Job scheduling
+options.EnableDatabaseSeeding = true; // Database initialization
+options.EnableProjections = true;     // Event sourcing projections
+options.EnableRealTimeProjections = true; // Real-time projection updates
+options.EnableSeeding = true;         // Advanced data seeding
+```
+
+### 🛒 E-Commerce & Business (4 features)
+```csharp
+options.EnableECommerce = true;       // E-commerce framework
+options.EnablePayments = true;        // Payment processing
+options.EnableShipping = true;        // Shipping management
+options.EnableFraudDetection = true;  // Fraud prevention
+```
+
+### 🌐 API & Web Management (4 features)
+```csharp
+options.EnableVersioning = true;      // API versioning
+options.EnableHttpClient = true;      // HTTP client abstraction
+options.EnableExceptionHandling = true; // Global error handling
+options.EnableValidation = true;      // Input validation
+```
+
+### ⚙️ Configuration & Features (1 feature)
+```csharp
+options.EnableFeatureFlags = true;    // Dynamic feature toggles
+```
+
+### 📊 Feature Count Summary
+- **Total Features**: 47
+- **File & Storage**: 4 features
+- **Security**: 4 features
+- **Architecture**: 5 features
+- **Performance**: 5 features
+- **Monitoring**: 5 features
+- **Communication**: 4 features
+- **Search & AI**: 2 features
+- **Background**: 5 features
+- **E-Commerce**: 4 features
+- **API Management**: 4 features
+- **Configuration**: 1 feature
+
+### 💡 Smart Defaults
+- **All features are FALSE by default**
+- **Minimal setup**: Just enable 3-4 core features
+- **Production setup**: Enable 8-10 essential features
+- **Enterprise setup**: Enable all 47 features you need
+
+---
+
 ## 🎯 Core Philosophy
 
 - **🔧 Modular Design**: Enable only what you need - pay for what you use
@@ -108,7 +222,7 @@ public class FilesController : ControllerBase
 
 ## 🏗️ Architecture
 
-**Clean, modular architecture** with **40+ enterprise features** in **29+ focused, single-responsibility files**:
+**Clean, modular architecture** with **47 enterprise features** in **29+ focused, single-responsibility files**:
 
 ```
 Marventa.Framework/
@@ -1035,7 +1149,7 @@ options.StorageOptions.EnableEncryption = true;
 
 ## 💡 Why Choose Marventa Framework?
 
-✅ **Complete Enterprise Solution** - 40+ features in one framework
+✅ **Complete Enterprise Solution** - 47 features in one framework
 ✅ **Modular Design** - Enable only what you need, pay for what you use
 ✅ **Production Ready** - Battle-tested in enterprise environments
 ✅ **Provider Agnostic** - Switch providers without code changes
@@ -1057,7 +1171,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 <div align="center">
-  <strong>Built with ❤️ for the .NET Community</strong>
+  <strong>Built with for the .NET Community</strong>
   <br>
   <sub>The complete enterprise .NET framework - from file management to full-scale applications</sub>
 </div>
