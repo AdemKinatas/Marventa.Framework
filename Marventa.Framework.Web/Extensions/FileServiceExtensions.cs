@@ -24,6 +24,9 @@ public static class FileServiceExtensions
 
         services.AddSingleton(Microsoft.Extensions.Options.Options.Create(options));
 
+        // Ensure logging is available for all services
+        services.AddLogging();
+
         // Register file processing service
         if (options.EnableFileProcessor)
         {

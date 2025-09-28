@@ -27,6 +27,10 @@ public class MockFileProcessor : IMarventaFileProcessor
             Dimensions = new ImageDimensions { Width = options.Width ?? 1920, Height = options.Height ?? 1080 },
             FileSizeBytes = 512000,
             ProcessingTimeMs = 100,
+            ProcessingTime = TimeSpan.FromMilliseconds(100),
+            OriginalSize = 1024000,
+            ProcessedSize = 512000,
+            CompressionRatio = 0.5,
             Format = "png"
         };
 
@@ -53,7 +57,8 @@ public class MockFileProcessor : IMarventaFileProcessor
             Success = true,
             Thumbnails = thumbnails,
             OriginalDimensions = new ImageDimensions { Width = 1920, Height = 1080 },
-            ProcessingTimeMs = 50
+            ProcessingTimeMs = 50,
+            ProcessingTime = TimeSpan.FromMilliseconds(50)
         };
 
         return Task.FromResult(result);
@@ -78,6 +83,7 @@ public class MockFileProcessor : IMarventaFileProcessor
             },
             Level = level,
             ProcessingTimeMs = 75,
+            ProcessingTime = TimeSpan.FromMilliseconds(75),
             QualityScore = level switch
             {
                 OptimizationLevel.Low => 0.95,
@@ -102,7 +108,8 @@ public class MockFileProcessor : IMarventaFileProcessor
             OriginalSizeBytes = 1024000,
             OptimizedSizeBytes = 512000,
             QualityScore = options.Quality / 100.0,
-            ProcessingTimeMs = 75
+            ProcessingTimeMs = 75,
+            ProcessingTime = TimeSpan.FromMilliseconds(75)
         };
 
         return Task.FromResult(result);
@@ -119,7 +126,9 @@ public class MockFileProcessor : IMarventaFileProcessor
             Dimensions = new ImageDimensions { Width = 1920, Height = 1080 },
             FileSizeBytes = 512000,
             Position = options.Position,
-            ProcessingTimeMs = 30
+            ProcessingTimeMs = 30,
+            ProcessingTime = TimeSpan.FromMilliseconds(30),
+            WatermarkApplied = true
         };
 
         return Task.FromResult(result);
@@ -139,7 +148,8 @@ public class MockFileProcessor : IMarventaFileProcessor
             ConvertedSizeBytes = 950000,
             Quality = quality,
             Dimensions = new ImageDimensions { Width = 1920, Height = 1080 },
-            ProcessingTimeMs = 40
+            ProcessingTimeMs = 40,
+            ProcessingTime = TimeSpan.FromMilliseconds(40)
         };
 
         return Task.FromResult(result);
@@ -155,7 +165,8 @@ public class MockFileProcessor : IMarventaFileProcessor
             ConvertedImage = new MemoryStream(new byte[] { 0x89, 0x50, 0x4E, 0x47 }),
             SourceFormat = "jpeg",
             TargetFormat = targetFormat,
-            ProcessingTimeMs = 40
+            ProcessingTimeMs = 40,
+            ProcessingTime = TimeSpan.FromMilliseconds(40)
         };
 
         return Task.FromResult(result);
@@ -193,6 +204,8 @@ public class MockFileProcessor : IMarventaFileProcessor
         {
             IsValid = true,
             DetectedFormat = "jpeg",
+            Format = "jpeg",
+            ColorDepth = 24,
             Dimensions = new ImageDimensions { Width = 1920, Height = 1080 },
             FileSizeBytes = 1024000,
             Errors = new List<string>(),
