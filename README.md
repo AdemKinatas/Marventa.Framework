@@ -2,7 +2,7 @@
 
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-512BD4)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-v2.5.0-blue)](https://www.nuget.org/packages/Marventa.Framework)
+[![NuGet](https://img.shields.io/badge/NuGet-v2.5.1-blue)](https://www.nuget.org/packages/Marventa.Framework)
 
 > **Complete enterprise-grade .NET framework with 47 modular features including file management, security, multi-tenancy, messaging, analytics, e-commerce, and more**
 
@@ -67,27 +67,55 @@ app.Run();
 
 ```csharp
 [ApiController]
+[Route("api/[controller]")]
 public class FilesController : ControllerBase
 {
     private readonly IMarventaStorage _storage;
     private readonly IMarventaFileProcessor _processor;
+    private readonly ILogger<FilesController> _logger;
 
+    // Constructor Injection - services automatically injected by DI container
+    public FilesController(
+        IMarventaStorage storage,
+        IMarventaFileProcessor processor,
+        ILogger<FilesController> logger)
+    {
+        _storage = storage;
+        _processor = processor;
+        _logger = logger;
+    }
+
+    [HttpPost("upload")]
     public async Task<IActionResult> UploadImage(IFormFile file)
     {
-        // Process image
-        var processResult = await _processor.ProcessImageAsync(file.OpenReadStream(), new()
+        _logger.LogInformation("Uploading file: {FileName}, Size: {Size} bytes",
+            file.FileName, file.Length);
+
+        try
         {
-            Width = 800, Height = 600, Quality = 85
-        });
+            // Process image
+            var processResult = await _processor.ProcessImageAsync(file.OpenReadStream(), new()
+            {
+                Width = 800, Height = 600, Quality = 85
+            });
 
-        // Upload to storage
-        var uploadResult = await _storage.UploadFileAsync(
-            processResult.ProcessedImage, file.FileName, file.ContentType);
+            // Upload to storage
+            var uploadResult = await _storage.UploadFileAsync(
+                processResult.ProcessedImage, file.FileName, file.ContentType);
 
-        return Ok(new {
-            FileId = uploadResult.FileId,
-            Url = uploadResult.PublicUrl
-        });
+            _logger.LogInformation("File uploaded successfully: {FileId}", uploadResult.FileId);
+
+            return Ok(new {
+                FileId = uploadResult.FileId,
+                Url = uploadResult.PublicUrl,
+                ProcessedSize = processResult.ProcessedSizeBytes
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to upload file: {FileName}", file.FileName);
+            return StatusCode(500, "File upload failed");
+        }
     }
 }
 ```
@@ -271,7 +299,7 @@ Marventa.Framework/
 **Structured logging with multiple providers**
 
 ```csharp
-// Configure logging
+// 1. Service Registration
 services.AddMarventaFramework(options =>
 {
     options.EnableLogging = true;
@@ -279,22 +307,73 @@ services.AddMarventaFramework(options =>
     options.LoggingOptions.MinimumLevel = LogLevel.Information;
 });
 
-// Usage
-_logger.LogInformation("Processing order {OrderId} for user {UserId}",
-    orderId, userId);
-
-// Structured logging with context
-using (_logger.BeginScope(new { OrderId = orderId, UserId = userId }))
+// 2. Constructor Injection in Controllers/Services
+public class OrderController : ControllerBase
 {
-    _logger.LogInformation("Order processing started");
-    // Process order...
-    _logger.LogInformation("Order processed successfully");
+    private readonly ILogger<OrderController> _logger;
+    private readonly IOrderService _orderService;
+
+    public OrderController(ILogger<OrderController> logger, IOrderService orderService)
+    {
+        _logger = logger;
+        _orderService = orderService;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
+    {
+        _logger.LogInformation("Creating order for customer {CustomerId}", dto.CustomerId);
+
+        try
+        {
+            var order = await _orderService.CreateOrderAsync(dto);
+            _logger.LogInformation("Order {OrderId} created successfully", order.Id);
+            return Ok(order);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create order for customer {CustomerId}", dto.CustomerId);
+            throw;
+        }
+    }
 }
 
-// Performance logging
-using (_logger.BeginTimedOperation("DatabaseQuery"))
+// 3. Service Layer with DI
+public class OrderService : IOrderService
 {
-    // Your database operation
+    private readonly ILogger<OrderService> _logger;
+    private readonly IRepository<Order> _orderRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public OrderService(
+        ILogger<OrderService> logger,
+        IRepository<Order> orderRepository,
+        IUnitOfWork unitOfWork)
+    {
+        _logger = logger;
+        _orderRepository = orderRepository;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Order> CreateOrderAsync(CreateOrderDto dto)
+    {
+        // Structured logging with context
+        using (_logger.BeginScope(new { CustomerId = dto.CustomerId, OrderType = dto.OrderType }))
+        {
+            _logger.LogInformation("Order processing started");
+
+            // Performance logging
+            using (_logger.BeginTimedOperation("DatabaseSave"))
+            {
+                var order = new Order(dto.CustomerId, dto.Items);
+                await _orderRepository.AddAsync(order);
+                await _unitOfWork.CommitAsync();
+            }
+
+            _logger.LogInformation("Order processed successfully");
+            return order;
+        }
+    }
 }
 ```
 
@@ -302,61 +381,199 @@ using (_logger.BeginTimedOperation("DatabaseQuery"))
 **High-performance caching with multiple backends**
 
 ```csharp
-// Memory cache (default)
-options.EnableCaching = true;
-options.CachingOptions.Provider = CacheProvider.Memory;
+// 1. Service Registration
+services.AddMarventaFramework(options =>
+{
+    options.EnableCaching = true;
+    // Memory cache (default)
+    options.CachingOptions.Provider = CacheProvider.Memory;
 
-// Redis distributed cache
-options.CachingOptions.Provider = CacheProvider.Redis;
-options.CachingOptions.ConnectionString = "localhost:6379";
+    // OR Redis distributed cache
+    options.CachingOptions.Provider = CacheProvider.Redis;
+    options.CachingOptions.ConnectionString = "localhost:6379";
+});
 
-// Usage examples
-// Simple caching
-var cachedData = await _cache.GetOrSetAsync("key",
-    async () => await ExpensiveOperation(),
-    TimeSpan.FromMinutes(5));
+// 2. Constructor Injection
+public class ProductService : IProductService
+{
+    private readonly ICacheService _cache;
+    private readonly IRepository<Product> _productRepository;
+    private readonly ILogger<ProductService> _logger;
 
-// Typed caching
-var user = await _cache.GetOrSetAsync<User>($"user:{userId}",
-    async () => await _userService.GetUserAsync(userId),
-    TimeSpan.FromHours(1));
-
-// Cache invalidation
-await _cache.RemoveAsync("key");
-await _cache.RemoveByPrefixAsync("user:*");
-
-// Advanced caching with tags
-await _cache.SetAsync("product:123", product,
-    new CacheOptions
+    public ProductService(
+        ICacheService cache,
+        IRepository<Product> productRepository,
+        ILogger<ProductService> logger)
     {
-        SlidingExpiration = TimeSpan.FromMinutes(30),
-        Tags = new[] { "products", "category:electronics" }
-    });
+        _cache = cache;
+        _productRepository = productRepository;
+        _logger = logger;
+    }
+
+    public async Task<Product> GetProductAsync(int productId)
+    {
+        // Simple caching with method
+        var product = await _cache.GetOrSetAsync($"product:{productId}",
+            async () => {
+                _logger.LogInformation("Loading product {ProductId} from database", productId);
+                return await _productRepository.GetByIdAsync(productId);
+            },
+            TimeSpan.FromMinutes(30));
+
+        return product;
+    }
+
+    public async Task<List<Product>> GetCategoryProductsAsync(string category)
+    {
+        // Advanced caching with tags
+        var products = await _cache.GetOrSetAsync($"products:category:{category}",
+            async () => await _productRepository.GetAsync(p => p.Category == category),
+            new CacheOptions
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(15),
+                Tags = new[] { "products", $"category:{category}" }
+            });
+
+        return products;
+    }
+
+    public async Task UpdateProductAsync(Product product)
+    {
+        await _productRepository.UpdateAsync(product);
+
+        // Cache invalidation after update
+        await _cache.RemoveAsync($"product:{product.Id}");
+        await _cache.RemoveByTagAsync($"category:{product.Category}");
+
+        _logger.LogInformation("Product {ProductId} updated and cache invalidated", product.Id);
+    }
+}
+
+// 3. Controller Usage
+public class ProductsController : ControllerBase
+{
+    private readonly IProductService _productService;
+
+    public ProductsController(IProductService productService)
+    {
+        _productService = productService;
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetProduct(int id)
+    {
+        var product = await _productService.GetProductAsync(id);
+        return Ok(product);
+    }
+}
 ```
 
 #### Repository Pattern
 **Generic repository with Unit of Work**
 
 ```csharp
-// Basic repository usage
-var users = await _repository.GetAllAsync<User>();
-var user = await _repository.GetByIdAsync<User>(userId);
-
-// Query with specifications
-var activeUsers = await _repository.GetAsync<User>(u => u.IsActive);
-
-// Complex queries
-var orders = await _repository.GetAsync<Order>(
-    filter: o => o.Status == OrderStatus.Pending,
-    orderBy: q => q.OrderByDescending(o => o.CreatedAt),
-    includes: "Customer,OrderItems.Product");
-
-// Unit of Work pattern
-using (var uow = _unitOfWork.Begin())
+// 1. Service Registration (Automatically handled by AddMarventaFramework)
+services.AddMarventaFramework(options =>
 {
-    await _repository.AddAsync(newOrder);
-    await _repository.UpdateAsync(customer);
-    await uow.CommitAsync();
+    options.EnableRepository = true;
+    // Repository and UnitOfWork are automatically registered as scoped services
+});
+
+// 2. Constructor Injection in Services
+public class UserService : IUserService
+{
+    private readonly IRepository<User> _userRepository;
+    private readonly IRepository<Order> _orderRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<UserService> _logger;
+
+    public UserService(
+        IRepository<User> userRepository,
+        IRepository<Order> orderRepository,
+        IUnitOfWork unitOfWork,
+        ILogger<UserService> logger)
+    {
+        _userRepository = userRepository;
+        _orderRepository = orderRepository;
+        _unitOfWork = unitOfWork;
+        _logger = logger;
+    }
+
+    public async Task<List<User>> GetActiveUsersAsync()
+    {
+        // Query with specifications
+        var activeUsers = await _userRepository.GetAsync(u => u.IsActive);
+        _logger.LogInformation("Retrieved {Count} active users", activeUsers.Count);
+        return activeUsers;
+    }
+
+    public async Task<User> GetUserWithOrdersAsync(int userId)
+    {
+        // Complex queries with includes
+        var user = await _userRepository.GetFirstOrDefaultAsync(
+            filter: u => u.Id == userId,
+            includes: "Orders.OrderItems.Product");
+
+        return user;
+    }
+
+    public async Task<User> CreateUserWithInitialOrderAsync(User user, Order initialOrder)
+    {
+        // Unit of Work pattern for transactions
+        using (var transaction = await _unitOfWork.BeginTransactionAsync())
+        {
+            try
+            {
+                // Add user
+                await _userRepository.AddAsync(user);
+                await _unitOfWork.SaveChangesAsync();
+
+                // Set the user ID for the order
+                initialOrder.UserId = user.Id;
+                await _orderRepository.AddAsync(initialOrder);
+
+                await _unitOfWork.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("User {UserId} created with initial order {OrderId}",
+                    user.Id, initialOrder.Id);
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to create user with initial order");
+                throw;
+            }
+        }
+    }
+}
+
+// 3. Controller Usage
+public class UsersController : ControllerBase
+{
+    private readonly IUserService _userService;
+
+    public UsersController(IUserService userService)
+    {
+        _userService = userService;
+    }
+
+    [HttpGet("active")]
+    public async Task<IActionResult> GetActiveUsers()
+    {
+        var users = await _userService.GetActiveUsersAsync();
+        return Ok(users);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
+    {
+        var user = new User(dto.Email, dto.FirstName, dto.LastName);
+        var createdUser = await _userService.CreateUserWithInitialOrderAsync(user, dto.InitialOrder);
+        return CreatedAtAction(nameof(GetUser), new { id = createdUser.Id }, createdUser);
+    }
 }
 ```
 
@@ -364,23 +581,94 @@ using (var uow = _unitOfWork.Begin())
 **System health monitoring**
 
 ```csharp
-// Configure health checks
+// 1. Service Registration
+services.AddMarventaFramework(options =>
+{
+    options.EnableHealthChecks = true;
+});
+
+// Add additional health checks
 services.AddHealthChecks()
     .AddCheck<DatabaseHealthCheck>("database")
     .AddCheck<CacheHealthCheck>("cache")
-    .AddCheck<StorageHealthCheck>("storage");
+    .AddCheck<StorageHealthCheck>("storage")
+    .AddCheck<CustomHealthCheck>("custom");
 
-// Custom health check
+// 2. Custom Health Check with DI
 public class CustomHealthCheck : IHealthCheck
 {
+    private readonly IRepository<User> _userRepository;
+    private readonly ICacheService _cache;
+    private readonly ILogger<CustomHealthCheck> _logger;
+
+    public CustomHealthCheck(
+        IRepository<User> userRepository,
+        ICacheService cache,
+        ILogger<CustomHealthCheck> logger)
+    {
+        _userRepository = userRepository;
+        _cache = cache;
+        _logger = logger;
+    }
+
     public async Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,
         CancellationToken cancellationToken = default)
     {
-        var isHealthy = await CheckServiceHealth();
-        return isHealthy
-            ? HealthCheckResult.Healthy("Service is running")
-            : HealthCheckResult.Unhealthy("Service is down");
+        try
+        {
+            // Check database connectivity
+            var userCount = await _userRepository.CountAsync();
+
+            // Check cache connectivity
+            await _cache.SetAsync("health-check", "OK", TimeSpan.FromSeconds(10));
+            var cacheValue = await _cache.GetAsync<string>("health-check");
+
+            var data = new Dictionary<string, object>
+            {
+                ["UserCount"] = userCount,
+                ["CacheStatus"] = cacheValue == "OK" ? "Healthy" : "Unhealthy"
+            };
+
+            _logger.LogInformation("Health check passed - Users: {UserCount}, Cache: {CacheStatus}",
+                userCount, cacheValue);
+
+            return HealthCheckResult.Healthy("All systems operational", data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Health check failed");
+            return HealthCheckResult.Unhealthy("System check failed", ex);
+        }
+    }
+}
+
+// 3. Health Check Endpoint in Controller
+public class HealthController : ControllerBase
+{
+    private readonly HealthCheckService _healthCheckService;
+
+    public HealthController(HealthCheckService healthCheckService)
+    {
+        _healthCheckService = healthCheckService;
+    }
+
+    [HttpGet("health")]
+    public async Task<IActionResult> GetHealth()
+    {
+        var report = await _healthCheckService.CheckHealthAsync();
+        return Ok(new
+        {
+            Status = report.Status.ToString(),
+            Duration = report.TotalDuration,
+            Checks = report.Entries.Select(e => new
+            {
+                Name = e.Key,
+                Status = e.Value.Status.ToString(),
+                Description = e.Value.Description,
+                Data = e.Value.Data
+            })
+        });
     }
 }
 ```
@@ -389,24 +677,122 @@ public class CustomHealthCheck : IHealthCheck
 **Input validation with FluentValidation**
 
 ```csharp
-// Validator definition
+// 1. Service Registration
+services.AddMarventaFramework(options =>
+{
+    options.EnableValidation = true;
+});
+
+// Validators are automatically registered by convention
+
+// 2. Validator Definition with DI
 public class CreateOrderValidator : AbstractValidator<CreateOrderDto>
 {
-    public CreateOrderValidator()
+    private readonly IRepository<Customer> _customerRepository;
+    private readonly IRepository<Product> _productRepository;
+
+    public CreateOrderValidator(
+        IRepository<Customer> customerRepository,
+        IRepository<Product> productRepository)
     {
-        RuleFor(x => x.CustomerId).NotEmpty();
-        RuleFor(x => x.Items).NotEmpty().Must(x => x.Count > 0);
-        RuleFor(x => x.TotalAmount).GreaterThan(0);
-        RuleForEach(x => x.Items).SetValidator(new OrderItemValidator());
+        _customerRepository = customerRepository;
+        _productRepository = productRepository;
+
+        RuleFor(x => x.CustomerId)
+            .NotEmpty()
+            .MustAsync(CustomerExists)
+            .WithMessage("Customer does not exist");
+
+        RuleFor(x => x.Items)
+            .NotEmpty()
+            .Must(x => x.Count > 0)
+            .WithMessage("Order must contain at least one item");
+
+        RuleFor(x => x.TotalAmount)
+            .GreaterThan(0)
+            .WithMessage("Total amount must be greater than zero");
+
+        RuleForEach(x => x.Items)
+            .SetValidator(new OrderItemValidator(_productRepository));
+
+        RuleFor(x => x)
+            .MustAsync(ValidateTotalAmount)
+            .WithMessage("Total amount does not match item prices");
+    }
+
+    private async Task<bool> CustomerExists(int customerId, CancellationToken token)
+    {
+        return await _customerRepository.AnyAsync(c => c.Id == customerId);
+    }
+
+    private async Task<bool> ValidateTotalAmount(CreateOrderDto order, CancellationToken token)
+    {
+        var products = await _productRepository.GetAsync(p => order.Items.Select(i => i.ProductId).Contains(p.Id));
+        var calculatedTotal = order.Items.Sum(item =>
+        {
+            var product = products.First(p => p.Id == item.ProductId);
+            return product.Price * item.Quantity;
+        });
+
+        return Math.Abs(calculatedTotal - order.TotalAmount) < 0.01m;
     }
 }
 
-// Auto-validation in controllers
-[HttpPost]
-public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
+// 3. Nested Validator with DI
+public class OrderItemValidator : AbstractValidator<OrderItemDto>
 {
-    // Automatically validated before reaching here
-    return Ok(await _orderService.CreateAsync(dto));
+    private readonly IRepository<Product> _productRepository;
+
+    public OrderItemValidator(IRepository<Product> productRepository)
+    {
+        _productRepository = productRepository;
+
+        RuleFor(x => x.ProductId)
+            .NotEmpty()
+            .MustAsync(ProductExists)
+            .WithMessage("Product does not exist");
+
+        RuleFor(x => x.Quantity)
+            .GreaterThan(0)
+            .WithMessage("Quantity must be greater than zero");
+    }
+
+    private async Task<bool> ProductExists(int productId, CancellationToken token)
+    {
+        return await _productRepository.AnyAsync(p => p.Id == productId);
+    }
+}
+
+// 4. Controller with Auto-Validation
+public class OrdersController : ControllerBase
+{
+    private readonly IOrderService _orderService;
+    private readonly ILogger<OrdersController> _logger;
+
+    public OrdersController(IOrderService orderService, ILogger<OrdersController> logger)
+    {
+        _orderService = orderService;
+        _logger = logger;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
+    {
+        // Validation happens automatically before reaching here
+        // If validation fails, BadRequest is returned automatically
+
+        _logger.LogInformation("Creating order for customer {CustomerId}", dto.CustomerId);
+
+        var order = await _orderService.CreateAsync(dto);
+        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetOrder(int id)
+    {
+        var order = await _orderService.GetByIdAsync(id);
+        return Ok(order);
+    }
 }
 ```
 
@@ -414,24 +800,151 @@ public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
 **Centralized error handling**
 
 ```csharp
-// Configure exception handling
-options.EnableExceptionHandling = true;
-options.ExceptionHandlingOptions.IncludeDetails = !env.IsProduction();
-options.ExceptionHandlingOptions.LogErrors = true;
+// 1. Service Registration
+services.AddMarventaFramework(options =>
+{
+    options.EnableExceptionHandling = true;
+    options.ExceptionHandlingOptions.IncludeDetails = !env.IsProduction();
+    options.ExceptionHandlingOptions.LogErrors = true;
+});
 
-// Custom exception types
-public class BusinessException : Exception { }
-public class ValidationException : Exception { }
-public class NotFoundException : Exception { }
+// 2. Custom Exception Types
+public class BusinessException : Exception
+{
+    public string ErrorCode { get; }
 
-// Global exception middleware handles all errors consistently
-// Returns standardized error responses:
+    public BusinessException(string errorCode, string message) : base(message)
+    {
+        ErrorCode = errorCode;
+    }
+}
+
+public class NotFoundException : Exception
+{
+    public NotFoundException(string entityName, object id)
+        : base($"{entityName} with ID {id} was not found")
+    {
+    }
+}
+
+// 3. Service with Exception Handling
+public class OrderService : IOrderService
+{
+    private readonly IRepository<Order> _orderRepository;
+    private readonly IRepository<Customer> _customerRepository;
+    private readonly ILogger<OrderService> _logger;
+
+    public OrderService(
+        IRepository<Order> orderRepository,
+        IRepository<Customer> customerRepository,
+        ILogger<OrderService> logger)
+    {
+        _orderRepository = orderRepository;
+        _customerRepository = customerRepository;
+        _logger = logger;
+    }
+
+    public async Task<Order> GetByIdAsync(int orderId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+        if (order == null)
+        {
+            _logger.LogWarning("Order {OrderId} not found", orderId);
+            throw new NotFoundException("Order", orderId);
+        }
+
+        return order;
+    }
+
+    public async Task<Order> CreateOrderAsync(CreateOrderDto dto)
+    {
+        // Check customer exists
+        var customer = await _customerRepository.GetByIdAsync(dto.CustomerId);
+        if (customer == null)
+        {
+            throw new NotFoundException("Customer", dto.CustomerId);
+        }
+
+        // Business rule validation
+        if (customer.CreditLimit < dto.TotalAmount)
+        {
+            _logger.LogWarning("Customer {CustomerId} credit limit exceeded. Limit: {CreditLimit}, Requested: {Amount}",
+                dto.CustomerId, customer.CreditLimit, dto.TotalAmount);
+
+            throw new BusinessException("CREDIT_LIMIT_EXCEEDED",
+                $"Order amount ${dto.TotalAmount} exceeds customer credit limit of ${customer.CreditLimit}");
+        }
+
+        var order = new Order(dto.CustomerId, dto.Items, dto.TotalAmount);
+        await _orderRepository.AddAsync(order);
+
+        _logger.LogInformation("Order {OrderId} created successfully for customer {CustomerId}",
+            order.Id, dto.CustomerId);
+
+        return order;
+    }
+}
+
+// 4. Controller Exception Handling (Automatic via Middleware)
+public class OrdersController : ControllerBase
+{
+    private readonly IOrderService _orderService;
+
+    public OrdersController(IOrderService orderService)
+    {
+        _orderService = orderService;
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetOrder(int id)
+    {
+        // No try-catch needed - global exception middleware handles all exceptions
+        var order = await _orderService.GetByIdAsync(id);
+        return Ok(order);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
+    {
+        // Exceptions are automatically caught and converted to proper HTTP responses
+        var order = await _orderService.CreateOrderAsync(dto);
+        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+    }
+}
+
+// 5. Automatic Error Response Examples:
+
+// NotFoundException -> 404 Not Found
 {
     "error": {
-        "code": "ORDER_NOT_FOUND",
+        "code": "NOT_FOUND",
         "message": "Order with ID 123 was not found",
         "timestamp": "2024-01-15T10:30:00Z",
         "traceId": "abc123"
+    }
+}
+
+// BusinessException -> 400 Bad Request
+{
+    "error": {
+        "code": "CREDIT_LIMIT_EXCEEDED",
+        "message": "Order amount $1500 exceeds customer credit limit of $1000",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "traceId": "def456"
+    }
+}
+
+// ValidationException -> 400 Bad Request
+{
+    "error": {
+        "code": "VALIDATION_FAILED",
+        "message": "One or more validation errors occurred",
+        "details": [
+            "Customer ID is required",
+            "Total amount must be greater than zero"
+        ],
+        "timestamp": "2024-01-15T10:30:00Z",
+        "traceId": "ghi789"
     }
 }
 ```
