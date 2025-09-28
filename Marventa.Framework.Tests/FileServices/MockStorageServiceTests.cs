@@ -67,7 +67,7 @@ public class MockStorageServiceTests
 
         // Verify content
         var downloadedContent = new byte[downloadResult.ContentLength];
-        await downloadResult.Content.ReadAsync(downloadedContent, 0, (int)downloadResult.ContentLength);
+        await downloadResult.Content.ReadExactlyAsync(downloadedContent, 0, (int)downloadResult.ContentLength);
         downloadedContent.Should().BeEquivalentTo(fileContent);
 
         downloadResult.Dispose();
