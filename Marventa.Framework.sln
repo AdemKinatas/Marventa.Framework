@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Marventa.Framework.Web", "M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Marventa.Framework", "Marventa.Framework\Marventa.Framework.csproj", "{09DE1846-420A-4E1A-BA9E-F110F1DB0568}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Marventa.Framework.Tests", "Marventa.Framework.Tests\Marventa.Framework.Tests.csproj", "{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{09DE1846-420A-4E1A-BA9E-F110F1DB0568}.Release|x64.Build.0 = Release|Any CPU
 		{09DE1846-420A-4E1A-BA9E-F110F1DB0568}.Release|x86.ActiveCfg = Release|Any CPU
 		{09DE1846-420A-4E1A-BA9E-F110F1DB0568}.Release|x86.Build.0 = Release|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Debug|x64.Build.0 = Debug|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Debug|x86.Build.0 = Debug|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Release|x64.ActiveCfg = Release|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Release|x64.Build.0 = Release|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Release|x86.ActiveCfg = Release|Any CPU
+		{38BEB08C-6E42-463C-8DF0-5CBFFE0BD19D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
