@@ -2,7 +2,7 @@
 
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-512BD4)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-v2.2.0-blue)](https://www.nuget.org/packages/Marventa.Framework)
+[![NuGet](https://img.shields.io/badge/NuGet-v2.3.0-blue)](https://www.nuget.org/packages/Marventa.Framework)
 
 > **Complete enterprise-grade .NET framework with 40+ modular features including file management, security, multi-tenancy, messaging, analytics, e-commerce, and more**
 

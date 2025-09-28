@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>2.2.0</PackageVersion>
-    <VersionPrefix>2.2.0</VersionPrefix>
+    <PackageVersion>2.3.0</PackageVersion>
+    <VersionPrefix>2.3.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>file-management;image-processing;storage;cdn;ai-ml;content-analysis;azure-blob;aws-s3;clean-architecture;modular;file-upload;image-optimization;metadata;search;analytics;aspnetcore;enterprise;solid-principles;pay-as-you-use</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v2.2.0: Major refactoring for perfect SOLID compliance! Eliminated all multi-class files - now 29 focused, single-responsibility files. Added FileAnalytics system, BulkProcessingResult, progressive JPEG support, enhanced validation with format detection. Complete test coverage with MockFileProcessorTests and MockStorageServiceTests. Professional NuGet-optimized documentation. Zero build errors, production-ready architecture.</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.3.0: Complete enterprise framework documentation! Now showcases all 40+ features including Security (JWT, API Keys, Encryption), Multi-Tenancy, Event-Driven Architecture, CQRS, Performance optimization, Analytics, Messaging, Search, Background Processing, E-Commerce, and API Management. Comprehensive single README.md with usage examples for every feature. Professional enterprise-grade documentation structure.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
