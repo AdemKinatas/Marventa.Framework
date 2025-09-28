@@ -2,6 +2,8 @@ name: Publish NuGet Package
 
 on:
   push:
+    branches:
+      - master  # Triggers on master branch pushes
     tags:
       - 'v*.*.*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
   workflow_dispatch:  # Allows manual trigger
