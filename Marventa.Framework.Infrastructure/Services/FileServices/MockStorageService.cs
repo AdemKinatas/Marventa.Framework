@@ -24,7 +24,7 @@ public class MockStorageService : IMarventaStorage
 
         var fileId = Guid.NewGuid().ToString();
         var data = new byte[stream.Length];
-        stream.Read(data, 0, (int)stream.Length);
+        stream.ReadExactly(data, 0, (int)stream.Length);
 
         _files[fileId] = new MockFileData
         {

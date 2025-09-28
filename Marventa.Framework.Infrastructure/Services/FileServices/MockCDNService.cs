@@ -21,7 +21,7 @@ public class MockCDNService : IMarventaCDN
     {
         _logger.LogInformation("Mock: Uploading file {FileId} with content type {ContentType} to CDN", fileId, contentType);
         var data = new byte[content.Length];
-        content.Read(data, 0, (int)content.Length);
+        content.ReadExactly(data, 0, (int)content.Length);
 
         _cdnFiles[fileId] = new MockCDNFile
         {
