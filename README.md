@@ -2,41 +2,38 @@
 
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-512BD4)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-v2.3.0-blue)](https://www.nuget.org/packages/Marventa.Framework)
+[![NuGet](https://img.shields.io/badge/NuGet-v2.5.0-blue)](https://www.nuget.org/packages/Marventa.Framework)
 
 > **Complete enterprise-grade .NET framework with 47 modular features including file management, security, multi-tenancy, messaging, analytics, e-commerce, and more**
 
 ## 📋 Table of Contents
 
-1. [Quick Start](#-quick-start)
-2. [Available Features](#️-available-features)
-3. [Core Philosophy](#-core-philosophy)
-4. [Architecture](#️-architecture)
-5. [Features](#-features)
-   - [Storage Management](#-storage-management)
-   - [Image Processing](#️-image-processing)
-   - [CDN Integration](#-cdn-integration)
-   - [AI/ML Services](#-aiml-services)
-   - [Metadata Management](#-metadata-management)
-   - [Security & Authentication](#-security--authentication)
-   - [Multi-Tenancy Support](#-multi-tenancy-support)
-   - [Event-Driven Architecture](#-event-driven-architecture)
-   - [CQRS Pattern](#-cqrs-pattern)
-   - [Performance & Scalability](#-performance--scalability)
-   - [Analytics & Monitoring](#-analytics--monitoring)
-   - [Messaging & Communication](#-messaging--communication)
-   - [Search & Discovery](#-search--discovery)
-   - [Background Processing](#-background-processing)
-   - [E-Commerce Features](#-e-commerce-features)
-   - [API Management](#-api-management)
-   - [Configuration & Features](#-configuration--features)
-5. [Configuration](#-configuration)
-6. [Testing](#-testing)
-7. [Best Practices](#-best-practices)
+1. [Quick Start](#1️⃣-quick-start)
+2. [Available Features](#2️⃣-available-features)
+3. [Core Philosophy](#3️⃣-core-philosophy)
+4. [Architecture](#4️⃣-architecture)
+5. [Detailed Features](#5️⃣-detailed-features)
+   - [5.1 Core Infrastructure](#51-core-infrastructure)
+   - [5.2 Security & Authentication](#52-security--authentication)
+   - [5.3 Communication Services](#53-communication-services)
+   - [5.4 Data & Storage](#54-data--storage)
+   - [5.5 API Management](#55-api-management)
+   - [5.6 Performance & Scalability](#56-performance--scalability)
+   - [5.7 Monitoring & Analytics](#57-monitoring--analytics)
+   - [5.8 Background Processing](#58-background-processing)
+   - [5.9 Enterprise Architecture](#59-enterprise-architecture)
+   - [5.10 Search & AI](#510-search--ai)
+   - [5.11 Business Features](#511-business-features)
+6. [Configuration](#6️⃣-configuration)
+7. [Best Practices](#7️⃣-best-practices)
+8. [Testing](#8️⃣-testing)
+9. [Available Packages](#9️⃣-available-packages)
+10. [Why Choose Marventa Framework?](#🔟-why-choose-marventa-framework)
+11. [License](#🔲-license)
 
 ---
 
-## ⚡ Quick Start
+## 1️⃣ Quick Start
 
 ### Installation
 
@@ -97,110 +94,114 @@ public class FilesController : ControllerBase
 
 ---
 
-## 🎛️ Available Features
+## 2️⃣ Available Features
 
 **47 modular features - enable only what you need!**
 
-### 🗄️ File & Storage (4 features)
+### 2.1 🔧 Core Infrastructure (6 features)
 ```csharp
-options.EnableStorage = true;          // Multi-provider storage (Azure, AWS, Local)
-options.EnableFileProcessor = true;    // Image processing & optimization
-options.EnableCDN = true;             // Content delivery networks
-options.EnableMetadata = true;        // File metadata management
+options.EnableLogging = true;         // 1. Structured logging (Serilog, NLog)
+options.EnableCaching = true;         // 2. Memory & distributed caching (Redis, In-Memory)
+options.EnableRepository = true;      // 3. Generic repository & Unit of Work
+options.EnableHealthChecks = true;    // 4. System health monitoring
+options.EnableValidation = true;      // 5. Input validation (FluentValidation)
+options.EnableExceptionHandling = true; // 6. Global error handling
 ```
 
-### 🔐 Security & Authentication (4 features)
+### 2.2 🔐 Security & Authentication (4 features)
 ```csharp
-options.EnableSecurity = true;        // Basic security framework
-options.EnableJWT = true;             // JWT token management
-options.EnableApiKeys = true;         // API key authentication
-options.EnableEncryption = true;      // Data encryption services
+options.EnableSecurity = true;        // 7. Core security framework
+options.EnableJWT = true;             // 8. JWT token authentication
+options.EnableApiKeys = true;         // 9. API key management
+options.EnableEncryption = true;      // 10. Data encryption (AES, RSA)
 ```
 
-### 🏢 Multi-Tenancy & Architecture (5 features)
+### 2.3 📧 Communication Services (3 features)
 ```csharp
-options.EnableMultiTenancy = true;    // Complete tenant isolation
-options.EnableEventDriven = true;     // Domain & integration events
-options.EnableCQRS = true;            // Command Query separation
-options.EnableSagas = true;           // Long-running processes
-options.EnableRepository = true;      // Data access abstraction
+options.EnableEmail = true;           // 11. Email service (SMTP, SendGrid)
+options.EnableSMS = true;             // 12. SMS notifications (Twilio)
+options.EnableHttpClient = true;      // 13. HTTP client with retry policies
 ```
 
-### ⚡ Performance & Scalability (5 features)
+### 2.4 🗄️ Data & Storage (5 features)
 ```csharp
-options.EnableCaching = true;         // Distributed caching
-options.EnableRateLimiting = true;    // API protection
-options.EnableDistributedLocking = true; // Critical section locks
-options.EnableIdempotency = true;     // Safe operation retries
-options.EnableCircuitBreaker = true;  // Circuit breaker pattern
+options.EnableStorage = true;         // 14. Multi-provider storage (Azure, AWS, Local)
+options.EnableFileProcessor = true;   // 15. Image processing & optimization
+options.EnableMetadata = true;        // 16. File metadata management
+options.EnableDatabaseSeeding = true; // 17. Database initialization & seeding
+options.EnableSeeding = true;         // 18. Advanced data seeding
 ```
 
-### 📊 Analytics & Monitoring (5 features)
+### 2.5 🌐 API Management (4 features)
 ```csharp
-options.EnableAnalytics = true;       // Event & metric tracking
-options.EnableHealthChecks = true;    // System health monitoring
-options.EnableObservability = true;   // Distributed tracing
-options.EnableLogging = true;         // Structured logging
-options.EnableTracking = true;        // Advanced tracking features
+options.EnableVersioning = true;      // 19. API versioning
+options.EnableRateLimiting = true;    // 20. Request throttling
+options.EnableCompression = true;     // 21. Response compression (Gzip, Brotli)
+options.EnableIdempotency = true;     // 22. Idempotent API operations
 ```
 
-### 📧 Messaging & Communication (4 features)
+### 2.6 ⚡ Performance & Scalability (5 features)
 ```csharp
-options.EnableMessaging = true;       // Message bus integration
-options.EnableEmail = true;           // Email notifications
-options.EnableSMS = true;             // SMS notifications
-options.EnableDeadLetterQueue = true; // Dead letter queue handling
+options.EnableDistributedLocking = true; // 23. Distributed locks (Redis)
+options.EnableCircuitBreaker = true;  // 24. Circuit breaker pattern
+options.EnableBatchOperations = true; // 25. Batch processing
+options.EnableAdvancedCaching = true; // 26. Cache strategies (Write-through, Write-behind)
+options.EnableCDN = true;             // 27. CDN integration (CloudFlare, Azure CDN)
 ```
 
-### 🔍 Search & AI/ML (2 features)
+### 2.7 📊 Monitoring & Analytics (4 features)
 ```csharp
-options.EnableSearch = true;          // Elasticsearch integration
-options.EnableML = true;              // AI/ML content analysis
+options.EnableAnalytics = true;       // 28. Event & metric tracking
+options.EnableObservability = true;   // 29. Distributed tracing (OpenTelemetry)
+options.EnableTracking = true;        // 30. User activity tracking
+options.EnableFeatureFlags = true;    // 31. Feature toggles & A/B testing
 ```
 
-### ⏱️ Background & Data Processing (5 features)
+### 2.8 ⏱️ Background Processing (3 features)
 ```csharp
-options.EnableBackgroundJobs = true;  // Job scheduling
-options.EnableDatabaseSeeding = true; // Database initialization
-options.EnableProjections = true;     // Event sourcing projections
-options.EnableRealTimeProjections = true; // Real-time projection updates
-options.EnableSeeding = true;         // Advanced data seeding
+options.EnableBackgroundJobs = true;  // 32. Job scheduling (Hangfire, Quartz)
+options.EnableMessaging = true;       // 33. Message bus (RabbitMQ, Azure Service Bus)
+options.EnableDeadLetterQueue = true; // 34. Failed message handling
 ```
 
-### 🛒 E-Commerce & Business (4 features)
+### 2.9 🏢 Enterprise Architecture (5 features)
 ```csharp
-options.EnableECommerce = true;       // E-commerce framework
-options.EnablePayments = true;        // Payment processing
-options.EnableShipping = true;        // Shipping management
-options.EnableFraudDetection = true;  // Fraud prevention
+options.EnableMultiTenancy = true;    // 35. Multi-tenant architecture
+options.EnableEventDriven = true;     // 36. Event sourcing & domain events
+options.EnableCQRS = true;            // 37. Command Query separation
+options.EnableSagas = true;           // 38. Saga orchestration
+options.EnableProjections = true;     // 39. Event projections
 ```
 
-### 🌐 API & Web Management (4 features)
+### 2.10 🔍 Search & AI (3 features)
 ```csharp
-options.EnableVersioning = true;      // API versioning
-options.EnableHttpClient = true;      // HTTP client abstraction
-options.EnableExceptionHandling = true; // Global error handling
-options.EnableValidation = true;      // Input validation
+options.EnableSearch = true;          // 40. Elasticsearch integration
+options.EnableML = true;              // 41. AI/ML content analysis
+options.EnableRealTimeProjections = true; // 42. Real-time data projections
 ```
 
-### ⚙️ Configuration & Features (1 feature)
+### 2.11 🛒 Business Features (5 features)
 ```csharp
-options.EnableFeatureFlags = true;    // Dynamic feature toggles
+options.EnableECommerce = true;       // 43. E-commerce framework
+options.EnablePayments = true;        // 44. Payment processing (Stripe, PayPal)
+options.EnableShipping = true;        // 45. Shipping & logistics
+options.EnableFraudDetection = true;  // 46. Fraud prevention
+options.EnableInternationalization = true; // 47. Multi-language support
 ```
 
 ### 📊 Feature Count Summary
 - **Total Features**: 47
-- **File & Storage**: 4 features
-- **Security**: 4 features
-- **Architecture**: 5 features
-- **Performance**: 5 features
-- **Monitoring**: 5 features
-- **Communication**: 4 features
-- **Search & AI**: 2 features
-- **Background**: 5 features
-- **E-Commerce**: 4 features
-- **API Management**: 4 features
-- **Configuration**: 1 feature
+- **Core Infrastructure**: 6 features (1-6)
+- **Security & Authentication**: 4 features (7-10)
+- **Communication Services**: 3 features (11-13)
+- **Data & Storage**: 5 features (14-18)
+- **API Management**: 4 features (19-22)
+- **Performance & Scalability**: 5 features (23-27)
+- **Monitoring & Analytics**: 4 features (28-31)
+- **Background Processing**: 3 features (32-34)
+- **Enterprise Architecture**: 5 features (35-39)
+- **Search & AI**: 3 features (40-42)
+- **Business Features**: 5 features (43-47)
 
 ### 💡 Smart Defaults
 - **All features are FALSE by default**
@@ -210,7 +211,7 @@ options.EnableFeatureFlags = true;    // Dynamic feature toggles
 
 ---
 
-## 🎯 Core Philosophy
+## 3️⃣ Core Philosophy
 
 - **🔧 Modular Design**: Enable only what you need - pay for what you use
 - **🔄 Provider Agnostic**: Switch providers without code changes
@@ -220,7 +221,7 @@ options.EnableFeatureFlags = true;    // Dynamic feature toggles
 
 ---
 
-## 🏗️ Architecture
+## 4️⃣ Architecture
 
 **Clean, modular architecture** with **47 enterprise features** in **29+ focused, single-responsibility files**:
 
@@ -262,9 +263,180 @@ Marventa.Framework/
 
 ---
 
-## 🎨 Features
+## 5️⃣ Detailed Features
 
-### 🗄️ Storage Management
+### 5.1 🔧 Core Infrastructure
+
+#### Logging
+**Structured logging with multiple providers**
+
+```csharp
+// Configure logging
+services.AddMarventaFramework(options =>
+{
+    options.EnableLogging = true;
+    options.LoggingOptions.Provider = LoggingProvider.Serilog;
+    options.LoggingOptions.MinimumLevel = LogLevel.Information;
+});
+
+// Usage
+_logger.LogInformation("Processing order {OrderId} for user {UserId}",
+    orderId, userId);
+
+// Structured logging with context
+using (_logger.BeginScope(new { OrderId = orderId, UserId = userId }))
+{
+    _logger.LogInformation("Order processing started");
+    // Process order...
+    _logger.LogInformation("Order processed successfully");
+}
+
+// Performance logging
+using (_logger.BeginTimedOperation("DatabaseQuery"))
+{
+    // Your database operation
+}
+```
+
+#### Caching
+**High-performance caching with multiple backends**
+
+```csharp
+// Memory cache (default)
+options.EnableCaching = true;
+options.CachingOptions.Provider = CacheProvider.Memory;
+
+// Redis distributed cache
+options.CachingOptions.Provider = CacheProvider.Redis;
+options.CachingOptions.ConnectionString = "localhost:6379";
+
+// Usage examples
+// Simple caching
+var cachedData = await _cache.GetOrSetAsync("key",
+    async () => await ExpensiveOperation(),
+    TimeSpan.FromMinutes(5));
+
+// Typed caching
+var user = await _cache.GetOrSetAsync<User>($"user:{userId}",
+    async () => await _userService.GetUserAsync(userId),
+    TimeSpan.FromHours(1));
+
+// Cache invalidation
+await _cache.RemoveAsync("key");
+await _cache.RemoveByPrefixAsync("user:*");
+
+// Advanced caching with tags
+await _cache.SetAsync("product:123", product,
+    new CacheOptions
+    {
+        SlidingExpiration = TimeSpan.FromMinutes(30),
+        Tags = new[] { "products", "category:electronics" }
+    });
+```
+
+#### Repository Pattern
+**Generic repository with Unit of Work**
+
+```csharp
+// Basic repository usage
+var users = await _repository.GetAllAsync<User>();
+var user = await _repository.GetByIdAsync<User>(userId);
+
+// Query with specifications
+var activeUsers = await _repository.GetAsync<User>(u => u.IsActive);
+
+// Complex queries
+var orders = await _repository.GetAsync<Order>(
+    filter: o => o.Status == OrderStatus.Pending,
+    orderBy: q => q.OrderByDescending(o => o.CreatedAt),
+    includes: "Customer,OrderItems.Product");
+
+// Unit of Work pattern
+using (var uow = _unitOfWork.Begin())
+{
+    await _repository.AddAsync(newOrder);
+    await _repository.UpdateAsync(customer);
+    await uow.CommitAsync();
+}
+```
+
+#### Health Checks
+**System health monitoring**
+
+```csharp
+// Configure health checks
+services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("database")
+    .AddCheck<CacheHealthCheck>("cache")
+    .AddCheck<StorageHealthCheck>("storage");
+
+// Custom health check
+public class CustomHealthCheck : IHealthCheck
+{
+    public async Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var isHealthy = await CheckServiceHealth();
+        return isHealthy
+            ? HealthCheckResult.Healthy("Service is running")
+            : HealthCheckResult.Unhealthy("Service is down");
+    }
+}
+```
+
+#### Validation
+**Input validation with FluentValidation**
+
+```csharp
+// Validator definition
+public class CreateOrderValidator : AbstractValidator<CreateOrderDto>
+{
+    public CreateOrderValidator()
+    {
+        RuleFor(x => x.CustomerId).NotEmpty();
+        RuleFor(x => x.Items).NotEmpty().Must(x => x.Count > 0);
+        RuleFor(x => x.TotalAmount).GreaterThan(0);
+        RuleForEach(x => x.Items).SetValidator(new OrderItemValidator());
+    }
+}
+
+// Auto-validation in controllers
+[HttpPost]
+public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
+{
+    // Automatically validated before reaching here
+    return Ok(await _orderService.CreateAsync(dto));
+}
+```
+
+#### Global Exception Handling
+**Centralized error handling**
+
+```csharp
+// Configure exception handling
+options.EnableExceptionHandling = true;
+options.ExceptionHandlingOptions.IncludeDetails = !env.IsProduction();
+options.ExceptionHandlingOptions.LogErrors = true;
+
+// Custom exception types
+public class BusinessException : Exception { }
+public class ValidationException : Exception { }
+public class NotFoundException : Exception { }
+
+// Global exception middleware handles all errors consistently
+// Returns standardized error responses:
+{
+    "error": {
+        "code": "ORDER_NOT_FOUND",
+        "message": "Order with ID 123 was not found",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "traceId": "abc123"
+    }
+}
+```
+
+### 5.2 🔐 Security & Authentication
 
 **Multi-provider storage with unified API**
 
@@ -304,7 +476,7 @@ var files = new Dictionary<string, Stream> { ["file1.jpg"] = stream1, ["file2.pn
 var bulkResult = await _storage.BulkUploadAsync(files);
 ```
 
-### 🖼️ Image Processing
+### 5.3 📧 Communication Services
 
 **Comprehensive image manipulation and optimization**
 
@@ -358,7 +530,7 @@ var convertResult = await _processor.ConvertFormatAsync(imageStream, "webp", new
 });
 ```
 
-### 🌐 CDN Integration
+### 5.4 🗄️ Data & Storage
 
 **Global content delivery with caching**
 
@@ -400,7 +572,7 @@ var metrics = await _cdn.GetCDNMetricsAsync(new TimeRange
 });
 ```
 
-### 🤖 AI/ML Services
+### 5.5 🌐 API Management
 
 **Intelligent content analysis and processing**
 
@@ -447,7 +619,7 @@ var suggestions = await _ml.GetOptimizationSuggestionsAsync(fileId, new Optimiza
 });
 ```
 
-### 📊 Metadata Management
+### 5.6 ⚡ Performance & Scalability
 
 **Advanced file metadata and search capabilities**
 
@@ -498,7 +670,7 @@ var popularTags = await _metadata.GetPopularTagsAsync(new TagPopularityOptions
 });
 ```
 
-### 🔐 Security & Authentication
+### 5.7 📊 Monitoring & Analytics
 
 **Comprehensive security with JWT, API Keys, and encryption**
 
@@ -531,7 +703,7 @@ var hash = await _encryptionService.GenerateHashAsync("password", salt);
 var isValid = await _encryptionService.VerifyHashAsync("password", hash, salt);
 ```
 
-### 🏢 Multi-Tenancy Support
+### 5.8 ⏱️ Background Processing
 
 **Complete tenant isolation and management**
 
@@ -561,7 +733,7 @@ if (!isAllowed) return StatusCode(429, "Rate limit exceeded");
 var hasAccess = await _tenantAuthorization.HasAccessAsync(tenantId, "feature-name");
 ```
 
-### 🔄 Event-Driven Architecture
+### 5.9 🏢 Enterprise Architecture
 
 **Domain and Integration events with Event Bus**
 
@@ -593,7 +765,7 @@ public class UserRegisteredEventHandler : IDomainEventHandler<UserRegisteredEven
 }
 ```
 
-### ⚡ CQRS Pattern
+### 5.10 🔍 Search & AI
 
 **Command Query Responsibility Segregation with MediatR-style architecture**
 
@@ -637,7 +809,7 @@ public class GetUserQueryHandler : IQueryHandler<GetUserQuery, UserDto>
 }
 ```
 
-### ⚡ Performance & Scalability
+### 5.11 🛍 Business Features
 
 **Rate limiting, caching, and distributed locking**
 
@@ -668,293 +840,9 @@ if (lockHandle.IsAcquired)
 public class ApiController : ControllerBase { }
 ```
 
-### 📊 Analytics & Monitoring
+## 6️⃣ Configuration
 
-**Comprehensive analytics and health monitoring**
-
-```csharp
-// Analytics configuration
-options.AnalyticsOptions.Provider = AnalyticsProvider.GoogleAnalytics;
-options.AnalyticsOptions.TrackingId = "GA-123456789";
-```
-
-**Usage Examples:**
-
-```csharp
-// Event Tracking
-await _analyticsService.TrackEventAsync("user_action", "button_click", new
-{
-    UserId = userId,
-    ButtonName = "purchase",
-    PageUrl = "/checkout"
-});
-
-// Metric Tracking
-await _analyticsService.TrackMetricAsync("response_time", 150.5, new
-{
-    Endpoint = "/api/users",
-    Method = "GET"
-});
-
-// Exception Tracking
-try { /* operation */ }
-catch (Exception ex)
-{
-    await _analyticsService.TrackExceptionAsync(ex, new { UserId = userId });
-}
-
-// Health Checks
-var healthStatus = await _healthCheck.CheckHealthAsync();
-Console.WriteLine($"System Health: {healthStatus.Status}");
-foreach (var check in healthStatus.Checks)
-{
-    Console.WriteLine($"  {check.Key}: {check.Value.Status}");
-}
-```
-
-### 📧 Messaging & Communication
-
-**Email, SMS, and Message Bus integration**
-
-```csharp
-// Email configuration
-options.EmailOptions.Provider = EmailProvider.SendGrid;
-options.EmailOptions.ApiKey = "your-sendgrid-key";
-options.EmailOptions.FromEmail = "noreply@yourapp.com";
-```
-
-**Usage Examples:**
-
-```csharp
-// Email Service
-await _emailService.SendEmailAsync(new EmailMessage
-{
-    To = "user@example.com",
-    Subject = "Welcome!",
-    HtmlBody = "<h1>Welcome to our platform!</h1>",
-    PlainTextBody = "Welcome to our platform!"
-});
-
-// Bulk Email
-var recipients = new[] { "user1@example.com", "user2@example.com" };
-await _emailService.SendBulkEmailAsync(recipients, "Newsletter", htmlContent);
-
-// SMS Service
-await _smsService.SendSmsAsync("+1234567890", "Your verification code: 123456");
-
-// Message Bus
-await _messageBus.PublishAsync(new UserRegisteredMessage
-{
-    UserId = userId,
-    Email = email,
-    RegistrationDate = DateTime.UtcNow
-});
-```
-
-### 🔍 Search & Discovery
-
-**Elasticsearch integration with advanced search capabilities**
-
-```csharp
-// Search configuration
-options.SearchOptions.Provider = SearchProvider.Elasticsearch;
-options.SearchOptions.ConnectionString = "http://localhost:9200";
-options.SearchOptions.DefaultIndex = "documents";
-```
-
-**Usage Examples:**
-
-```csharp
-// Document Indexing
-var document = new ProductDocument
-{
-    Id = "prod-123",
-    Name = "Wireless Headphones",
-    Description = "High-quality wireless headphones",
-    Price = 99.99m,
-    Category = "Electronics"
-};
-await _searchService.IndexDocumentAsync("products", document);
-
-// Search with Filters
-var searchResult = await _searchService.SearchAsync<ProductDocument>("products", new SearchRequest
-{
-    Query = "wireless headphones",
-    Filters = new Dictionary<string, object>
-    {
-        ["Category"] = "Electronics",
-        ["Price"] = new { gte = 50, lte = 150 }
-    },
-    Sort = new[] { new SortField { Field = "Price", Order = SortOrder.Ascending } },
-    Size = 20,
-    From = 0
-});
-
-// Aggregations
-var aggregationResult = await _searchService.AggregateAsync("products", new AggregationRequest
-{
-    Aggregations = new Dictionary<string, IAggregation>
-    {
-        ["avg_price"] = new AverageAggregation { Field = "Price" },
-        ["categories"] = new TermsAggregation { Field = "Category" }
-    }
-});
-```
-
-### ⏱️ Background Processing
-
-**Job scheduling and background task management**
-
-```csharp
-// Background job configuration
-options.BackgroundJobOptions.Provider = BackgroundJobProvider.Hangfire;
-options.BackgroundJobOptions.ConnectionString = "Server=localhost;Database=Jobs";
-```
-
-**Usage Examples:**
-
-```csharp
-// Schedule Background Job
-var jobId = await _backgroundJobService.EnqueueAsync<IEmailService>(
-    service => service.SendEmailAsync(emailMessage));
-
-// Schedule Delayed Job
-var delayedJobId = await _backgroundJobService.ScheduleAsync<IReportService>(
-    service => service.GenerateMonthlyReportAsync(),
-    TimeSpan.FromHours(24));
-
-// Recurring Job
-await _backgroundJobService.AddRecurringJobAsync(
-    "daily-cleanup",
-    () => _cleanupService.CleanupOldFilesAsync(),
-    "0 2 * * *"); // Every day at 2 AM
-
-// Job Status
-var jobStatus = await _backgroundJobService.GetJobStatusAsync(jobId);
-Console.WriteLine($"Job Status: {jobStatus.State}");
-```
-
-### 🛒 E-Commerce Features
-
-**Payment processing, shipping, and fraud detection**
-
-**Usage Examples:**
-
-```csharp
-// Payment Processing
-var payment = new Payment
-{
-    Amount = 99.99m,
-    Currency = "USD",
-    PaymentMethod = PaymentMethod.CreditCard,
-    CustomerId = "cust-123"
-};
-var paymentResult = await _paymentService.ProcessPaymentAsync(payment);
-
-// Shipping Management
-var shipment = new Shipment
-{
-    OrderId = "order-123",
-    ShippingAddress = shippingAddress,
-    Carrier = ShippingCarrier.FedEx,
-    TrackingNumber = "1234567890"
-};
-await _shippingService.CreateShipmentAsync(shipment);
-
-// Track Shipment
-var trackingInfo = await _shippingService.TrackShipmentAsync("1234567890");
-Console.WriteLine($"Status: {trackingInfo.Status}, Location: {trackingInfo.CurrentLocation}");
-
-// Fraud Detection
-var fraudCheck = await _fraudService.CheckTransactionAsync(new FraudCheckRequest
-{
-    TransactionAmount = 99.99m,
-    CustomerIP = "192.168.1.1",
-    CustomerEmail = "customer@example.com",
-    BillingAddress = billingAddress
-});
-
-if (fraudCheck.RiskScore > 0.7)
-{
-    // Flag as potentially fraudulent
-    await _fraudService.FlagTransactionAsync(transactionId, FraudReason.HighRiskScore);
-}
-```
-
-### 🌐 API Management
-
-**Versioning, idempotency, and HTTP client abstraction**
-
-**Usage Examples:**
-
-```csharp
-// API Versioning
-[ApiVersion("1.0")]
-[ApiVersion("2.0")]
-public class UsersController : VersionedControllerBase
-{
-    [HttpGet]
-    [MapToApiVersion("1.0")]
-    public async Task<IActionResult> GetUsersV1() { /* v1 logic */ }
-
-    [HttpGet]
-    [MapToApiVersion("2.0")]
-    public async Task<IActionResult> GetUsersV2() { /* v2 logic */ }
-}
-
-// Idempotency
-[HttpPost]
-[Idempotent]
-public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
-{
-    // This endpoint is automatically idempotent
-    var order = await _orderService.CreateOrderAsync(request);
-    return Ok(order);
-}
-
-// HTTP Client Service
-var response = await _httpClientService.GetAsync<UserDto>("https://api.example.com/users/123");
-var postResponse = await _httpClientService.PostAsync<CreateUserResponse, CreateUserRequest>(
-    "https://api.example.com/users", createUserRequest);
-```
-
-### ⚙️ Configuration & Features
-
-**Feature flags and dynamic configuration**
-
-**Usage Examples:**
-
-```csharp
-// Feature Flags
-var isNewCheckoutEnabled = await _featureFlagService.IsEnabledAsync("new-checkout-flow");
-if (isNewCheckoutEnabled)
-{
-    // Use new checkout process
-    return await ProcessNewCheckoutAsync(request);
-}
-else
-{
-    // Use legacy checkout
-    return await ProcessLegacyCheckoutAsync(request);
-}
-
-// User-Specific Feature Flags
-var hasAdvancedFeatures = await _featureFlagService.IsEnabledForUserAsync(
-    "advanced-analytics", userId);
-
-// Dynamic Configuration
-var maxRetries = await _configurationService.GetValueAsync<int>("api.max-retries");
-var timeout = await _configurationService.GetValueAsync<TimeSpan>("api.timeout");
-
-// Configuration with Default
-var cacheTimeout = await _configurationService.GetValueAsync("cache.timeout", TimeSpan.FromMinutes(30));
-```
-
----
-
-## ⚙️ Configuration
-
-### appsettings.json Configuration
+### 6.1 appsettings.json Configuration
 
 ```json
 {
@@ -1011,7 +899,7 @@ var cacheTimeout = await _configurationService.GetValueAsync("cache.timeout", Ti
 }
 ```
 
-### Environment Variables
+### 6.2 Environment Variables
 
 ```bash
 # Storage
@@ -1033,7 +921,7 @@ MONGODB_CONNECTION_STRING="mongodb://localhost:27017"
 
 ---
 
-## 🧪 Testing
+## 8️⃣ Testing
 
 **Built-in mock services for comprehensive testing:**
 
@@ -1070,9 +958,9 @@ public async Task UploadFile_Should_ReturnSuccess()
 
 ---
 
-## ✅ Best Practices
+## 7️⃣ Best Practices
 
-### 1. Resource Management
+### 7.1 Resource Management
 
 ```csharp
 // Always dispose streams
@@ -1083,7 +971,7 @@ var result = await _storage.UploadFileAsync(fileStream, fileName, contentType);
 using var processedStream = result.ProcessedImage;
 ```
 
-### 2. Error Handling
+### 7.2 Error Handling
 
 ```csharp
 try
@@ -1102,7 +990,7 @@ catch (Exception ex)
 }
 ```
 
-### 3. Performance Optimization
+### 7.3 Performance Optimization
 
 ```csharp
 // Use cancellation tokens
@@ -1114,7 +1002,7 @@ var files = GetFiles();
 var results = await _storage.BulkUploadAsync(files);
 ```
 
-### 4. Security
+### 7.4 Security
 
 ```csharp
 // Validate file types
@@ -1136,7 +1024,7 @@ options.StorageOptions.EnableEncryption = true;
 
 ---
 
-## 📦 Available Packages
+## 9️⃣ Available Packages
 
 | Package | Purpose | Dependencies |
 |---------|---------|--------------|
@@ -1147,7 +1035,7 @@ options.StorageOptions.EnableEncryption = true;
 
 ---
 
-## 💡 Why Choose Marventa Framework?
+## 🔟 Why Choose Marventa Framework?
 
 ✅ **Complete Enterprise Solution** - 47 features in one framework
 ✅ **Modular Design** - Enable only what you need, pay for what you use
@@ -1164,7 +1052,7 @@ options.StorageOptions.EnableEncryption = true;
 
 ---
 
-## 📄 License
+## 🔲 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
