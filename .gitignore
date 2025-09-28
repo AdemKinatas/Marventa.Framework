@@ -365,3 +365,11 @@ FodyWeavers.xsd
 
 # Local NuGet packages output
 nupkgs/
+
+# Claude Code - AI Assistant files (never commit)
+.claude/
+*.claude
+claude-*
+*claude*
+anthropic/
+*anthropic*
