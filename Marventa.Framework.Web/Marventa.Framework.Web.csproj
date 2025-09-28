@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit" Version="8.5.3" />
+    <PackageReference Include="MassTransit" Version="8.3.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="9.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
@@ -14,10 +14,8 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.10.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.10.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.10.0-beta.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.2.0" />
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.0.0" />
   </ItemGroup>
 
   <PropertyGroup>
