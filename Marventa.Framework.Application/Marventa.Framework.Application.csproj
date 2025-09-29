@@ -20,7 +20,12 @@
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
+    <PackageVersion>2.8.0</PackageVersion>
+    <VersionPrefix>2.8.0</VersionPrefix>
+    <Title>Marventa Framework Application</Title>
+    <Authors>Marventa</Authors>
+    <Description>Application layer with CQRS, MediatR, and business logic for Marventa Framework</Description>
   </PropertyGroup>
 
 </Project>
