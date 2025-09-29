@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>2.8.0</PackageVersion>
-    <VersionPrefix>2.8.0</VersionPrefix>
+    <PackageVersion>2.9.0</PackageVersion>
+    <VersionPrefix>2.9.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>file-management;image-processing;storage;cdn;ai-ml;content-analysis;azure-blob;aws-s3;clean-architecture;modular;file-upload;image-optimization;metadata;search;analytics;aspnetcore;enterprise;solid-principles;pay-as-you-use</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v2.8.0: Individual module packaging support with local NuGet source integration. Each framework module (Core, Domain, Application, Infrastructure, Web) now available as separate NuGet packages. Enhanced development workflow with local package management. Updated workloads and improved compatibility. Perfect for modular development and selective feature usage.</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.9.0: Single package distribution with embedded modules. Fixed dependency resolution issues by embedding all framework modules (Core, Domain, Application, Infrastructure, Web) directly into the main package. No more external dependencies or NU1101 errors. Simplified installation process while maintaining full modular architecture. Updated workloads and enhanced .NET 9.0 compatibility. Perfect for enterprise applications requiring reliable package management.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
