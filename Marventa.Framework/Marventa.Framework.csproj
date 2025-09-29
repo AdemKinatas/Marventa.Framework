@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>2.10.0</PackageVersion>
-    <VersionPrefix>2.10.0</VersionPrefix>
+    <PackageVersion>2.11.0</PackageVersion>
+    <VersionPrefix>2.11.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>file-management;image-processing;storage;cdn;ai-ml;content-analysis;azure-blob;aws-s3;clean-architecture;modular;file-upload;image-optimization;metadata;search;analytics;aspnetcore;enterprise;solid-principles;pay-as-you-use</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v2.10.0: Fixed namespace accessibility and type forwarding. Added proper global usings and assembly forwarding for all extension classes. Framework namespaces (Web.Extensions, Infrastructure.Extensions, Core.Extensions) now accessible from main package. Enhanced developer experience with IntelliSense support. Complete single-package solution with full namespace transparency. No dependency issues, perfect IDE integration.</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.11.0: Complete framework cleanup and modular architecture redesign. Removed unused extensions and mock implementations. Streamlined core APIs with MarventaExtensions for full modular control (Enterprise, Standard, Core configurations). Clean namespace structure with only essential extensions exposed. Production-ready single package with proper separation of concerns. Perfect for enterprise applications requiring selective feature activation.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
