@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 
 namespace Marventa.Framework.Infrastructure.RateLimiting;
 

@@ -1,5 +1,7 @@
 using System.Text.Json;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Idempotency;
+using Marventa.Framework.Core.Interfaces.Caching;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 using Marventa.Framework.Infrastructure.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

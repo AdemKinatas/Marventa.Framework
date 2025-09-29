@@ -1,5 +1,5 @@
 using System;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Marventa.Framework.Infrastructure.Services;

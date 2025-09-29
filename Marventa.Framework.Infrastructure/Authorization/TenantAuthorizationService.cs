@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 
 namespace Marventa.Framework.Infrastructure.Authorization;
 

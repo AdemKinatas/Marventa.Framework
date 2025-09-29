@@ -8,21 +8,21 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>3.0.1</PackageVersion>
-    <VersionPrefix>3.0.1</VersionPrefix>
+    <PackageVersion>3.1.0</PackageVersion>
+    <VersionPrefix>3.1.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
     <Company>Marventa</Company>
-    <Description>Enterprise-ready modular file management framework for .NET 8.0/9.0. Provides intelligent file processing, multi-provider storage (Azure Blob, AWS S3), CDN integration, AI-powered content analysis, and comprehensive metadata management. Built with Clean Architecture and SOLID principles. Pay-as-you-use modular design - enable only the features you need. Perfect for modern applications requiring robust file handling capabilities.</Description>
+    <Description>Enterprise-ready modular framework for .NET 8.0/9.0 with Clean Architecture. Features: BaseDbContext with audit/soft-delete/multi-tenancy, 88 organized interfaces across 17 domains, Repository/UnitOfWork patterns, CQRS, Sagas, Event Sourcing, CDN integration, and comprehensive infrastructure services. Built with SOLID principles for scalable enterprise applications.</Description>
     <Copyright>Copyright © Marventa 2024</Copyright>
     <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageTags>file-management;image-processing;storage;cdn;ai-ml;content-analysis;azure-blob;aws-s3;clean-architecture;modular;file-upload;image-optimization;metadata;search;analytics;aspnetcore;enterprise;solid-principles;pay-as-you-use</PackageTags>
+    <PackageTags>clean-architecture;basedbcontext;repository-pattern;unit-of-work;cqrs;saga-pattern;event-sourcing;multi-tenancy;soft-delete;audit-trail;mongodb;entity-framework;solid-principles;ddd;enterprise;aspnetcore;modular;microservices</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v3.0.1: HOTFIX - Fixed NuGet package dependency resolution issue. All sub-assemblies (Core, Domain, Application, Infrastructure, Web) are now properly embedded in the main package. Users can now install and use Marventa.Framework v3.0.1 without dependency resolution errors. No breaking changes from v3.0.0.</PackageReleaseNotes>
+    <PackageReleaseNotes>v3.1.0: Major Architecture Enhancement - Added BaseDbContext with automatic audit tracking, soft delete, and multi-tenancy support. Reorganized 88 interfaces into 17 domain-specific namespaces for better discoverability. Enhanced documentation with comprehensive examples for BaseDbContext, Repository pattern, and all extension methods. No breaking changes - fully backward compatible.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

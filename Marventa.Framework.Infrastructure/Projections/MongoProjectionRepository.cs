@@ -2,7 +2,8 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Projections;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 using System.Linq.Expressions;
 
 namespace Marventa.Framework.Infrastructure.Projections;

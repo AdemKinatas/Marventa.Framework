@@ -1,4 +1,4 @@
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Caching;
 
 namespace Marventa.Framework.Infrastructure.Extensions;
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Sagas;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 using Marventa.Framework.Domain.Entities;
 
 namespace Marventa.Framework.Infrastructure.Sagas;

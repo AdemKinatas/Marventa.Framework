@@ -1,4 +1,4 @@
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace Marventa.Framework.Infrastructure.Storage;

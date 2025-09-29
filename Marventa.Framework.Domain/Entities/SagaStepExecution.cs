@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Marventa.Framework.Core.Entities;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Sagas;
 
 namespace Marventa.Framework.Domain.Entities;
 

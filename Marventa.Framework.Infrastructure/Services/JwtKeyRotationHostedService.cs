@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Security;
 using Marventa.Framework.Infrastructure.Services.Security;
 
 namespace Marventa.Framework.Infrastructure.Services;

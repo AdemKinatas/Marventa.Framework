@@ -1,7 +1,7 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Services;
 using Marventa.Framework.Core.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

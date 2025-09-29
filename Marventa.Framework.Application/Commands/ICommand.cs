@@ -1,4 +1,4 @@
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Validation;
 
 namespace Marventa.Framework.Application.Commands;
 
