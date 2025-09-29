@@ -33,7 +33,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Using version from tag: $VERSION"
         else
-          VERSION="3.0.0-preview-$(date +%Y%m%d%H%M%S)"
+          VERSION="3.0.1-preview-$(date +%Y%m%d%H%M%S)"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Using preview version: $VERSION"
         fi

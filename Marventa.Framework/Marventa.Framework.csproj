@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>3.0.0</PackageVersion>
-    <VersionPrefix>3.0.0</VersionPrefix>
+    <PackageVersion>3.0.1</PackageVersion>
+    <VersionPrefix>3.0.1</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>file-management;image-processing;storage;cdn;ai-ml;content-analysis;azure-blob;aws-s3;clean-architecture;modular;file-upload;image-optimization;metadata;search;analytics;aspnetcore;enterprise;solid-principles;pay-as-you-use</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v3.0.0: BREAKING CHANGES - Complete architectural overhaul! Clean Architecture with proper interface segregation. Production-ready CDN services (Azure, AWS, CloudFlare). Saga pattern for distributed transactions. Enhanced repository pattern. Unified middleware pipeline. Full multi-tenancy support. 47+ modular features. Comprehensive documentation with examples. Breaking: Interface reorganization, namespace changes, removed deprecated APIs. Requires .NET 8.0/9.0.</PackageReleaseNotes>
+    <PackageReleaseNotes>v3.0.1: HOTFIX - Fixed NuGet package dependency resolution issue. All sub-assemblies (Core, Domain, Application, Infrastructure, Web) are now properly embedded in the main package. Users can now install and use Marventa.Framework v3.0.1 without dependency resolution errors. No breaking changes from v3.0.0.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
@@ -31,13 +31,26 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" />
-    <ProjectReference Include="..\Marventa.Framework.Domain\Marventa.Framework.Domain.csproj" />
-    <ProjectReference Include="..\Marventa.Framework.Application\Marventa.Framework.Application.csproj" />
-    <ProjectReference Include="..\Marventa.Framework.Infrastructure\Marventa.Framework.Infrastructure.csproj" />
-    <ProjectReference Include="..\Marventa.Framework.Web\Marventa.Framework.Web.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Marventa.Framework.Domain\Marventa.Framework.Domain.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Marventa.Framework.Application\Marventa.Framework.Application.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Marventa.Framework.Infrastructure\Marventa.Framework.Infrastructure.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Marventa.Framework.Web\Marventa.Framework.Web.csproj" PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- Manual assembly inclusion removed - using normal NuGet dependencies -->
+  <!-- Include all assemblies in the package -->
+  <ItemGroup>
+    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Core.dll" PackagePath="lib/net8.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Domain.dll" PackagePath="lib/net8.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Application.dll" PackagePath="lib/net8.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Infrastructure.dll" PackagePath="lib/net8.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Web.dll" PackagePath="lib/net8.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+
+    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Core.dll" PackagePath="lib/net9.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Domain.dll" PackagePath="lib/net9.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Application.dll" PackagePath="lib/net9.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Infrastructure.dll" PackagePath="lib/net9.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Web.dll" PackagePath="lib/net9.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+  </ItemGroup>
 
 </Project>
