@@ -1,5 +1,6 @@
 using Marventa.Framework.Core.Analytics;
 using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Analytics;
 using Microsoft.Extensions.Logging;
 
 namespace Marventa.Framework.Infrastructure.Analytics;

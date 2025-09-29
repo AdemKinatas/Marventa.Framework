@@ -25,22 +25,13 @@ public class SagaStepResult
         => new() { IsSuccess = true, RequiresCompensation = false };
 }
 
-public enum SagaStatus
-{
-    Started,
-    InProgress,
-    Completed,
-    Failed,
-    Compensating,
-    Compensated
-}
-
 public abstract class BaseSagaState : ISaga
 {
     public Guid CorrelationId { get; set; } = Guid.NewGuid();
     public SagaStatus Status { get; set; } = SagaStatus.Started;
-    public string? CurrentStep { get; set; }
+    public string CurrentStep { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? CompletedAt { get; set; }
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public string? ErrorMessage { get; set; }
     public Dictionary<string, object> Properties { get; set; } = new();

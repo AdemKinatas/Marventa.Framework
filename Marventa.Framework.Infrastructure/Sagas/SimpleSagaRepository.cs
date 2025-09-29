@@ -130,4 +130,33 @@ public class SimpleSagaRepository<TSaga> : ISagaRepository<TSaga> where TSaga : 
             throw;
         }
     }
+
+    public async Task<IEnumerable<TSaga>> GetByStatusAsync(SagaStatus status, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var sagaType = typeof(TSaga).Name;
+            var sagaStates = await _context.Set<SagaState>()
+                .Where(s => s.SagaType == sagaType && s.Status == status)
+                .ToListAsync(cancellationToken);
+
+            var sagas = new List<TSaga>();
+            foreach (var sagaState in sagaStates)
+            {
+                var sagaData = sagaState.GetData<TSaga>();
+                if (sagaData != null)
+                {
+                    sagaData.CorrelationId = sagaState.CorrelationId;
+                    sagas.Add(sagaData);
+                }
+            }
+
+            return sagas;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting sagas {SagaType} by status {Status}", typeof(TSaga).Name, status);
+            throw;
+        }
+    }
 }

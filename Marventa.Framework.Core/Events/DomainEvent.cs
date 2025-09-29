@@ -1,3 +1,5 @@
+using Marventa.Framework.Core.Interfaces.Events;
+
 namespace Marventa.Framework.Core.Events;
 
 public abstract class DomainEvent : IDomainEvent
