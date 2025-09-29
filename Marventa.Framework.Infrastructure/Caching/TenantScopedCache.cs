@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Caching;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 using System.Text.Json;
 
 namespace Marventa.Framework.Infrastructure.Caching;

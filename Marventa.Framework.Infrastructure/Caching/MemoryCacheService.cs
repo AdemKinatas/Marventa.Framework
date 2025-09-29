@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 

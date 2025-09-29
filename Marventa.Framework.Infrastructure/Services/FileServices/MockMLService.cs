@@ -1,4 +1,4 @@
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.MachineLearning;
 using Marventa.Framework.Core.Models.ML;
 using Microsoft.Extensions.Logging;
 

@@ -1,4 +1,5 @@
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Messaging.Outbox;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 using Marventa.Framework.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

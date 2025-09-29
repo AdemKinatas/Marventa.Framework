@@ -1,5 +1,5 @@
 using Confluent.Kafka;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Messaging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

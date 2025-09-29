@@ -2,7 +2,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Caching;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 using Marventa.Framework.Infrastructure.Caching;
 
 namespace Marventa.Framework.Infrastructure.Extensions;

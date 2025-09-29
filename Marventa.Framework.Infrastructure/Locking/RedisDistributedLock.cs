@@ -4,7 +4,8 @@ using RedLockNet;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
 using StackExchange.Redis;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.DistributedSystems;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 
 namespace Marventa.Framework.Infrastructure.Locking;
 

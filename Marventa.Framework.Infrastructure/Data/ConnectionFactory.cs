@@ -3,7 +3,7 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Data;
 using Microsoft.Extensions.Configuration;
 
 namespace Marventa.Framework.Infrastructure.Data;

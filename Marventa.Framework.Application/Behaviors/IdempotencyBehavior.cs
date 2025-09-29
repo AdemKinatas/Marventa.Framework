@@ -1,7 +1,7 @@
 using System.Reflection;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Idempotency;
 using Marventa.Framework.Core.Attributes;
 using Microsoft.AspNetCore.Http;
 

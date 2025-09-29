@@ -69,9 +69,14 @@ jobs:
           ## 🚀 Marventa Framework ${{ steps.get_version.outputs.VERSION }}
 
           ### ✨ New Features
-          - **CDN Service Integration**: Complete implementations for Azure, AWS, and CloudFlare
-          - **Saga Pattern**: Distributed transaction orchestration with compensation
-          - **Repository Pattern**: Enhanced with caching integration
+          - **BaseDbContext**: Enterprise DbContext with automatic audit tracking, soft delete, multi-tenancy, and domain events
+          - **Interface Organization**: 88 types reorganized into 17 domain-specific namespaces for better discoverability
+          - **Enhanced Documentation**: Comprehensive examples for BaseDbContext, Repository pattern, and all extension methods
+
+          ### 🔧 Architecture Improvements
+          - **Data Access**: BaseRepository, UnitOfWork, and BaseDbContext with automatic features
+          - **Organized Interfaces**: 71 interfaces + 13 classes + 4 enums in structured namespaces
+          - **Clean Architecture**: Full implementation with SOLID principles
 
           ### 📦 Installation
           ```bash
@@ -79,7 +84,10 @@ jobs:
           ```
 
           ### 📖 Documentation
-          See [README](https://github.com/${{ github.repository }}/blob/master/README.md) for usage examples.
+          See [README](https://github.com/${{ github.repository }}/blob/master/README.md) for complete usage examples and architecture details.
+
+          ### ⚠️ Breaking Changes
+          None - fully backward compatible with v3.0.x
         draft: false
         prerelease: false
         files: ./nupkgs/*.nupkg

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Data;
 
 namespace Marventa.Framework.Infrastructure.Extensions;
 

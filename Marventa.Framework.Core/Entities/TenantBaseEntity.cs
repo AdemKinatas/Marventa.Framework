@@ -1,4 +1,4 @@
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 
 namespace Marventa.Framework.Core.Entities;
 
