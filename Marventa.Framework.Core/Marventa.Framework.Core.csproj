@@ -4,7 +4,7 @@
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsPackable>true</IsPackable>
+    <IsPackable>false</IsPackable>
     <PackageVersion>2.8.0</PackageVersion>
     <VersionPrefix>2.8.0</VersionPrefix>
     <Title>Marventa Framework Core</Title>
