@@ -2,11 +2,9 @@ name: Publish NuGet Package
 
 on:
   push:
-    branches:
-      - master  # Triggers on master branch pushes
     tags:
-      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v1.2.3, etc.
-  workflow_dispatch:  # Allows manual trigger
+      - 'v*.*.*'  # Only triggers on version tags like v1.0.0, v1.2.3, etc.
+  workflow_dispatch:  # Allows manual trigger (for testing only)
 
 jobs:
   publish:
@@ -33,9 +31,8 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Using version from tag: $VERSION"
         else
-          VERSION="3.0.1-preview-$(date +%Y%m%d%H%M%S)"
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "Using preview version: $VERSION"
+          echo "ERROR: This workflow should only run on version tags"
+          exit 1
         fi
 
     - name: Restore dependencies
