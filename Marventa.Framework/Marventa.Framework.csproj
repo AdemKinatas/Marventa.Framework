@@ -31,11 +31,59 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" />
-    <ProjectReference Include="..\Marventa.Framework.Domain\Marventa.Framework.Domain.csproj" />
-    <ProjectReference Include="..\Marventa.Framework.Application\Marventa.Framework.Application.csproj" />
-    <ProjectReference Include="..\Marventa.Framework.Infrastructure\Marventa.Framework.Infrastructure.csproj" />
-    <ProjectReference Include="..\Marventa.Framework.Web\Marventa.Framework.Web.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Marventa.Framework.Domain\Marventa.Framework.Domain.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Marventa.Framework.Application\Marventa.Framework.Application.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Marventa.Framework.Infrastructure\Marventa.Framework.Infrastructure.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Marventa.Framework.Web\Marventa.Framework.Web.csproj" PrivateAssets="all" />
   </ItemGroup>
+
+  <Target Name="IncludeReferencedProjectsOutput" BeforeTargets="Pack">
+    <ItemGroup>
+      <!-- .NET 8.0 -->
+      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0\Marventa.Framework.Core.dll">
+        <PackagePath>lib/net8.0/</PackagePath>
+        <TargetFramework>net8.0</TargetFramework>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0\Marventa.Framework.Domain.dll">
+        <PackagePath>lib/net8.0/</PackagePath>
+        <TargetFramework>net8.0</TargetFramework>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0\Marventa.Framework.Application.dll">
+        <PackagePath>lib/net8.0/</PackagePath>
+        <TargetFramework>net8.0</TargetFramework>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0\Marventa.Framework.Infrastructure.dll">
+        <PackagePath>lib/net8.0/</PackagePath>
+        <TargetFramework>net8.0</TargetFramework>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0\Marventa.Framework.Web.dll">
+        <PackagePath>lib/net8.0/</PackagePath>
+        <TargetFramework>net8.0</TargetFramework>
+      </TfmSpecificPackageFile>
+
+      <!-- .NET 9.0 -->
+      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\Marventa.Framework.Core.dll">
+        <PackagePath>lib/net9.0/</PackagePath>
+        <TargetFramework>net9.0</TargetFramework>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\Marventa.Framework.Domain.dll">
+        <PackagePath>lib/net9.0/</PackagePath>
+        <TargetFramework>net9.0</TargetFramework>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\Marventa.Framework.Application.dll">
+        <PackagePath>lib/net9.0/</PackagePath>
+        <TargetFramework>net9.0</TargetFramework>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\Marventa.Framework.Infrastructure.dll">
+        <PackagePath>lib/net9.0/</PackagePath>
+        <TargetFramework>net9.0</TargetFramework>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\Marventa.Framework.Web.dll">
+        <PackagePath>lib/net9.0/</PackagePath>
+        <TargetFramework>net9.0</TargetFramework>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 
 </Project>
