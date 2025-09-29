@@ -168,6 +168,9 @@ public class OrderSagaOrchestrator : ISagaOrchestrator<OrderSaga>
         saga.CurrentStep = "Completed";
 
         _logger.LogInformation("Order saga {CorrelationId} completed successfully", saga.CorrelationId);
+
+        // Complete the async operation
+        await Task.CompletedTask;
     }
 
     // Saga step implementations
