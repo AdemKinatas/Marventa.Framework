@@ -1,4 +1,4 @@
-name: Publish NuGet Package v${{ github.ref_name }}
+name: Publish NuGet Package
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    name: Build and Publish v${{ github.ref_name }}
+    name: Build and Publish
 
     steps:
     - name: Checkout code
@@ -44,10 +44,10 @@ jobs:
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal
 
-    - name: Pack NuGet package
+    - name: Pack NuGet package v${{ steps.get_version.outputs.VERSION }}
       run: dotnet pack Marventa.Framework/Marventa.Framework.csproj --configuration Release --no-build --output ./nupkgs -p:PackageVersion=${{ steps.get_version.outputs.VERSION }}
 
-    - name: Publish to NuGet.org
+    - name: Publish v${{ steps.get_version.outputs.VERSION }} to NuGet.org
       run: |
         echo "📦 Publishing Marventa.Framework version ${{ steps.get_version.outputs.VERSION }} to NuGet.org"
         dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
@@ -59,14 +59,14 @@ jobs:
         name: nuget-package-${{ steps.get_version.outputs.VERSION }}
         path: ./nupkgs/*.nupkg
 
-    - name: Create GitHub Release
+    - name: Create GitHub Release v${{ steps.get_version.outputs.VERSION }}
       if: startsWith(github.ref, 'refs/tags/')
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Release ${{ steps.get_version.outputs.VERSION }}
+        release_name: Marventa Framework v${{ steps.get_version.outputs.VERSION }}
         body: |
           ## 🚀 Marventa Framework ${{ steps.get_version.outputs.VERSION }}
 
