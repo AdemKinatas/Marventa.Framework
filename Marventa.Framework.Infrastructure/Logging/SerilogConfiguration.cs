@@ -133,16 +133,16 @@ public static class SerilogConfiguration
             // Attach additional properties
             options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
             {
-                diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+                diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value ?? "unknown");
                 diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].ToString());
-                diagnosticContext.Set("RemoteIP", httpContext.Connection.RemoteIpAddress?.ToString());
+                diagnosticContext.Set("RemoteIP", httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
                 diagnosticContext.Set("RequestId", httpContext.TraceIdentifier);
 
                 // Add user information if authenticated
                 if (httpContext.User?.Identity?.IsAuthenticated ?? false)
                 {
-                    diagnosticContext.Set("UserName", httpContext.User.Identity.Name);
-                    diagnosticContext.Set("UserId", httpContext.User.FindFirst("sub")?.Value);
+                    diagnosticContext.Set("UserName", httpContext.User.Identity.Name ?? "unknown");
+                    diagnosticContext.Set("UserId", httpContext.User.FindFirst("sub")?.Value ?? "unknown");
                 }
             };
         });

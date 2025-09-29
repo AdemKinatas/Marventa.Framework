@@ -101,4 +101,46 @@ public class SagaManager : ISagaManager
             throw;
         }
     }
+
+    public async Task<SagaStatus?> GetSagaStatusAsync<TSaga>(Guid correlationId, CancellationToken cancellationToken = default)
+        where TSaga : class, ISaga
+    {
+        try
+        {
+            var repository = _serviceProvider.GetRequiredService<ISagaRepository<TSaga>>();
+            var saga = await repository.GetAsync(correlationId, cancellationToken);
+            return saga?.Status;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting saga {SagaType} status for correlation ID {CorrelationId}", typeof(TSaga).Name, correlationId);
+            throw;
+        }
+    }
+
+    public async Task CompleteSagaAsync<TSaga>(Guid correlationId, CancellationToken cancellationToken = default)
+        where TSaga : class, ISaga
+    {
+        try
+        {
+            var repository = _serviceProvider.GetRequiredService<ISagaRepository<TSaga>>();
+            var saga = await repository.GetAsync(correlationId, cancellationToken);
+            if (saga == null)
+            {
+                _logger.LogWarning("Saga {SagaType} with correlation ID {CorrelationId} not found for completion", typeof(TSaga).Name, correlationId);
+                return;
+            }
+
+            saga.Status = SagaStatus.Completed;
+            saga.CompletedAt = DateTime.UtcNow;
+            await repository.UpdateAsync(saga, cancellationToken);
+
+            _logger.LogInformation("Completed saga {SagaType} with correlation ID {CorrelationId}", typeof(TSaga).Name, correlationId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error completing saga {SagaType} with correlation ID {CorrelationId}", typeof(TSaga).Name, correlationId);
+            throw;
+        }
+    }
 }

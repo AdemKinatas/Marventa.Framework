@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>2.11.0</PackageVersion>
-    <VersionPrefix>2.11.0</VersionPrefix>
+    <PackageVersion>2.12.0</PackageVersion>
+    <VersionPrefix>2.12.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>file-management;image-processing;storage;cdn;ai-ml;content-analysis;azure-blob;aws-s3;clean-architecture;modular;file-upload;image-optimization;metadata;search;analytics;aspnetcore;enterprise;solid-principles;pay-as-you-use</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v2.11.0: Complete framework cleanup and modular architecture redesign. Removed unused extensions and mock implementations. Streamlined core APIs with MarventaExtensions for full modular control (Enterprise, Standard, Core configurations). Clean namespace structure with only essential extensions exposed. Production-ready single package with proper separation of concerns. Perfect for enterprise applications requiring selective feature activation.</PackageReleaseNotes>
+    <PackageReleaseNotes>v2.12.0: Major feature release! Added production-ready CDN service implementations for Azure, AWS, and CloudFlare with complete metrics, invalidation, and transformation support. Introduced Saga pattern for distributed transaction orchestration with compensation logic. Enhanced repository pattern with caching integration. Fixed all Clean Architecture compliance issues. Comprehensive documentation with real-world usage examples for all new features. 100% build success with .NET 8.0/9.0 support.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
@@ -31,59 +31,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\Marventa.Framework.Domain\Marventa.Framework.Domain.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\Marventa.Framework.Application\Marventa.Framework.Application.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\Marventa.Framework.Infrastructure\Marventa.Framework.Infrastructure.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\Marventa.Framework.Web\Marventa.Framework.Web.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Domain\Marventa.Framework.Domain.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Application\Marventa.Framework.Application.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Infrastructure\Marventa.Framework.Infrastructure.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Web\Marventa.Framework.Web.csproj" />
   </ItemGroup>
 
-  <Target Name="IncludeReferencedProjectsOutput" BeforeTargets="Pack">
-    <ItemGroup>
-      <!-- .NET 8.0 -->
-      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0\Marventa.Framework.Core.dll">
-        <PackagePath>lib/net8.0/</PackagePath>
-        <TargetFramework>net8.0</TargetFramework>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0\Marventa.Framework.Domain.dll">
-        <PackagePath>lib/net8.0/</PackagePath>
-        <TargetFramework>net8.0</TargetFramework>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0\Marventa.Framework.Application.dll">
-        <PackagePath>lib/net8.0/</PackagePath>
-        <TargetFramework>net8.0</TargetFramework>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0\Marventa.Framework.Infrastructure.dll">
-        <PackagePath>lib/net8.0/</PackagePath>
-        <TargetFramework>net8.0</TargetFramework>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net8.0\Marventa.Framework.Web.dll">
-        <PackagePath>lib/net8.0/</PackagePath>
-        <TargetFramework>net8.0</TargetFramework>
-      </TfmSpecificPackageFile>
-
-      <!-- .NET 9.0 -->
-      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\Marventa.Framework.Core.dll">
-        <PackagePath>lib/net9.0/</PackagePath>
-        <TargetFramework>net9.0</TargetFramework>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\Marventa.Framework.Domain.dll">
-        <PackagePath>lib/net9.0/</PackagePath>
-        <TargetFramework>net9.0</TargetFramework>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\Marventa.Framework.Application.dll">
-        <PackagePath>lib/net9.0/</PackagePath>
-        <TargetFramework>net9.0</TargetFramework>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\Marventa.Framework.Infrastructure.dll">
-        <PackagePath>lib/net9.0/</PackagePath>
-        <TargetFramework>net9.0</TargetFramework>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\Marventa.Framework.Web.dll">
-        <PackagePath>lib/net9.0/</PackagePath>
-        <TargetFramework>net9.0</TargetFramework>
-      </TfmSpecificPackageFile>
-    </ItemGroup>
-  </Target>
+  <!-- Manual assembly inclusion removed - using normal NuGet dependencies -->
 
 </Project>

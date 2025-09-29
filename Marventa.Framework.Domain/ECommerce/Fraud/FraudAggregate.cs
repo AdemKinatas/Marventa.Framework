@@ -1,4 +1,5 @@
 using Marventa.Framework.Core.Entities;
+using Marventa.Framework.Core.Interfaces.Events;
 using Marventa.Framework.Core.Events;
 using Marventa.Framework.Domain.Common;
 

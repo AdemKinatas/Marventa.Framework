@@ -1,3 +1,4 @@
+using Marventa.Framework.Core.Interfaces.Events;
 using Marventa.Framework.Core.Events;
 
 namespace Marventa.Framework.Domain.ECommerce.Fraud;

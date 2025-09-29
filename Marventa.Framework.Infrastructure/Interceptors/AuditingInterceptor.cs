@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Marventa.Framework.Core.Interfaces;
 using Marventa.Framework.Core.Entities;
-using Marventa.Framework.Core.Security;
+using Marventa.Framework.Core.Interfaces.Security;
 
 namespace Marventa.Framework.Infrastructure.Interceptors;
 
