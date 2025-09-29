@@ -1,4 +1,4 @@
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Storage;
 using Marventa.Framework.Core.Models.FileProcessing;
 using Microsoft.Extensions.Logging;
 

@@ -1,5 +1,5 @@
 using MassTransit;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Messaging;
 using Microsoft.Extensions.Logging;
 
 namespace Marventa.Framework.Infrastructure.Messaging.RabbitMQ;

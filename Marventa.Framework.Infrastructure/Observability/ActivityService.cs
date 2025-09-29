@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.DistributedSystems;
 
 namespace Marventa.Framework.Infrastructure.Observability;
 

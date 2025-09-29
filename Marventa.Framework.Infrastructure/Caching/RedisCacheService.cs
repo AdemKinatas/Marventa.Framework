@@ -2,7 +2,8 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Caching;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
 
 namespace Marventa.Framework.Infrastructure.Caching;
 

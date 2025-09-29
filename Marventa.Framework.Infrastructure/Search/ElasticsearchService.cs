@@ -1,4 +1,7 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Marventa.Framework.Core.Interfaces.Services;
 
 namespace Marventa.Framework.Infrastructure.Search;
 

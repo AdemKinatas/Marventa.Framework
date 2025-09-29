@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Marventa.Framework.Infrastructure.Http;

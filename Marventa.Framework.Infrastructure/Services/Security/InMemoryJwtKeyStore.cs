@@ -1,4 +1,4 @@
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Security;
 using System.Collections.Concurrent;
 
 namespace Marventa.Framework.Infrastructure.Services.Security;

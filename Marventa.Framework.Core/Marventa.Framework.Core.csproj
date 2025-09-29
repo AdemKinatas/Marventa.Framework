@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <!-- Core is now packable as separate package for interface access -->
-    <PackageVersion>2.8.0</PackageVersion>
-    <VersionPrefix>2.8.0</VersionPrefix>
+    <PackageVersion>3.1.0</PackageVersion>
+    <VersionPrefix>3.1.0</VersionPrefix>
     <Title>Marventa Framework Core</Title>
     <Authors>Marventa</Authors>
     <Description>Core utilities and base classes for Marventa Framework</Description>

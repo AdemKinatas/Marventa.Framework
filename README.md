@@ -66,12 +66,58 @@ dotnet add package Marventa.Framework
 }
 ```
 
-**2. Configure Services in `Program.cs`:**
+**2. Create your DbContext inheriting from BaseDbContext:**
+
+```csharp
+using Marventa.Framework.Infrastructure.Data;
+using Marventa.Framework.Core.Interfaces.MultiTenancy;
+using Microsoft.EntityFrameworkCore;
+
+public class ApplicationDbContext : BaseDbContext
+{
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options,
+        ITenantContext tenantContext)
+        : base(options, tenantContext)
+    {
+    }
+
+    public DbSet<Product> Products { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder); // Apply BaseDbContext configurations
+
+        // Your custom entity configurations
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+    }
+}
+```
+
+**3. Configure Services in `Program.cs`:**
 
 ```csharp
 using Marventa.Framework.Web.Extensions;
+using Marventa.Framework.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add BaseDbContext with automatic features
+builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    // BaseDbContext provides:
+    // ✅ Audit tracking (CreatedDate, UpdatedDate)
+    // ✅ Soft delete with global filters
+    // ✅ Multi-tenancy with automatic isolation
+    // ✅ Domain event dispatching
+});
+
+// Add repositories and unit of work
+builder.Services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Configure Marventa Framework with Clean Architecture
 builder.Services.AddMarventaFramework(builder.Configuration, options =>
@@ -156,7 +202,7 @@ app.UseMarventaFramework(builder.Configuration);
 app.Run();
 ```
 
-**3. Test your application:**
+**4. Test your application:**
 
 ```bash
 # Start your application
@@ -167,7 +213,7 @@ curl -H "X-API-Key: your-secret-api-key-here" https://localhost:5001/health
 curl -H "X-API-Key: your-secret-api-key-here" https://localhost:5001/
 ```
 
-**4. Ready to use! Your application now includes:**
+**5. Ready to use! Your application now includes:**
 
 - ✅ **Enterprise Middleware Pipeline** (rate limiting, authentication, logging)
 - ✅ **Clean Architecture Structure** (SOLID principles)
@@ -183,39 +229,178 @@ curl -H "X-API-Key: your-secret-api-key-here" https://localhost:5001/
 ### Clean Architecture Implementation
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Presentation Layer                    │
-│  ┌─────────────────┐  ┌─────────────────────────────────┐ │
-│  │   Controllers   │  │         Middleware              │ │
-│  │                 │  │  • Authentication              │ │
-│  └─────────────────┘  │  • Rate Limiting               │ │
-│                       │  • Exception Handling          │ │
-│                       │  • Request/Response Logging    │ │
-│                       └─────────────────────────────────┘ │
-├─────────────────────────────────────────────────────────┤
-│                   Application Layer                     │
-│  ┌─────────────────┐  ┌─────────────────────────────────┐ │
-│  │    Services     │  │         Commands/Queries       │ │
-│  │  • Email        │  │  • CQRS Pattern               │ │
-│  │  • SMS          │  │  • Validation                 │ │
-│  │  • File Proc.   │  │  • Business Logic             │ │
-│  └─────────────────┘  └─────────────────────────────────┘ │
-├─────────────────────────────────────────────────────────┤
-│                   Infrastructure Layer                  │
-│  ┌─────────────────┐  ┌─────────────────────────────────┐ │
-│  │    Storage      │  │         External Services      │ │
-│  │  • Local Files  │  │  • Redis                      │ │
-│  │  • Cloud        │  │  • Email Providers            │ │
-│  │  • Database     │  │  • SMS Providers              │ │
-│  └─────────────────┘  └─────────────────────────────────┘ │
-├─────────────────────────────────────────────────────────┤
-│                      Domain Layer                       │
-│  ┌─────────────────────────────────────────────────────┐ │
-│  │              Core Business Logic                    │ │
-│  │  • Entities  • Value Objects  • Domain Services   │ │
-│  │  • Business Rules  • Domain Events               │ │
-│  └─────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    Presentation Layer (Web)                      │
+│  ┌─────────────────┐  ┌───────────────────────────────────────┐ │
+│  │   Controllers   │  │         Middleware Pipeline           │ │
+│  │  • REST APIs    │  │  • Authentication & Authorization    │ │
+│  │  • Validation   │  │  • Rate Limiting & Throttling        │ │
+│  └─────────────────┘  │  • Exception Handling                │ │
+│                       │  • Request/Response Logging          │ │
+│                       │  • Correlation & Activity Tracking   │ │
+│                       └───────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────┤
+│                   Application Layer                             │
+│  ┌─────────────────┐  ┌───────────────────────────────────────┐ │
+│  │  Use Cases      │  │         Commands/Queries              │ │
+│  │  • Services     │  │  • CQRS Pattern                      │ │
+│  │  • DTOs         │  │  • MediatR Handlers                  │ │
+│  │  • Validators   │  │  • FluentValidation                  │ │
+│  └─────────────────┘  │  • Pipeline Behaviors                │ │
+│                       └───────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────┤
+│                   Infrastructure Layer                          │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │  Data Access    │  │   External      │  │   Messaging     │ │
+│  │  • BaseDbContext│  │   Services      │  │  • RabbitMQ     │ │
+│  │  • Repository   │  │  • Redis        │  │  • Kafka        │ │
+│  │  • UnitOfWork   │  │  • CDN          │  │  • Outbox       │ │
+│  │  • MongoDB      │  │  • Storage      │  │  • Inbox        │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+├─────────────────────────────────────────────────────────────────┤
+│                      Domain Layer                               │
+│  ┌───────────────────────────────────────────────────────────┐ │
+│  │              Core Business Logic (Core)                   │ │
+│  │  • Entities           • Value Objects    • Aggregates    │ │
+│  │  • Domain Events      • Business Rules   • Specifications│ │
+│  │  • Domain Services    • Interfaces       • Enums         │ │
+│  └───────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Core Interface Organization (88 Types)
+
+The framework provides **71 interfaces**, **13 classes**, and **4 enums** organized into 17 domain-specific namespaces:
+
+```
+Marventa.Framework.Core.Interfaces/
+├── 📁 Data/                    - IRepository, IUnitOfWork, IConnectionFactory
+├── 📁 Messaging/               - IMessageBus, ICommandHandler, IRequestHandler
+│   └── 📁 Outbox/             - IOutboxMessage, IInboxMessage, IOutboxService
+├── 📁 Sagas/                   - ISaga, ISagaManager, ISagaOrchestrator, SagaStatus
+├── 📁 Projections/             - IProjection, IProjectionManager, IEventStore
+├── 📁 Storage/                 - IStorageService, IMarventaCDN, IMarventaStorage
+├── 📁 Services/                - IEmailService, ISmsService, ISearchService
+├── 📁 MultiTenancy/            - ITenant, ITenantContext, ITenantResolver
+├── 📁 Caching/                 - ICacheService, ITenantScopedCache
+├── 📁 Security/                - IJwtKeyRotationService, ITokenService, IEncryptionService
+├── 📁 Events/                  - IDomainEvent, IEventBus, IIntegrationEvent
+├── 📁 Analytics/               - IAnalyticsService
+├── 📁 HealthCheck/             - IHealthCheck, HealthCheckResult
+├── 📁 Idempotency/             - IIdempotencyService, IdempotencyResult
+├── 📁 DistributedSystems/      - IDistributedLock, ICorrelationContext
+├── 📁 Http/                    - IHttpClientService
+├── 📁 MachineLearning/         - IMarventaML
+├── 📁 BackgroundJobs/          - IBackgroundJobService
+├── 📁 Configuration/           - IConfigurationService, IFeatureFlagService
+└── 📁 Validation/              - IValidatable
+```
+
+### Base Infrastructure Components
+
+#### **BaseDbContext** - Enterprise DbContext
+Provides common database functionality for all EF Core contexts:
+
+```csharp
+public class ApplicationDbContext : BaseDbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ITenantContext tenantContext)
+        : base(options, tenantContext)
+    {
+    }
+
+    public DbSet<Product> Products { get; set; }
+    public DbSet<Order> Orders { get; set; }
+
+    protected override Task PublishDomainEventAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
+    {
+        // Implement custom domain event publishing
+        return _eventBus.PublishAsync(domainEvent, cancellationToken);
+    }
+}
+```
+
+**Features:**
+- ✅ **Automatic Audit Tracking** - CreatedDate, UpdatedDate on all entities
+- ✅ **Soft Delete** - IsDeleted flag with global query filters
+- ✅ **Multi-Tenancy** - Automatic tenant isolation with query filters
+- ✅ **Domain Events** - Domain event dispatching before save
+- ✅ **Global Query Filters** - Automatic filtering for soft deletes and tenants
+
+#### **BaseRepository<T>** - Generic Repository
+Implements common CRUD operations with soft delete support:
+
+```csharp
+public class ProductRepository : BaseRepository<Product>
+{
+    public ProductRepository(ApplicationDbContext context) : base(context)
+    {
+    }
+
+    public async Task<IEnumerable<Product>> GetFeaturedProductsAsync()
+    {
+        return await Query()
+            .Where(p => p.IsFeatured)
+            .OrderByDescending(p => p.Rating)
+            .Take(10)
+            .ToListAsync();
+    }
+}
+```
+
+#### **UnitOfWork** - Transaction Management
+Coordinates multiple repository operations in a single transaction:
+
+```csharp
+public class OrderService
+{
+    private readonly IUnitOfWork _unitOfWork;
+
+    public async Task<Order> CreateOrderAsync(OrderDto dto)
+    {
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            var order = await _unitOfWork.Repository<Order>().AddAsync(new Order(dto));
+            var inventory = await _unitOfWork.Repository<Inventory>().GetByIdAsync(dto.ProductId);
+            inventory.Quantity -= dto.Quantity;
+            await _unitOfWork.Repository<Inventory>().UpdateAsync(inventory);
+
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitTransactionAsync();
+            return order;
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
+    }
+}
+```
+
+#### **MongoProjectionRepository<T>** - MongoDB Projections
+Optimized for CQRS read models and event projections:
+
+```csharp
+public class ProductProjection : BaseProjection
+{
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public int StockLevel { get; set; }
+    public List<string> Categories { get; set; }
+}
+
+// Usage
+public class ProductProjectionService
+{
+    private readonly IProjectionRepository<ProductProjection> _repository;
+
+    public async Task<ProductProjection> GetProductAsync(string id)
+    {
+        return await _repository.GetByIdAsync(id);
+    }
+}
 ```
 
 ### SOLID Principles Implementation
@@ -223,8 +408,8 @@ curl -H "X-API-Key: your-secret-api-key-here" https://localhost:5001/
 - **Single Responsibility**: Each service class has one reason to change
 - **Open/Closed**: Extensible through interfaces, closed for modification
 - **Liskov Substitution**: All implementations are substitutable
-- **Interface Segregation**: Small, focused interfaces
-- **Dependency Inversion**: Depends on abstractions, not concretions
+- **Interface Segregation**: 88 types organized into 17 focused namespaces
+- **Dependency Inversion**: All components depend on abstractions (interfaces)
 
 ---
 
@@ -709,6 +894,169 @@ public class OrdersController : ControllerBase
         return Ok(new { sagaId, status });
     }
 }
+```
+
+### 🔧 Extension Methods
+
+The framework provides rich extension methods for common operations across all layers:
+
+#### **Web Extensions** (`Marventa.Framework.Web.Extensions`)
+
+```csharp
+// Configure all Marventa services
+builder.Services.AddMarventaFramework(configuration, options => { ... });
+
+// Add specific feature sets
+builder.Services.AddMarventaSecurity(configuration);
+builder.Services.AddMarventaStorage(configuration);
+builder.Services.AddMarventaCDN(configuration);
+builder.Services.AddMarventaCaching(configuration);
+
+// Configure middleware pipeline
+app.UseMarventaFramework(configuration);
+```
+
+#### **Infrastructure Extensions** (`Marventa.Framework.Infrastructure.Extensions`)
+
+```csharp
+// Database & Data Access with BaseDbContext
+services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+{
+    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+    // BaseDbContext automatically provides:
+    // - Audit tracking (CreatedDate, UpdatedDate)
+    // - Soft delete with global filters
+    // - Multi-tenancy with automatic tenant isolation
+    // - Domain event dispatching
+});
+
+// Register repositories using the organized interface structure
+services.AddScoped<IRepository<Product>, BaseRepository<Product>>();
+services.AddScoped<IRepository<Order>, BaseRepository<Order>>();
+
+// Or register all repositories at once
+services.AddRepositories();  // Registers all BaseRepository implementations
+
+// Unit of Work pattern for transaction management
+services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// MongoDB for CQRS Projections (organized under Interfaces/Projections/)
+services.AddSingleton<IMongoClient>(sp =>
+{
+    var mongoUrl = configuration.GetConnectionString("MongoDB");
+    return new MongoClient(mongoUrl);
+});
+services.AddScoped(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    return client.GetDatabase("ProjectionsDB");
+});
+services.AddScoped(typeof(IProjectionRepository<>), typeof(MongoProjectionRepository<>));
+
+// Messaging & Events (organized under Interfaces/Messaging/)
+services.AddScoped<IMessageBus, RabbitMqMessageBus>();
+services.AddScoped<IEventBus, DomainEventBus>();
+services.AddRabbitMq(configuration);
+services.AddKafka(configuration);
+
+// Outbox/Inbox Pattern (organized under Interfaces/Messaging/Outbox/)
+services.AddScoped<IOutboxService, OutboxService>();
+services.AddScoped<IInboxService, InboxService>();
+services.AddScoped<ITransactionalMessageService, TransactionalMessageService>();
+
+// Sagas & Orchestration (organized under Interfaces/Sagas/)
+services.AddScoped<ISagaManager, SagaManager>();
+services.AddScoped(typeof(ISagaRepository<>), typeof(SimpleSagaRepository<>));
+services.AddScoped<ISagaOrchestrator<OrderProcessingSaga>, OrderProcessingOrchestrator>();
+
+// Multi-Tenancy (organized under Interfaces/MultiTenancy/)
+services.AddScoped<ITenantContext, TenantContext>();
+services.AddScoped<ITenantResolver, TenantResolver>();
+services.AddScoped<ITenantStore, TenantStore>();
+services.AddScoped<ITenantAuthorization, TenantAuthorizationService>();
+services.AddScoped<ITenantPermissionService, TenantPermissionService>();
+
+// Caching (organized under Interfaces/Caching/)
+services.AddScoped<ICacheService, RedisCacheService>();
+services.AddScoped<ITenantScopedCache, TenantScopedCacheService>();
+services.AddMemoryCache();
+services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = configuration.GetConnectionString("Redis");
+});
+
+// Storage & CDN (organized under Interfaces/Storage/)
+services.AddScoped<IStorageService, LocalStorageService>();
+services.AddScoped<IMarventaStorage, MarventaStorageService>();
+services.AddScoped<IMarventaCDN, AzureCDNService>(); // or AwsCDNService, CloudFlareCDNService
+services.AddScoped<IMarventaFileProcessor, MarventaFileProcessor>();
+services.AddScoped<IMarventaFileMetadata, MarventaFileMetadataService>();
+
+// Search (organized under Interfaces/Services/)
+services.AddScoped<ISearchService, ElasticsearchService>();
+
+// Communication Services (organized under Interfaces/Services/)
+services.AddScoped<IEmailService, EmailService>();
+services.AddScoped<ISmsService, SmsService>();
+services.AddScoped<ILoggerService, LoggerService>();
+
+// Security (organized under Interfaces/Security/)
+services.AddScoped<IJwtKeyRotationService, JwtKeyRotationService>();
+services.AddScoped<IJwtKeyStore, JwtKeyStore>();
+services.AddScoped<ITokenService, TokenService>();
+services.AddScoped<IEncryptionService, EncryptionService>();
+services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+// Distributed Systems (organized under Interfaces/DistributedSystems/)
+services.AddScoped<IDistributedLock, RedisDistributedLock>();
+services.AddScoped<ICorrelationContext, CorrelationContext>();
+services.AddScoped<IActivityService, ActivityService>();
+
+// Health Checks (organized under Interfaces/HealthCheck/)
+services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("database")
+    .AddCheck<RedisHealthCheck>("redis")
+    .AddCheck<StorageHealthCheck>("storage");
+
+// Idempotency (organized under Interfaces/Idempotency/)
+services.AddScoped<IIdempotencyService, IdempotencyService>();
+
+// Background Jobs (organized under Interfaces/BackgroundJobs/)
+services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
+services.AddHangfire(configuration);
+
+// Configuration & Feature Flags (organized under Interfaces/Configuration/)
+services.AddScoped<IConfigurationService, ConfigurationService>();
+services.AddScoped<IFeatureFlagService, FeatureFlagService>();
+
+// Analytics (organized under Interfaces/Analytics/)
+services.AddScoped<IAnalyticsService, AnalyticsService>();
+
+// Machine Learning (organized under Interfaces/MachineLearning/)
+services.AddScoped<IMarventaML, MarventaMLService>();
+
+// HTTP Client (organized under Interfaces/Http/)
+services.AddHttpClient<IHttpClientService, HttpClientService>();
+```
+
+#### **Application Extensions** (`Marventa.Framework.Application.Extensions`)
+
+```csharp
+// CQRS & MediatR
+services.AddCqrs(typeof(Program).Assembly);
+services.AddFluentValidation(typeof(Program).Assembly);
+
+// AutoMapper
+services.AddAutoMapperProfiles(typeof(Program).Assembly);
+```
+
+#### **Core Extensions** (`Marventa.Framework.Core.Extensions`)
+
+```csharp
+// Extension methods for common operations
+var trimmed = myString.TrimOrDefault();
+var parsed = myString.ToGuidOrDefault();
+var validated = myEntity.IsValid();
 ```
 
 ### 💾 Repository Pattern with Clean Architecture

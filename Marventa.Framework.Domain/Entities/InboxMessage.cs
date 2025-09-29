@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Messaging.Outbox;
 using Marventa.Framework.Core.Entities;
 
 namespace Marventa.Framework.Domain.Entities;

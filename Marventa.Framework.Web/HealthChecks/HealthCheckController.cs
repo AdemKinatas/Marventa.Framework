@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Marventa.Framework.Application.DTOs;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.HealthCheck;
 using Marventa.Framework.Web.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

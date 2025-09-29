@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Marventa.Framework.Core.Entities;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 

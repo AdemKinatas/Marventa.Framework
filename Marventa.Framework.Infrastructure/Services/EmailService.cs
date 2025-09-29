@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Mail;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Services;
 using Marventa.Framework.Core.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

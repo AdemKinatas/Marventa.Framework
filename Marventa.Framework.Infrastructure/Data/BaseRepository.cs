@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Marventa.Framework.Core.Entities;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Marventa.Framework.Infrastructure.Data;

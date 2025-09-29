@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Logging;
-using Marventa.Framework.Core.Interfaces;
+using Marventa.Framework.Core.Interfaces.Idempotency;
 using Marventa.Framework.Core.Attributes;
 using System.Text.Json;
 
