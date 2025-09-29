@@ -1,4 +1,4 @@
-name: Publish NuGet Package
+name: Publish NuGet Package v${{ github.ref_name }}
 
 on:
   push:
@@ -11,6 +11,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    name: Build and Publish v${{ github.ref_name }}
 
     steps:
     - name: Checkout code
@@ -29,7 +30,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Using version from tag: $VERSION"
         else
-          VERSION="2.12.0-preview-$(date +%Y%m%d%H%M%S)"
+          VERSION="3.0.0-preview-$(date +%Y%m%d%H%M%S)"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Using preview version: $VERSION"
         fi
@@ -48,8 +49,9 @@ jobs:
 
     - name: Publish to NuGet.org
       run: |
-        echo "Publishing version ${{ steps.get_version.outputs.VERSION }} to NuGet.org"
+        echo "📦 Publishing Marventa.Framework version ${{ steps.get_version.outputs.VERSION }} to NuGet.org"
         dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        echo "✅ Successfully published version ${{ steps.get_version.outputs.VERSION }}"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4.6.2
