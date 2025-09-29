@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Marventa.Framework.Core.Interfaces;
-using Marventa.Framework.Infrastructure.Security;
+using Marventa.Framework.Infrastructure.Services.Security;
 using Marventa.Framework.Infrastructure.Services;
 
 namespace Marventa.Framework.Infrastructure.Extensions;

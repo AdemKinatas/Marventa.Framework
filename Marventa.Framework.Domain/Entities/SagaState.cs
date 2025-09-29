@@ -18,7 +18,7 @@ public class SagaState : BaseEntity, ISaga
     public SagaStatus Status { get; set; } = SagaStatus.Started;
 
     [MaxLength(100)]
-    public string? CurrentStep { get; set; }
+    public string CurrentStep { get; set; } = string.Empty;
 
     [MaxLength(1000)]
     public string? ErrorMessage { get; set; }
@@ -29,6 +29,9 @@ public class SagaState : BaseEntity, ISaga
     public string? TenantId { get; set; }
 
     public List<string> CompletedSteps { get; set; } = new();
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? CompletedAt { get; set; }
 
     // Computed property for deserialization
     public T? GetData<T>() where T : class
