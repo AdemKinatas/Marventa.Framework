@@ -2,7 +2,7 @@
 
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-512BD4)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-v3.0.0-blue)](https://www.nuget.org/packages/Marventa.Framework)
+[![NuGet](https://img.shields.io/badge/NuGet-v3.0.1-blue)](https://www.nuget.org/packages/Marventa.Framework)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)]()
 [![Code Quality](https://img.shields.io/badge/Code%20Quality-A+-brightgreen)]()
 
