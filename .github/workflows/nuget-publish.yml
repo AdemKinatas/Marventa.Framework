@@ -12,6 +12,9 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     name: Build and Publish
+    permissions:
+      contents: write
+      packages: write
 
     steps:
     - name: Checkout code
@@ -61,12 +64,10 @@ jobs:
 
     - name: Create GitHub Release v${{ steps.get_version.outputs.VERSION }}
       if: startsWith(github.ref, 'refs/tags/')
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Marventa Framework v${{ steps.get_version.outputs.VERSION }}
+        tag_name: ${{ github.ref_name }}
+        name: Marventa Framework v${{ steps.get_version.outputs.VERSION }}
         body: |
           ## 🚀 Marventa Framework ${{ steps.get_version.outputs.VERSION }}
 
@@ -84,3 +85,4 @@ jobs:
           See [README](https://github.com/${{ github.repository }}/blob/master/README.md) for usage examples.
         draft: false
         prerelease: false
+        files: ./nupkgs/*.nupkg
