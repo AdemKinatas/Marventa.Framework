@@ -40,13 +40,8 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
 
-    - name: Test (if tests exist)
-      run: |
-        if [ -d "tests" ] || find . -name "*.Tests.csproj" -o -name "*Test*.csproj" | grep -q .; then
-          dotnet test --configuration Release --no-build --verbosity normal
-        else
-          echo "No tests found, skipping test step"
-        fi
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal
 
     - name: Pack NuGet package
       run: dotnet pack Marventa.Framework/Marventa.Framework.csproj --configuration Release --no-build --output ./nupkgs
