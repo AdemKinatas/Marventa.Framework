@@ -2,11 +2,11 @@
 
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-512BD4)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-v3.0.1-blue)](https://www.nuget.org/packages/Marventa.Framework)
+[![NuGet](https://img.shields.io/badge/NuGet-v3.2.0-blue)](https://www.nuget.org/packages/Marventa.Framework)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)]()
 [![Code Quality](https://img.shields.io/badge/Code%20Quality-A+-brightgreen)]()
 
-> **Enterprise-grade .NET framework implementing Clean Architecture and SOLID principles with 47+ modular features**
+> **Enterprise-grade .NET framework implementing Clean Architecture and SOLID principles with CQRS, MediatR Behaviors, and 47+ modular features**
 
 ## 🎯 Overview
 
@@ -66,7 +66,30 @@ dotnet add package Marventa.Framework
 }
 ```
 
-**2. Create your DbContext inheriting from BaseDbContext:**
+**2. Create your domain entities inheriting from BaseEntity:**
+
+```csharp
+using Marventa.Framework.Core.Entities;
+
+public class Product : BaseEntity
+{
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int StockQuantity { get; set; }
+
+    // BaseEntity provides: Id, CreatedDate, UpdatedDate, IsDeleted, etc.
+}
+
+public class Order : AuditableEntity
+{
+    public string OrderNumber { get; set; } = string.Empty;
+    public decimal TotalAmount { get; set; }
+
+    // AuditableEntity adds: Version, RowVersion for optimistic concurrency
+}
+```
+
+**3. Create your DbContext inheriting from BaseDbContext:**
 
 ```csharp
 using Marventa.Framework.Infrastructure.Data;
@@ -96,7 +119,7 @@ public class ApplicationDbContext : BaseDbContext
 }
 ```
 
-**3. Configure Services in `Program.cs`:**
+**4. Configure Services in `Program.cs`:**
 
 ```csharp
 using Marventa.Framework.Web.Extensions;
@@ -202,7 +225,7 @@ app.UseMarventaFramework(builder.Configuration);
 app.Run();
 ```
 
-**4. Test your application:**
+**5. Test your application:**
 
 ```bash
 # Start your application
@@ -213,7 +236,39 @@ curl -H "X-API-Key: your-secret-api-key-here" https://localhost:5001/health
 curl -H "X-API-Key: your-secret-api-key-here" https://localhost:5001/
 ```
 
-**5. Ready to use! Your application now includes:**
+**6. Common Classes and Namespaces:**
+
+| Class | Namespace | Usage |
+|-------|-----------|-------|
+| **Entities** | | |
+| `BaseEntity` | `Marventa.Framework.Core.Entities` | Base class for all entities |
+| `AuditableEntity` | `Marventa.Framework.Core.Entities` | Entity with versioning |
+| `TenantBaseEntity` | `Marventa.Framework.Core.Entities` | Multi-tenant entity |
+| `BaseAggregateRoot` | `Marventa.Framework.Domain.Common` | DDD aggregate root with events |
+| **DTOs** | | |
+| `BaseDto` | `Marventa.Framework.Application.DTOs` | Base DTO with audit info |
+| `ApiResponse<T>` | `Marventa.Framework.Application.DTOs` | API response wrapper |
+| `PagedResult<T>` | `Marventa.Framework.Application.DTOs` | Pagination result |
+| **CQRS** | | |
+| `ICommand` | `Marventa.Framework.Application.Commands` | Command interface |
+| `IQuery<T>` | `Marventa.Framework.Application.Queries` | Query interface |
+| **Value Objects** | | |
+| `Money` | `Marventa.Framework.Domain.ValueObjects` | Financial calculations |
+| `Currency` | `Marventa.Framework.Domain.ValueObjects` | Currency support |
+| **Patterns** | | |
+| `IRepository<T>` | `Marventa.Framework.Core.Interfaces.Data` | Repository pattern |
+| `IUnitOfWork` | `Marventa.Framework.Core.Interfaces.Data` | Transaction management |
+| `BaseSpecification<T>` | `Marventa.Framework.Domain.Specifications` | Query specification |
+| **Infrastructure** | | |
+| `BaseDbContext` | `Marventa.Framework.Infrastructure.Data` | DbContext base class |
+| `BaseRepository<T>` | `Marventa.Framework.Infrastructure.Data` | Repository implementation |
+| **MediatR Behaviors** | | |
+| `ValidationBehavior` | `Marventa.Framework.Application.Behaviors` | Auto validation |
+| `LoggingBehavior` | `Marventa.Framework.Application.Behaviors` | Performance logging |
+| `TransactionBehavior` | `Marventa.Framework.Application.Behaviors` | Auto transactions |
+| `IdempotencyBehavior` | `Marventa.Framework.Application.Behaviors` | Idempotency support |
+
+**7. Ready to use! Your application now includes:**
 
 - ✅ **Enterprise Middleware Pipeline** (rate limiting, authentication, logging)
 - ✅ **Clean Architecture Structure** (SOLID principles)
@@ -221,6 +276,9 @@ curl -H "X-API-Key: your-secret-api-key-here" https://localhost:5001/
 - ✅ **Production-Ready Security** (API keys, CORS, headers)
 - ✅ **Performance Optimization** (caching, compression)
 - ✅ **Health Monitoring** (health checks, logging)
+- ✅ **Base Entity Classes** (Audit tracking, soft delete, multi-tenancy)
+- ✅ **CQRS Support** (Commands, Queries, MediatR behaviors)
+- ✅ **Result Pattern** (Consistent API responses)
 
 ---
 
@@ -297,6 +355,297 @@ Marventa.Framework.Core.Interfaces/
 ```
 
 ### Base Infrastructure Components
+
+#### **BaseEntity** - Domain Entity Base Class
+
+All domain entities should inherit from `BaseEntity` for automatic audit tracking and soft delete support:
+
+```csharp
+using Marventa.Framework.Core.Entities;
+
+public class Product : BaseEntity
+{
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int StockQuantity { get; set; }
+    public string Category { get; set; } = string.Empty;
+
+    // BaseEntity provides:
+    // - Guid Id (auto-generated)
+    // - DateTime CreatedDate (auto-set)
+    // - DateTime? UpdatedDate (auto-updated)
+    // - string? CreatedBy (for audit)
+    // - string? UpdatedBy (for audit)
+    // - bool IsDeleted (soft delete flag)
+    // - DateTime? DeletedDate (soft delete timestamp)
+    // - string? DeletedBy (who deleted)
+}
+```
+
+**Features:**
+- ✅ **Automatic ID Generation** - GUID-based unique identifiers
+- ✅ **Audit Tracking** - CreatedDate, UpdatedDate, CreatedBy, UpdatedBy
+- ✅ **Soft Delete** - IsDeleted flag prevents hard deletes
+- ✅ **Timestamp Tracking** - Automatic datetime management
+
+#### **AuditableEntity** - Enhanced Entity with Versioning
+
+For entities requiring version control and row versioning:
+
+```csharp
+using Marventa.Framework.Core.Entities;
+
+public class Order : AuditableEntity
+{
+    public string OrderNumber { get; set; } = string.Empty;
+    public Guid CustomerId { get; set; }
+    public decimal TotalAmount { get; set; }
+    public OrderStatus Status { get; set; }
+
+    // AuditableEntity includes all BaseEntity properties plus:
+    // - string Version (semantic version like "1.0")
+    // - byte[] RowVersion (for optimistic concurrency)
+}
+```
+
+**Features:**
+- ✅ **All BaseEntity features**
+- ✅ **Version Control** - Semantic versioning support
+- ✅ **Optimistic Concurrency** - RowVersion for conflict detection
+
+#### **TenantBaseEntity** - Multi-Tenant Entity
+
+For multi-tenant applications with tenant isolation:
+
+```csharp
+using Marventa.Framework.Core.Entities;
+
+public class Customer : TenantBaseEntity
+{
+    public string CompanyName { get; set; } = string.Empty;
+    public string ContactEmail { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty;
+
+    // TenantBaseEntity includes BaseEntity properties plus:
+    // - Guid TenantId (tenant identifier)
+    // Automatically filtered by tenant in queries
+}
+```
+
+**Features:**
+- ✅ **All BaseEntity features**
+- ✅ **Tenant Isolation** - Automatic filtering by TenantId
+- ✅ **Multi-Tenancy** - Built-in tenant context support
+
+#### **ApiResponse<T>** - Consistent API Responses
+
+Use `ApiResponse<T>` for standardized API responses across your application:
+
+```csharp
+using Marventa.Framework.Application.DTOs;
+
+// Success response
+public async Task<ActionResult<ApiResponse<ProductDto>>> GetProduct(Guid id)
+{
+    var product = await _productService.GetByIdAsync(id);
+
+    if (product == null)
+        return NotFound(ApiResponse<ProductDto>.FailureResult(
+            "Product not found",
+            "PRODUCT_NOT_FOUND"));
+
+    return Ok(ApiResponse<ProductDto>.SuccessResult(
+        product,
+        "Product retrieved successfully"));
+}
+
+// Validation error response
+public async Task<ActionResult<ApiResponse<ProductDto>>> CreateProduct(CreateProductDto dto)
+{
+    var validationErrors = ValidateProduct(dto);
+
+    if (validationErrors.Any())
+        return BadRequest(ApiResponse<ProductDto>.ValidationErrorResult(validationErrors));
+
+    var product = await _productService.CreateAsync(dto);
+    return Ok(ApiResponse<ProductDto>.SuccessResult(product));
+}
+```
+
+**ApiResponse Properties:**
+- `bool Success` - Indicates success or failure
+- `T? Data` - Response payload
+- `string? Message` - Human-readable message
+- `string? ErrorCode` - Machine-readable error code
+- `IDictionary<string, string[]>? Errors` - Validation errors
+
+#### **PagedResult<T>** - Pagination Support
+
+For paginated API responses:
+
+```csharp
+using Marventa.Framework.Application.DTOs;
+
+public async Task<ActionResult<PagedResult<ProductDto>>> GetProducts(
+    int pageNumber = 1,
+    int pageSize = 20)
+{
+    var products = await _productService.GetPagedAsync(pageNumber, pageSize);
+
+    var pagedResult = new PagedResult<ProductDto>(
+        items: products.Items,
+        totalCount: products.TotalCount,
+        pageNumber: pageNumber,
+        pageSize: pageSize
+    );
+
+    return Ok(pagedResult);
+}
+```
+
+**PagedResult Properties:**
+- `IReadOnlyList<T> Items` - Current page items
+- `int TotalCount` - Total items across all pages
+- `int PageNumber` - Current page number
+- `int PageSize` - Items per page
+- `int TotalPages` - Total number of pages
+- `bool HasPreviousPage` - Can navigate backward
+- `bool HasNextPage` - Can navigate forward
+
+#### **BaseDto** - Data Transfer Object Base Class
+
+Use for DTOs that need audit information:
+
+```csharp
+using Marventa.Framework.Application.DTOs;
+
+public class ProductDto : BaseDto
+{
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int StockQuantity { get; set; }
+
+    // BaseDto provides: Id, CreatedDate, UpdatedDate, CreatedBy, UpdatedBy
+}
+```
+
+#### **BaseAggregateRoot** - Domain-Driven Design Aggregate Root
+
+For complex entities that manage domain events:
+
+```csharp
+using Marventa.Framework.Domain.Common;
+using Marventa.Framework.Core.Events;
+
+public class Order : BaseAggregateRoot
+{
+    public string OrderNumber { get; set; } = string.Empty;
+    public decimal TotalAmount { get; set; }
+    public List<OrderItem> Items { get; set; } = new();
+
+    public void AddItem(OrderItem item)
+    {
+        Items.Add(item);
+        // Raise domain event
+        AddDomainEvent(new OrderItemAddedEvent(Id, item.ProductId, item.Quantity));
+    }
+}
+
+// Domain Event
+public class OrderItemAddedEvent : DomainEventBase
+{
+    public Guid OrderId { get; }
+    public Guid ProductId { get; }
+    public int Quantity { get; }
+
+    public OrderItemAddedEvent(Guid orderId, Guid productId, int quantity)
+    {
+        OrderId = orderId;
+        ProductId = productId;
+        Quantity = quantity;
+    }
+}
+```
+
+**BaseAggregateRoot Methods:**
+- `AddDomainEvent(IDomainEvent)` - Add domain event
+- `RemoveDomainEvent(IDomainEvent)` - Remove domain event
+- `ClearDomainEvents()` - Clear all events
+- `IReadOnlyList<IDomainEvent> DomainEvents` - Get events
+
+#### **Money & Currency** - Value Objects for Financial Operations
+
+DDD value objects for safe money calculations:
+
+```csharp
+using Marventa.Framework.Domain.ValueObjects;
+
+public class Product : BaseEntity
+{
+    public string Name { get; set; } = string.Empty;
+    public Money Price { get; set; } = Money.Zero("USD");
+}
+
+// Usage examples
+var price = new Money(99.99m, "USD");
+var taxedPrice = price.ApplyTax(0.18m);  // Add 18% tax
+var discountedPrice = price.ApplyDiscount(0.20m);  // 20% discount
+
+var total = price + price;  // Operator overloading
+var comparison = price > new Money(50, "USD");  // Comparison
+
+// Currency conversion
+var eurPrice = price.ConvertTo(Currency.FromCode("EUR"), 0.92m);
+
+// Formatting
+Console.WriteLine(price.ToString());  // $99.99
+```
+
+**Money Features:**
+- ✅ **Currency-safe operations** - Prevents mixing currencies
+- ✅ **Tax & Discount calculations** - Built-in business operations
+- ✅ **Operator overloading** - Natural mathematical operations
+- ✅ **Currency conversion** - Exchange rate support
+- ✅ **Formatting** - Culture-aware string representation
+
+#### **BaseSpecification<T>** - Repository Query Specification Pattern
+
+For complex queries with filtering, sorting, and includes:
+
+```csharp
+using Marventa.Framework.Domain.Specifications;
+
+public class ProductsInCategorySpec : BaseSpecification<Product>
+{
+    public ProductsInCategorySpec(string category, int pageNumber, int pageSize)
+    {
+        // Filtering
+        Criteria = p => p.Category == category && !p.IsDeleted;
+
+        // Eager loading
+        AddInclude(p => p.Reviews);
+        AddInclude(p => p.Supplier);
+
+        // Sorting
+        ApplyOrderByDescending(p => p.CreatedDate);
+
+        // Pagination
+        ApplyPaging((pageNumber - 1) * pageSize, pageSize);
+    }
+}
+
+// Usage in repository
+var spec = new ProductsInCategorySpec("Electronics", 1, 20);
+var products = await _repository.GetWithSpecificationAsync(spec);
+```
+
+**Specification Features:**
+- ✅ **Filtering** - Complex where conditions
+- ✅ **Eager Loading** - Include related entities
+- ✅ **Sorting** - OrderBy, OrderByDescending
+- ✅ **Pagination** - Skip and Take
+- ✅ **Reusable** - Encapsulate query logic
 
 #### **BaseDbContext** - Enterprise DbContext
 Provides common database functionality for all EF Core contexts:
@@ -1048,6 +1397,292 @@ services.AddFluentValidation(typeof(Program).Assembly);
 
 // AutoMapper
 services.AddAutoMapperProfiles(typeof(Program).Assembly);
+```
+
+### 🎯 CQRS Pattern with MediatR
+
+The framework provides built-in support for CQRS (Command Query Responsibility Segregation) with MediatR pipeline behaviors.
+
+#### **Setting up MediatR with Behaviors**
+
+**Option 1: Using Marventa Framework Configuration (Integrated)**
+
+```csharp
+// In Program.cs
+builder.Services.AddMarventaFramework(builder.Configuration, options =>
+{
+    // Enable CQRS with MediatR
+    options.EnableCQRS = true;
+
+    // Configure CQRS assemblies and behaviors
+    options.CqrsOptions.Assemblies.Add(typeof(Program).Assembly);
+    options.CqrsOptions.EnableValidationBehavior = true;   // Default: true
+    options.CqrsOptions.EnableLoggingBehavior = true;      // Default: true
+    options.CqrsOptions.EnableTransactionBehavior = true;  // Default: true
+
+    // Other framework features...
+    options.EnableLogging = true;
+    options.EnableCaching = true;
+});
+
+// That's it! CQRS is fully configured with all behaviors
+```
+
+**Option 2: Manual Configuration**
+
+```csharp
+using Marventa.Framework.Application.Behaviors;
+using MediatR;
+
+// In Program.cs
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+
+    // Add pipeline behaviors (executed in order)
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));      // 1. Validate requests
+    cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));         // 2. Log performance
+    cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));     // 3. Manage transactions
+});
+
+// Add FluentValidation
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+// Add Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+```
+
+**Option 3: Repository Pattern without CQRS**
+
+If you only want repositories without MediatR/CQRS:
+
+```csharp
+using Marventa.Framework.Core.Interfaces.Data;
+using Marventa.Framework.Infrastructure.Data;
+
+// Manually add Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
+```
+
+#### **ICommand & IQuery Interfaces**
+
+The framework provides base interfaces for CQRS implementation:
+
+```csharp
+using Marventa.Framework.Application.Commands;
+using Marventa.Framework.Application.Queries;
+
+// ICommand - No return value
+public interface ICommand : IValidatable { }
+
+// ICommand<TResponse> - Returns a value
+public interface ICommand<out TResponse> : ICommand { }
+
+// IQuery<TResponse> - Read-only queries
+public interface IQuery<out TResponse> : IValidatable { }
+```
+
+**Note:** These interfaces extend `IValidatable`, meaning all commands and queries can be validated using FluentValidation.
+
+#### **Creating Commands**
+
+Commands represent write operations that modify state:
+
+```csharp
+using Marventa.Framework.Application.Commands;
+using Marventa.Framework.Application.DTOs;
+
+// Command
+public class CreateProductCommand : ICommand<Guid>
+{
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public string Category { get; set; } = string.Empty;
+}
+
+// Validator (automatically executed by ValidationBehavior)
+public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
+{
+    public CreateProductCommandValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Price).GreaterThan(0);
+        RuleFor(x => x.Category).NotEmpty();
+    }
+}
+
+// Handler
+public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Guid>
+{
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<CreateProductCommandHandler> _logger;
+
+    public CreateProductCommandHandler(
+        IUnitOfWork unitOfWork,
+        ILogger<CreateProductCommandHandler> logger)
+    {
+        _unitOfWork = unitOfWork;
+        _logger = logger;
+    }
+
+    public async Task<Guid> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+    {
+        var product = new Product
+        {
+            Name = request.Name,
+            Description = request.Description,
+            Price = request.Price,
+            Category = request.Category
+        };
+
+        await _unitOfWork.Repository<Product>().AddAsync(product, cancellationToken);
+        // TransactionBehavior automatically calls SaveChangesAsync
+
+        _logger.LogInformation("Product created: {ProductId}", product.Id);
+        return product.Id;
+    }
+}
+```
+
+#### **Creating Queries**
+
+Queries represent read operations that don't modify state:
+
+```csharp
+using Marventa.Framework.Application.Queries;
+using Marventa.Framework.Application.DTOs;
+
+// Query
+public class GetProductByIdQuery : IQuery<ProductDto>
+{
+    public Guid Id { get; set; }
+}
+
+// Handler
+public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, ProductDto>
+{
+    private readonly IRepository<Product> _repository;
+    private readonly IMapper _mapper;
+
+    public GetProductByIdQueryHandler(
+        IRepository<Product> repository,
+        IMapper mapper)
+    {
+        _repository = repository;
+        _mapper = mapper;
+    }
+
+    public async Task<ProductDto> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
+    {
+        var product = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        return _mapper.Map<ProductDto>(product);
+    }
+}
+```
+
+#### **Using in Controllers**
+
+```csharp
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public ProductsController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<ApiResponse<Guid>>> Create(
+        [FromBody] CreateProductCommand command,
+        CancellationToken cancellationToken)
+    {
+        // ValidationBehavior validates automatically
+        // LoggingBehavior logs performance automatically
+        // TransactionBehavior manages transaction automatically
+        var productId = await _mediator.Send(command, cancellationToken);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = productId },
+            ApiResponse<Guid>.SuccessResult(productId, "Product created successfully"));
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ApiResponse<ProductDto>>> GetById(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetProductByIdQuery { Id = id };
+        var product = await _mediator.Send(query, cancellationToken);
+
+        if (product == null)
+            return NotFound(ApiResponse<ProductDto>.FailureResult("Product not found"));
+
+        return Ok(ApiResponse<ProductDto>.SuccessResult(product));
+    }
+}
+```
+
+#### **MediatR Pipeline Behaviors**
+
+The framework includes three essential behaviors:
+
+**1. ValidationBehavior** - Automatic request validation
+```csharp
+// Automatically validates all commands/queries using FluentValidation
+// Throws ValidationException with detailed error messages
+// No need to manually validate in handlers
+```
+
+**2. LoggingBehavior** - Performance monitoring
+```csharp
+// Logs every request with execution time
+// Warns about slow operations (>500ms)
+// Logs errors with stack traces
+// Output example:
+// [INFO] Handling CreateProductCommand
+// [INFO] Handled CreateProductCommand in 45ms
+// [WARN] Long running request: GetAllProductsQuery took 750ms
+```
+
+**3. TransactionBehavior** - Automatic transaction management
+```csharp
+// Automatically wraps commands in transactions
+// Calls SaveChangesAsync after successful execution
+// Rolls back on exceptions
+// Queries are not wrapped in transactions (read-only)
+// No need to manually call SaveChangesAsync in command handlers
+```
+
+#### **Result Pattern**
+
+Use `ApiResponse<T>` for consistent API responses:
+
+```csharp
+// Success response
+return ApiResponse<ProductDto>.SuccessResult(product, "Product retrieved successfully");
+
+// Failure response
+return ApiResponse<ProductDto>.FailureResult("Product not found", "PRODUCT_NOT_FOUND");
+
+// Validation error response
+return ApiResponse<ProductDto>.ValidationErrorResult(errors);
+
+// Paged results
+var pagedProducts = new PagedResult<ProductDto>(
+    items: products,
+    totalCount: 150,
+    pageNumber: 1,
+    pageSize: 20
+);
 ```
 
 #### **Core Extensions** (`Marventa.Framework.Core.Extensions`)

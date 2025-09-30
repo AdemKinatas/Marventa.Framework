@@ -8,21 +8,21 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>3.1.0</PackageVersion>
-    <VersionPrefix>3.1.0</VersionPrefix>
+    <PackageVersion>3.2.0</PackageVersion>
+    <VersionPrefix>3.2.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
     <Company>Marventa</Company>
-    <Description>Enterprise-ready modular framework for .NET 8.0/9.0 with Clean Architecture. Features: BaseDbContext with audit/soft-delete/multi-tenancy, 88 organized interfaces across 17 domains, Repository/UnitOfWork patterns, CQRS, Sagas, Event Sourcing, CDN integration, and comprehensive infrastructure services. Built with SOLID principles for scalable enterprise applications.</Description>
+    <Description>Enterprise-ready modular framework for .NET 8.0/9.0 with Clean Architecture. Features: BaseDbContext with audit/soft-delete/multi-tenancy, 88 organized interfaces across 17 domains, Repository/UnitOfWork patterns, CQRS with MediatR Behaviors (Validation, Logging, Transaction), Sagas, Event Sourcing, CDN integration, and comprehensive infrastructure services. Built with SOLID principles for scalable enterprise applications.</Description>
     <Copyright>Copyright © Marventa 2024</Copyright>
     <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageTags>clean-architecture;basedbcontext;repository-pattern;unit-of-work;cqrs;saga-pattern;event-sourcing;multi-tenancy;soft-delete;audit-trail;mongodb;entity-framework;solid-principles;ddd;enterprise;aspnetcore;modular;microservices</PackageTags>
+    <PackageTags>clean-architecture;basedbcontext;repository-pattern;unit-of-work;cqrs;mediatr;pipeline-behaviors;saga-pattern;event-sourcing;multi-tenancy;soft-delete;audit-trail;mongodb;entity-framework;solid-principles;ddd;enterprise;aspnetcore;modular;microservices</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v3.1.0: Major Architecture Enhancement - Added BaseDbContext with automatic audit tracking, soft delete, and multi-tenancy support. Reorganized 88 interfaces into 17 domain-specific namespaces for better discoverability. Enhanced documentation with comprehensive examples for BaseDbContext, Repository pattern, and all extension methods. No breaking changes - fully backward compatible.</PackageReleaseNotes>
+    <PackageReleaseNotes>v3.2.0: Enhanced MediatR Support - Added LoggingBehavior for performance monitoring and TransactionBehavior for automatic transaction management. All behaviors work seamlessly with existing CQRS infrastructure. Improved Application layer with comprehensive pipeline behaviors. No breaking changes - fully backward compatible.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
