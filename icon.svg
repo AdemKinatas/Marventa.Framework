@@ -1,0 +1,121 @@
+<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Vibrant gradient background -->
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Accent gradient for M -->
+    <linearGradient id="letterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E0E7FF;stop-opacity:0.95" />
+    </linearGradient>
+
+    <!-- Glow effect -->
+    <radialGradient id="glowGradient" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#60A5FA;stop-opacity:0" />
+    </radialGradient>
+
+    <!-- Shine effect -->
+    <linearGradient id="shineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.3" />
+      <stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="256" height="256" fill="url(#mainGradient)" rx="56"/>
+
+  <!-- Glow effect behind M -->
+  <circle cx="128" cy="128" r="90" fill="url(#glowGradient)" opacity="0.6"/>
+
+  <!-- 3D Shadow effect for M -->
+  <g transform="translate(4, 4)" opacity="0.15">
+    <path d="M 63,95 L 63,175 L 78,175 L 78,115 L 118,165 L 133,165 L 173,115 L 173,175 L 188,175 L 188,95 L 168,95 L 125.5,150 L 83,95 Z" fill="#000000"/>
+  </g>
+
+  <!-- Main M letter with 3D effect -->
+  <g>
+    <!-- Base M shape -->
+    <path d="M 63,95 L 63,175 L 78,175 L 78,115 L 118,165 L 133,165 L 173,115 L 173,175 L 188,175 L 188,95 L 168,95 L 125.5,150 L 83,95 Z"
+          fill="url(#letterGradient)"
+          stroke="#FFFFFF"
+          stroke-width="1"
+          stroke-opacity="0.3"/>
+
+    <!-- Highlight on left side -->
+    <path d="M 63,95 L 63,175 L 70,175 L 70,102 L 63,95 Z"
+          fill="#FFFFFF"
+          opacity="0.4"/>
+  </g>
+
+  <!-- Decorative hexagons for framework/architecture feel -->
+  <g opacity="0.2">
+    <!-- Top left hexagon -->
+    <path d="M 35,35 L 45,30 L 55,35 L 55,45 L 45,50 L 35,45 Z"
+          fill="none"
+          stroke="#FFFFFF"
+          stroke-width="1.5"/>
+
+    <!-- Top right hexagon -->
+    <path d="M 200,35 L 210,30 L 220,35 L 220,45 L 210,50 L 200,45 Z"
+          fill="none"
+          stroke="#FFFFFF"
+          stroke-width="1.5"/>
+
+    <!-- Bottom left hexagon -->
+    <path d="M 35,210 L 45,205 L 55,210 L 55,220 L 45,225 L 35,220 Z"
+          fill="none"
+          stroke="#FFFFFF"
+          stroke-width="1.5"/>
+
+    <!-- Bottom right hexagon -->
+    <path d="M 200,210 L 210,205 L 220,210 L 220,220 L 210,225 L 200,220 Z"
+          fill="none"
+          stroke="#FFFFFF"
+          stroke-width="1.5"/>
+  </g>
+
+  <!-- Connecting dots/nodes for network effect -->
+  <g>
+    <circle cx="40" cy="40" r="3" fill="#60A5FA" opacity="0.8"/>
+    <circle cx="216" cy="40" r="3" fill="#60A5FA" opacity="0.8"/>
+    <circle cx="40" cy="216" r="3" fill="#60A5FA" opacity="0.8"/>
+    <circle cx="216" cy="216" r="3" fill="#60A5FA" opacity="0.8"/>
+
+    <!-- Corner accent dots -->
+    <circle cx="128" cy="20" r="2" fill="#93C5FD" opacity="0.6"/>
+    <circle cx="236" cy="128" r="2" fill="#93C5FD" opacity="0.6"/>
+    <circle cx="128" cy="236" r="2" fill="#93C5FD" opacity="0.6"/>
+    <circle cx="20" cy="128" r="2" fill="#93C5FD" opacity="0.6"/>
+  </g>
+
+  <!-- Subtle framework text at bottom -->
+  <text x="128" y="215"
+        font-family="Arial, sans-serif"
+        font-size="16"
+        font-weight="600"
+        letter-spacing="3"
+        fill="#FFFFFF"
+        text-anchor="middle"
+        opacity="0.8">FRAMEWORK</text>
+
+  <!-- Version badge/accent -->
+  <g transform="translate(185, 30)">
+    <rect x="0" y="0" width="40" height="18" rx="9" fill="#FFFFFF" opacity="0.15"/>
+    <text x="20" y="13"
+          font-family="Arial, sans-serif"
+          font-size="10"
+          font-weight="bold"
+          fill="#FFFFFF"
+          text-anchor="middle"
+          opacity="0.9">v3</text>
+  </g>
+
+  <!-- Shine overlay for glossy effect -->
+  <ellipse cx="128" cy="90" rx="80" ry="60" fill="url(#shineGradient)" opacity="0.4"/>
+</svg>
