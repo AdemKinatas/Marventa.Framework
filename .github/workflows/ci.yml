@@ -3,6 +3,8 @@ name: Continuous Integration
 on:
   push:
     branches: [ master, develop ]
+    tags-ignore:
+      - 'v*.*.*'  # Don't run on version tags (nuget-publish.yml handles those)
   pull_request:
     branches: [ master, develop ]
 
