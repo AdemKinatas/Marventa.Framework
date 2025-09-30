@@ -2,28 +2,38 @@
 
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-512BD4)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-v3.5.1-blue)](https://www.nuget.org/packages/Marventa.Framework)
+[![NuGet](https://img.shields.io/badge/NuGet-v3.5.2-blue)](https://www.nuget.org/packages/Marventa.Framework)
 
 > **Enterprise-grade .NET framework with Clean Architecture, CQRS, and 47+ modular features**
 
 ---
 
-## What's New in v3.5.1
+## What's New in v3.5.2
 
-**Major Quality & Dependency Fixes**
+**🔧 CRITICAL PACKAGING FIX - True Single Package**
 
-- **NEW**: Repository<T> pattern auto-registered - no manual setup needed
-- **NEW**: Elasticsearch service registration via `EnableSearch` flag
-- **NEW**: Outbox/Inbox pattern services via `EnableMessaging` flag
-- **NEW**: Projection management via `EnableProjections` flag
-- **FIX**: All dependencies now properly exported - no more manual Serilog/Redis installation!
-- **QUALITY**: ~3,000 lines refactored for better maintainability and clarity
+- **FIXED**: Package now works globally - no more NU1102 errors!
+- **FIXED**: All sub-package DLLs properly embedded (Core, Domain, Application, Infrastructure, Web)
+- **FIXED**: All dependencies included (Redis, Serilog, EF Core, MediatR, etc.)
+- **IMPROVED**: Single command installation - works anywhere in the world
 
-**Migration from v3.4.x**:
-1. Update to v3.5.1: `dotnet add package Marventa.Framework --version 3.5.1`
-2. Remove manually installed dependencies (Serilog.\*, StackExchange.Redis, etc.) - they're now included
-3. Repository pattern is auto-registered - remove manual registrations
-4. Use new feature flags: `EnableSearch`, `EnableMessaging`, `EnableProjections`
+**Just install and use - everything included!**
+
+```bash
+dotnet add package Marventa.Framework
+# No sub-packages needed, no manual dependencies - everything included!
+```
+
+**What you get automatically:**
+- ✅ BaseEntity, BaseRepository, ApiResponse
+- ✅ Unified Middleware (Logging, Cache, Exception Handling, CorrelationId)
+- ✅ CQRS with MediatR + Validation/Logging Behaviors
+- ✅ All dependencies (Redis, Serilog, Hangfire, etc.)
+
+**v3.5.1 Features Still Included:**
+- Repository<T> pattern auto-registered
+- Elasticsearch, Outbox/Inbox, Projection services
+- All 27 production-ready features
 
 ---
 
@@ -197,16 +207,16 @@ These features have infrastructure but are disabled or incomplete:
 ### Step 1: Install NuGet Package
 
 ```bash
-# Install latest version (v3.5.1)
-dotnet add package Marventa.Framework --version 3.5.1
+# Install latest version (v3.5.2)
+dotnet add package Marventa.Framework
 ```
 
-**What's included automatically in v3.5.1:**
-- All dependencies are now properly exported
-- No need to manually install Serilog packages
-- No need to manually install StackExchange.Redis
-- No need to manually install Elasticsearch.Net
-- Repository pattern is auto-registered
+**What's included automatically in v3.5.2:**
+- ✅ All 5 framework DLLs embedded (Core, Domain, Application, Infrastructure, Web)
+- ✅ All dependencies auto-installed (Serilog, Redis, EF Core, MediatR, Hangfire, etc.)
+- ✅ No sub-package errors - works globally
+- ✅ Repository pattern auto-registered
+- ✅ No manual dependency installation needed
 
 ### Step 2: Install Database Provider
 
@@ -228,41 +238,23 @@ dotnet restore
 dotnet build
 ```
 
-### Migration from v3.4.x
+### Migration from v3.5.1 or earlier
 
-If you're upgrading from v3.4.x, follow these steps:
+If you're upgrading from v3.5.1 or v3.4.x:
 
 1. **Update the package:**
    ```bash
-   dotnet add package Marventa.Framework --version 3.5.1
+   dotnet add package Marventa.Framework
    ```
 
-2. **Remove manually installed dependencies** (they're now included):
+2. **Clean and rebuild** (to clear old package cache):
    ```bash
-   # Remove these if you installed them manually
-   dotnet remove package Serilog
-   dotnet remove package Serilog.Sinks.Console
-   dotnet remove package Serilog.Sinks.File
-   dotnet remove package StackExchange.Redis
-   dotnet remove package Elasticsearch.Net
-   dotnet remove package NEST
+   dotnet clean
+   dotnet restore
+   dotnet build
    ```
 
-3. **Remove manual Repository registration** (now auto-registered):
-   ```csharp
-   // ❌ Remove this - no longer needed
-   builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-   ```
-
-4. **Use new feature flags:**
-   ```csharp
-   builder.Services.AddMarventaFramework(builder.Configuration, options =>
-   {
-       options.EnableSearch = true;        // NEW: Elasticsearch
-       options.EnableMessaging = true;     // NEW: Outbox/Inbox
-       options.EnableProjections = true;   // NEW: Projections
-   });
-   ```
+3. **That's it!** No other changes needed. v3.5.2 is a packaging fix - no breaking changes.
 
 ---
 

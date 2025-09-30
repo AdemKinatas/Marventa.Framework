@@ -5,43 +5,37 @@ Enterprise-grade .NET framework with Clean Architecture, CQRS, and 47+ modular f
 [![NuGet](https://img.shields.io/nuget/v/Marventa.Framework.svg)](https://www.nuget.org/packages/Marventa.Framework/)
 [![Downloads](https://img.shields.io/nuget/dt/Marventa.Framework.svg)](https://www.nuget.org/packages/Marventa.Framework/)
 
-## What's New in v3.5.1
+## What's New in v3.5.2
 
-✅ **Service Registration Fixes**
-- Repository<T> pattern now auto-registered (no manual setup!)
-- Elasticsearch service auto-registered via `EnableSearch` flag
-- Outbox/Inbox pattern services via `EnableMessaging` flag
-- Projection management via `EnableProjections` flag
+🔧 **CRITICAL PACKAGING FIX - True Single Package**
 
-🔧 **Dependency Management Fixed**
-All dependencies (Serilog, StackExchange.Redis, etc.) now automatically installed - **no manual package installation needed!**
+- ✅ **FIXED**: No more NU1102 errors - works globally!
+- ✅ **FIXED**: All 5 framework DLLs embedded (Core, Domain, Application, Infrastructure, Web)
+- ✅ **FIXED**: All dependencies included (Redis, Serilog, EF Core, MediatR, Hangfire, etc.)
+- ✅ **WORKS WORLDWIDE**: Install from anywhere - China, Europe, US, anywhere!
 
-📚 **Accurate Documentation**
-- 27 production-ready features verified
-- Mock/placeholder implementations clearly marked
-- Complete feature status transparency
+**Just one command:**
+```bash
+dotnet add package Marventa.Framework
+```
+
+Everything included - no sub-packages, no manual dependencies!
 
 ## Quick Start
 
 ### Installation
 ```bash
-dotnet add package Marventa.Framework --version 3.5.1
-# All dependencies automatic - no manual Serilog/Redis install needed!
+dotnet add package Marventa.Framework
+# That's it! All dependencies included automatically.
 ```
 
-### Migrating from v3.4.x?
+### Migrating from v3.5.1 or earlier?
 ```bash
-# 1. Remove manually installed dependencies (if any)
-dotnet remove package Serilog
-dotnet remove package Serilog.AspNetCore
-dotnet remove package StackExchange.Redis
-# ... etc
-
-# 2. Update to v3.5.1
-dotnet add package Marventa.Framework --version 3.5.1
-
-# 3. Remove manual Repository registration (now automatic)
-# Delete: services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
+# Just update - no breaking changes
+dotnet add package Marventa.Framework
+dotnet clean
+dotnet restore
+dotnet build
 ```
 
 ### Basic Setup
@@ -207,7 +201,7 @@ public class FileService
 }
 ```
 
-## Feature Status (v3.5.1)
+## Feature Status (v3.5.2)
 
 ✅ **Production Ready (27 features)**
 - BaseDbContext, Repository, Unit of Work, CQRS, Saga, Outbox/Inbox, Projections
