@@ -17,7 +17,9 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;S101;S3246;S2326;S3881;S6562;S3427</NoWarn>
+    <!-- Suppress XML documentation warnings for internal classes -->
+    <!-- Public APIs have documentation, internal classes don't require it -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
