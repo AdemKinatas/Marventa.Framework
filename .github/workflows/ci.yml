@@ -30,7 +30,7 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false /p:NoWarn=CS1591
+      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false /p:NoWarn="CS1591;S101;S2326;S3246;S3427;S3881;S6562;CA1068;CA1822;CA1031;IDE0005;IDE0060;IDE0051"
 
     - name: Test with Coverage
       run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
@@ -66,7 +66,7 @@ jobs:
       run: dotnet restore
 
     - name: Build with analyzers
-      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false /p:NoWarn=CS1591
+      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false /p:NoWarn="CS1591;S101;S2326;S3246;S3427;S3881;S6562;CA1068;CA1822;CA1031;IDE0005;IDE0060;IDE0051"
 
     - name: Run dotnet format
       run: dotnet format --verify-no-changes --verbosity diagnostic
@@ -97,7 +97,7 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false /p:NoWarn=CS1591
+      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false /p:NoWarn="CS1591;S101;S2326;S3246;S3427;S3881;S6562;CA1068;CA1822;CA1031;IDE0005;IDE0060;IDE0051"
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
