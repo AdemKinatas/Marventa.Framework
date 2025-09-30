@@ -75,7 +75,7 @@ public class BaseRepositoryIntegrationTests : IDisposable
         // Act
         entity.Name = "Updated";
         entity.Value = 99;
-        _repository.Update(entity);
+        await _repository.UpdateAsync(entity);
         await _context.SaveChangesAsync();
 
         // Assert
@@ -93,7 +93,7 @@ public class BaseRepositoryIntegrationTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        await _repository.DeleteAsync(entity.Id);
+        await _repository.DeleteAsync(entity);
         await _context.SaveChangesAsync();
 
         // Assert
