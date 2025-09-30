@@ -22,7 +22,7 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false /p:NoWarn="CS1591;S101;S2326;S3246;S3427;S3881;S6562;CA1068;CA1822;CA1031;IDE0005;IDE0060;IDE0051"
+      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false
 
     - name: Pack
       run: dotnet pack Marventa.Framework/Marventa.Framework.csproj --configuration Release --no-build --output ./artifacts
