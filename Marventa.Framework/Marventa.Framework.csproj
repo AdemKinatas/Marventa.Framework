@@ -23,11 +23,11 @@
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>v3.2.0: Enhanced MediatR Support - Added LoggingBehavior for performance monitoring and TransactionBehavior for automatic transaction management. All behaviors work seamlessly with existing CQRS infrastructure. Improved Application layer with comprehensive pipeline behaviors. No breaking changes - fully backward compatible.</PackageReleaseNotes>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\README.nuget.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
