@@ -1,39 +1,126 @@
-# 📘 Marventa Framework - Complete Guide
+# 📘 Marventa Framework
 
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-512BD4)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![NuGet](https://img.shields.io/badge/NuGet-v3.5.2-blue)](https://www.nuget.org/packages/Marventa.Framework)
 
-> **Enterprise-grade .NET framework with Clean Architecture, CQRS, and 47+ modular features**
+> **Kurumsal .NET projeleri için hazır Clean Architecture framework'ü**
+
+## ⚡ 5 Dakikada Başla
+
+```bash
+# 1. Paketi yükle
+dotnet add package Marventa.Framework
+
+# 2. Kullan - hepsi bu kadar!
+```
+
+**[→ Hızlı Başlangıç Rehberi (5 dakika)](QUICKSTART.md)**
 
 ---
 
-## What's New in v3.5.2
+## 🎯 Ne İşe Yarar?
 
-**🔧 CRITICAL PACKAGING FIX - True Single Package**
+Marventa Framework, .NET projelerinize **anında** şunları kazandırır:
 
-- **FIXED**: Package now works globally - no more NU1102 errors!
-- **FIXED**: All sub-package DLLs properly embedded (Core, Domain, Application, Infrastructure, Web)
-- **FIXED**: All dependencies included (Redis, Serilog, EF Core, MediatR, etc.)
-- **IMPROVED**: Single command installation - works anywhere in the world
+| Özellik | Ne Sağlar |
+|---------|-----------|
+| 🏗️ **BaseEntity** | Otomatik ID, tarih, soft delete |
+| 📦 **Repository Pattern** | Hazır CRUD operasyonları |
+| 🎭 **CQRS** | MediatR ile temiz command/query ayrımı |
+| ✅ **Validation** | FluentValidation ile otomatik doğrulama |
+| 📝 **Logging** | Serilog ile yapılandırılmış loglama |
+| 💾 **Caching** | Memory ve Redis cache desteği |
+| 🛡️ **Exception Handling** | Merkezi hata yönetimi |
+| 🔗 **CorrelationId** | Request tracking |
+| 👥 **Multi-Tenancy** | Tenant izolasyonu |
 
-**Just install and use - everything included!**
+---
 
-```bash
-dotnet add package Marventa.Framework
-# No sub-packages needed, no manual dependencies - everything included!
+## 💡 Basit Örnekler
+
+### Entity Oluştur
+```csharp
+public class Product : BaseEntity  // Id, CreatedDate, IsDeleted otomatik gelir
+{
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+}
 ```
 
-**What you get automatically:**
-- ✅ BaseEntity, BaseRepository, ApiResponse
-- ✅ Unified Middleware (Logging, Cache, Exception Handling, CorrelationId)
-- ✅ CQRS with MediatR + Validation/Logging Behaviors
-- ✅ All dependencies (Redis, Serilog, Hangfire, etc.)
+### Repository Kullan
+```csharp
+public class ProductService
+{
+    private readonly IRepository<Product> _repo;
 
-**v3.5.1 Features Still Included:**
-- Repository<T> pattern auto-registered
-- Elasticsearch, Outbox/Inbox, Projection services
-- All 27 production-ready features
+    public async Task<Product> GetAsync(Guid id)
+        => await _repo.GetByIdAsync(id);  // Soft delete otomatik filtrelenir
+}
+```
+
+### CQRS Command
+```csharp
+public record CreateProductCommand(string Name, decimal Price) : ICommand<Guid>;
+
+// Validation otomatik çalışır, loglama otomatik, transaction otomatik
+public class CreateProductHandler : IRequestHandler<CreateProductCommand, Guid>
+{
+    public async Task<Guid> Handle(CreateProductCommand cmd, CancellationToken ct)
+    {
+        var product = new Product { Name = cmd.Name, Price = cmd.Price };
+        await _repo.AddAsync(product, ct);
+        return product.Id;
+    }
+}
+```
+
+### API Response
+```csharp
+[HttpGet("{id}")]
+public async Task<IActionResult> Get(Guid id)
+{
+    var product = await _mediator.Send(new GetProductQuery(id));
+    return Ok(ApiResponse<Product>.SuccessResult(product));
+}
+```
+
+---
+
+## 📦 Ne Var İçinde? (v3.5.2)
+
+### ✅ Hazır Özellikler (27 adet)
+- BaseEntity, Repository, Unit of Work
+- CQRS, MediatR Behaviors (Validation, Logging, Transaction)
+- Saga Pattern, Outbox/Inbox Pattern
+- Redis Cache, Memory Cache
+- Serilog Logging
+- JWT Authentication, API Key Auth
+- Multi-Tenancy, Soft Delete, Audit Trail
+- CDN (Azure, AWS, CloudFlare)
+- Storage (Local, Azure Blob, S3)
+- Email, SMS, Notification
+
+### ⚠️ Geliştirme Özellikleri (6 adet)
+- Mock servisler (test için)
+
+### 🚧 Yol Haritası (14 adet)
+- Event Sourcing, Background Jobs, E-commerce
+
+**[→ Tüm Özellikler ve Detaylar](#-2-feature-status)**
+
+---
+
+## 🎯 Kimler Kullanmalı?
+
+✅ Kurumsal .NET projeleri geliştiriyorsanız
+✅ Clean Architecture istiyorsanız
+✅ CQRS pattern'i kolayca uygulamak istiyorsanız
+✅ Repository, UnitOfWork boilerplate yazmak istemiyorsanız
+✅ Multi-tenancy, audit trail gibi özelliklere ihtiyacınız varsa
+
+❌ Çok basit CRUD uygulamalar için fazla olabilir
+❌ Entity Framework kullanmak istemiyorsanız (MongoDB desteği kısıtlı)
 
 ---
 

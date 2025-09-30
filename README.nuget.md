@@ -1,44 +1,38 @@
 # Marventa Framework
 
-Enterprise-grade .NET framework with Clean Architecture, CQRS, and 47+ modular features for .NET 8.0/9.0
+> **Kurumsal .NET projeleri için hazır Clean Architecture çözümü**
 
 [![NuGet](https://img.shields.io/nuget/v/Marventa.Framework.svg)](https://www.nuget.org/packages/Marventa.Framework/)
 [![Downloads](https://img.shields.io/nuget/dt/Marventa.Framework.svg)](https://www.nuget.org/packages/Marventa.Framework/)
 
-## What's New in v3.5.2
+## ⚡ Hızlı Başlangıç
 
-🔧 **CRITICAL PACKAGING FIX - True Single Package**
-
-- ✅ **FIXED**: No more NU1102 errors - works globally!
-- ✅ **FIXED**: All 5 framework DLLs embedded (Core, Domain, Application, Infrastructure, Web)
-- ✅ **FIXED**: All dependencies included (Redis, Serilog, EF Core, MediatR, Hangfire, etc.)
-- ✅ **WORKS WORLDWIDE**: Install from anywhere - China, Europe, US, anywhere!
-
-**Just one command:**
 ```bash
 dotnet add package Marventa.Framework
 ```
 
-Everything included - no sub-packages, no manual dependencies!
+**Hepsi bu kadar!** Tüm bağımlılıklar otomatik yüklenir.
 
-## Quick Start
+---
 
-### Installation
-```bash
-dotnet add package Marventa.Framework
-# That's it! All dependencies included automatically.
-```
+## 🎯 Ne Sağlar?
 
-### Migrating from v3.5.1 or earlier?
-```bash
-# Just update - no breaking changes
-dotnet add package Marventa.Framework
-dotnet clean
-dotnet restore
-dotnet build
-```
+| Özellik | Açıklama |
+|---------|----------|
+| 🏗️ BaseEntity | Otomatik ID, tarih, soft delete |
+| 📦 Repository | Hazır CRUD operasyonları |
+| 🎭 CQRS | MediatR ile command/query |
+| ✅ Validation | FluentValidation otomatik |
+| 📝 Logging | Serilog hazır |
+| 💾 Cache | Redis + Memory cache |
+| 🛡️ Exception | Merkezi hata yönetimi |
+| 🔗 CorrelationId | Request tracking |
 
-### Basic Setup
+---
+
+## 💻 Kod Örnekleri
+
+### 1️⃣ Setup (Program.cs)
 ```csharp
 using Marventa.Framework.Web.Extensions;
 
@@ -46,103 +40,54 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMarventaFramework(builder.Configuration, options =>
 {
-    options.EnableCQRS = true;
-    options.EnableRepository = true;
     options.EnableLogging = true;
     options.EnableCaching = true;
+    options.EnableCQRS = true;
 });
 
 var app = builder.Build();
-app.UseMarventaFramework(builder.Configuration);
+app.UseMarventaFramework(app.Configuration);
 app.Run();
 ```
 
-## Core Features
-
-**Base Entity Classes**
-- `BaseEntity` - Audit tracking, soft delete, timestamps
-- `AuditableEntity` - Version control and concurrency
-- `TenantBaseEntity` - Multi-tenant isolation
-
-**CQRS with MediatR**
-- Automatic validation with FluentValidation
-- Transaction management
-- Logging and performance tracking
-- Idempotency support
-
-**Repository Pattern**
-- Generic repository with common operations
-- Unit of Work pattern
-- Specification pattern support
-- Soft delete handling
-
-**Pipeline Behaviors**
-- `ValidationBehavior` - Automatic input validation
-- `LoggingBehavior` - Performance monitoring
-- `TransactionBehavior` - Automatic transaction management
-- `IdempotencyBehavior` - Duplicate prevention (implemented, manual registration required)
-
-## Example: Product CRUD
-
-**Entity**
+### 2️⃣ Entity Oluştur
 ```csharp
-public class Product : BaseEntity
+public class Product : BaseEntity  // Id, CreatedDate, IsDeleted otomatik
 {
     public string Name { get; set; }
     public decimal Price { get; set; }
 }
 ```
 
-**Command**
+### 3️⃣ Repository Kullan
 ```csharp
-public class CreateProductCommand : ICommand<Guid>
+public class ProductService
 {
-    public string Name { get; set; }
-    public decimal Price { get; set; }
+    private readonly IRepository<Product> _repo;
+
+    public async Task<Product> GetAsync(Guid id)
+        => await _repo.GetByIdAsync(id);
 }
+```
 
-public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
+### 4️⃣ CQRS Command
+```csharp
+public record CreateProductCommand(string Name, decimal Price) : ICommand<Guid>;
+
+public class CreateProductHandler : IRequestHandler<CreateProductCommand, Guid>
 {
-    public CreateProductCommandValidator()
-    {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
-        RuleFor(x => x.Price).GreaterThan(0);
-    }
-}
+    private readonly IRepository<Product> _repo;
 
-public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Guid>
-{
-    private readonly IUnitOfWork _unitOfWork;
-
-    public async Task<Guid> Handle(CreateProductCommand request, CancellationToken ct)
+    public async Task<Guid> Handle(CreateProductCommand cmd, CancellationToken ct)
     {
-        var product = new Product { Name = request.Name, Price = request.Price };
-        await _unitOfWork.Repository<Product>().AddAsync(product, ct);
+        var product = new Product { Name = cmd.Name, Price = cmd.Price };
+        await _repo.AddAsync(product, ct);
         return product.Id;
     }
 }
 ```
 
-**Query**
-```csharp
-public class GetProductByIdQuery : IQuery<ProductDto>
-{
-    public Guid Id { get; set; }
-}
-
-public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, ProductDto>
-{
-    private readonly IRepository<Product> _repository;
-
-    public async Task<ProductDto> Handle(GetProductByIdQuery request, CancellationToken ct)
-    {
-        var product = await _repository.GetByIdAsync(request.Id);
-        return new ProductDto { Id = product.Id, Name = product.Name, Price = product.Price };
-    }
-}
-```
-
-**Controller**
+### 5️⃣ Controller
 ```csharp
 [ApiController]
 [Route("api/[controller]")]
@@ -151,81 +96,63 @@ public class ProductsController : ControllerBase
     private readonly IMediator _mediator;
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ProductDto>> Get(Guid id)
-        => Ok(await _mediator.Send(new GetProductByIdQuery { Id = id }));
+    public async Task<IActionResult> Get(Guid id)
+    {
+        var product = await _mediator.Send(new GetProductQuery(id));
+        return Ok(ApiResponse<Product>.SuccessResult(product));
+    }
 
     [HttpPost]
-    public async Task<ActionResult<Guid>> Create(CreateProductCommand command)
-        => CreatedAtAction(nameof(Get), new { id = await _mediator.Send(command) }, null);
-}
-```
-
-## Advanced Features
-
-**Multi-Tenancy**
-```csharp
-public class Customer : TenantBaseEntity
-{
-    public string CompanyName { get; set; }
-}
-```
-
-**Event Sourcing**
-```csharp
-public class OrderCreatedEvent : IDomainEvent
-{
-    public Guid OrderId { get; set; }
-    public decimal Amount { get; set; }
-}
-```
-
-**Saga Pattern**
-```csharp
-public class OrderSaga : ISaga<OrderSagaState>
-{
-    public async Task ExecuteAsync(OrderSagaState state, CancellationToken ct)
+    public async Task<IActionResult> Create(CreateProductCommand cmd)
     {
-        // Distributed transaction logic
+        var id = await _mediator.Send(cmd);
+        return Ok(ApiResponse<Guid>.SuccessResult(id));
     }
 }
 ```
 
-**CDN Integration**
-```csharp
-public class FileService
-{
-    private readonly IMarventaCDN _cdn;
+---
 
-    public async Task<string> UploadAsync(Stream file)
-        => await _cdn.UploadAsync(file, new CDNUploadOptions());
-}
-```
+## 📦 İçerik (v3.5.2)
 
-## Feature Status (v3.5.2)
+### ✅ Hazır Özellikler (27)
+- BaseEntity, Repository, Unit of Work
+- CQRS, Validation, Logging, Transaction Behaviors
+- Saga Pattern, Outbox/Inbox
+- Redis Cache, Memory Cache
+- Serilog Logging
+- JWT Auth, API Key Auth
+- Multi-Tenancy, Soft Delete, Audit
+- CDN (Azure, AWS, CloudFlare)
+- Storage (Local, Azure, S3)
 
-✅ **Production Ready (27 features)**
-- BaseDbContext, Repository, Unit of Work, CQRS, Saga, Outbox/Inbox, Projections
-- Caching (Memory/Redis), Elasticsearch
-- Email, SMS, Storage (Local/Cloud), CDN (Azure/AWS/CloudFlare)
-- JWT, Encryption, Multi-tenancy, Health Checks
+### ⚠️ Test/Mock (6)
+- Geliştirme için placeholder servisler
 
-⚠️ **Mock/Development (6 features)**
-- ML Service, Analytics, Mock CDN/Storage (for testing)
+### 🚧 Yol Haritası (14)
+- Event Sourcing, Background Jobs, E-commerce
 
-🚧 **Roadmap (14 features)**
-- Event Sourcing (infrastructure ready), Background Jobs, E-commerce features
+---
 
-**See full README** for detailed feature breakdown and usage examples.
+## 📚 Kaynaklar
 
-## Resources
+- **Tam Dokümantasyon**: [GitHub README](https://github.com/AdemKinatas/Marventa.Framework#readme)
+- **5 Dakika Rehberi**: [QUICKSTART.md](https://github.com/AdemKinatas/Marventa.Framework/blob/master/QUICKSTART.md)
+- **Issues**: [GitHub Issues](https://github.com/AdemKinatas/Marventa.Framework/issues)
+- **Örnekler**: [Samples Klasörü](https://github.com/AdemKinatas/Marventa.Framework/tree/master/samples)
 
-- **Documentation**: https://github.com/AdemKinatas/Marventa.Framework#readme
-- **GitHub**: https://github.com/AdemKinatas/Marventa.Framework
-- **Issues**: https://github.com/AdemKinatas/Marventa.Framework/issues
-- **Email**: ademkinatas@gmail.com
+---
 
-## License
+## ⚙️ Gereksinimler
 
-MIT License - Free for personal and commercial use.
+- .NET 8.0 veya 9.0
+- SQL Server, PostgreSQL veya MySQL (opsiyonel)
+- Redis (cache için, opsiyonel)
 
-Built with love by Adem Kinatas
+---
+
+## 📄 Lisans
+
+MIT - Ticari ve kişisel kullanım için ücretsiz
+
+**Yapımcı:** Adem Kinatas
