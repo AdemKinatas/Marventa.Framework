@@ -2,7 +2,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using Marventa.Framework.Application.Behaviors;
 using Marventa.Framework.Application.Commands;
-using Marventa.Framework.Application.Models;
+using Marventa.Framework.Application.DTOs;
 using MediatR;
 using Moq;
 using Xunit;
