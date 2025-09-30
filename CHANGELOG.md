@@ -5,6 +5,62 @@ All notable changes to Marventa Framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2024-09-30
+
+### Added
+- **LoggingBehavior**: MediatR pipeline behavior for automatic performance monitoring
+  - Logs all requests with execution time
+  - Warns about slow operations (>500ms)
+  - Error logging with full stack traces
+  - Integrated with Microsoft.Extensions.Logging
+- **TransactionBehavior**: Automatic transaction management for commands
+  - Wraps all commands (but not queries) in database transactions
+  - Automatically calls SaveChangesAsync on success
+  - Automatic rollback on exceptions
+  - Works seamlessly with IUnitOfWork
+- **CQRS Integration in MarventaFramework**: Fully integrated CQRS support
+  - New `CqrsOptions` configuration class with assembly and behavior settings
+  - `EnableCQRS` option in MarventaFrameworkOptions
+  - Automatic MediatR, behaviors, validators, and UnitOfWork registration
+  - Configurable pipeline behaviors (Validation, Logging, Transaction)
+  - Integrated with existing framework configuration pattern
+- **Comprehensive CQRS Documentation**: Added detailed MediatR usage guide
+  - Complete setup instructions with all three behaviors
+  - Command and Query creation examples
+  - Validator integration examples
+  - Controller usage patterns
+  - Result Pattern documentation with ApiResponse<T>
+  - Four different setup options for different use cases
+
+### Changed
+- **Application Layer**: Updated to version 2.9.0
+  - Enhanced CQRS infrastructure with new behaviors
+  - Improved pipeline behavior ordering
+- **Documentation**: Major README.md enhancements
+  - Added 250+ lines of CQRS/MediatR documentation
+  - Complete examples for Commands, Queries, and Handlers
+  - Pipeline behavior usage patterns
+  - Result Pattern best practices
+- **Package Description**: Updated to highlight MediatR Behaviors support
+
+### Technical Details
+- Zero breaking changes - fully backward compatible
+- ValidationBehavior, LoggingBehavior, and TransactionBehavior work together seamlessly
+- Behaviors are executed in order: Validation → Logging → Transaction
+- Build: 0 errors, 0 warnings
+
+### Migration from 3.1.0
+No changes required - simply upgrade the package version.
+
+To enable CQRS with MediatR behaviors:
+```csharp
+builder.Services.AddMarventaFramework(configuration, options =>
+{
+    options.EnableCQRS = true;
+    options.CqrsOptions.Assemblies.Add(typeof(Program).Assembly);
+});
+```
+
 ## [3.1.0] - 2024-12-20
 
 ### Added
