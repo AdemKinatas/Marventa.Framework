@@ -2287,7 +2287,7 @@ public class ProductService
 
 // ✅ Good - Dependencies are now included
 // No need to manually install Serilog, Redis, or Elasticsearch packages
-dotnet add package Marventa.Framework --version 3.5.1
+dotnet add package Marventa.Framework
 
 // ✅ Good - Use new feature flags
 builder.Services.AddMarventaFramework(builder.Configuration, options =>
