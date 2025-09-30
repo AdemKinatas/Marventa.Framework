@@ -15,9 +15,6 @@ public class CDNMetrics
     /// </summary>
     public long TotalRequests { get; set; }
 
-    /// <summary>
-    /// Total bandwidth consumed in bytes
-    /// </summary>
     public long TotalBandwidthBytes { get; set; }
 
     /// <summary>
@@ -50,14 +47,7 @@ public class CDNMetrics
     /// </summary>
     public Dictionary<string, long> TopReferrers { get; set; } = new();
 
-    /// <summary>
-    /// Peak requests per second
-    /// </summary>
     public double PeakRequestsPerSecond { get; set; }
-
-    /// <summary>
-    /// Error rate percentage
-    /// </summary>
     public double ErrorRatePercentage { get; set; }
 }
 

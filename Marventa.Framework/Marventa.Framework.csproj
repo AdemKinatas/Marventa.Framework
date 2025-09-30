@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>3.4.1</PackageVersion>
-    <VersionPrefix>3.4.1</VersionPrefix>
+    <PackageVersion>3.5.1</PackageVersion>
+    <VersionPrefix>3.5.1</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,30 @@
     <PackageTags>net8.0;net9.0;dotnet8;dotnet9;clean-architecture;basedbcontext;repository-pattern;unit-of-work;cqrs;mediatr;pipeline-behaviors;saga-pattern;event-sourcing;multi-tenancy;soft-delete;audit-trail;mongodb;entity-framework;solid-principles;ddd;enterprise;aspnetcore;modular;microservices</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v3.4.1: Multi-target clarification - Package explicitly supports both .NET 8.0 and .NET 9.0. Updated description and tags to make framework support clear. Full lib/net8.0 and lib/net9.0 assemblies included. Zero breaking changes from v3.4.0.</PackageReleaseNotes>
+    <PackageReleaseNotes><![CDATA[v3.5.1: Service registration fixes + accurate documentation
+
+✅ NEW SERVICE REGISTRATIONS:
+- Repository<T> pattern now auto-registered (no manual setup needed)
+- Elasticsearch service registration (EnableSearch flag)
+- Outbox/Inbox pattern services (EnableMessaging flag)
+- Projection management services (EnableProjections flag)
+- All advertised features now properly wired up
+
+🎯 CODE QUALITY (from v3.5.0):
+- Split MarventaExtensions (824→77 lines) into 8 focused files
+- Refactored ~3,000 lines following Single Responsibility Principle
+- Removed 8 unused/redundant files
+
+🔧 DEPENDENCY FIX (from v3.5.0):
+- Dependencies properly exported (no manual Serilog/Redis install needed)
+
+📚 DOCUMENTATION:
+- Comprehensive feature audit completed
+- 27 production-ready features verified
+- Mock implementations clearly marked
+- Roadmap features documented
+
+⚠️ See README.md for complete feature status and implementation details]]></PackageReleaseNotes>
     <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
     <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
@@ -33,11 +56,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\Marventa.Framework.Domain\Marventa.Framework.Domain.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\Marventa.Framework.Application\Marventa.Framework.Application.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\Marventa.Framework.Infrastructure\Marventa.Framework.Infrastructure.csproj" PrivateAssets="all" />
-    <ProjectReference Include="..\Marventa.Framework.Web\Marventa.Framework.Web.csproj" PrivateAssets="all" />
+    <!-- Remove PrivateAssets so dependencies are exported to consuming projects -->
+    <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Domain\Marventa.Framework.Domain.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Application\Marventa.Framework.Application.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Infrastructure\Marventa.Framework.Infrastructure.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Web\Marventa.Framework.Web.csproj" />
   </ItemGroup>
 
   <!-- Include all assemblies in the package -->

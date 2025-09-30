@@ -46,14 +46,7 @@ public class StorageDownloadResult : IDisposable
     /// </summary>
     public StorageFileInfo FileInfo { get; set; } = new();
 
-    /// <summary>
-    /// Content type of the file
-    /// </summary>
     public string ContentType { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Content length in bytes
-    /// </summary>
     public long ContentLength { get; set; }
 
     /// <summary>
@@ -61,19 +54,8 @@ public class StorageDownloadResult : IDisposable
     /// </summary>
     public string? ETag { get; set; }
 
-    /// <summary>
-    /// Last modification time
-    /// </summary>
     public DateTime LastModified { get; set; }
-
-    /// <summary>
-    /// Whether download was successful
-    /// </summary>
     public bool Success { get; set; }
-
-    /// <summary>
-    /// Error message if download failed
-    /// </summary>
     public string? ErrorMessage { get; set; }
 
     public void Dispose()
@@ -88,9 +70,6 @@ public class StorageDownloadResult : IDisposable
 /// </summary>
 public class ByteRange
 {
-    /// <summary>
-    /// Start byte position
-    /// </summary>
     public long Start { get; set; }
 
     /// <summary>
@@ -98,8 +77,5 @@ public class ByteRange
     /// </summary>
     public long End { get; set; }
 
-    /// <summary>
-    /// Total content length
-    /// </summary>
     public long? ContentLength { get; set; }
 }

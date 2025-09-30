@@ -2,11 +2,46 @@
 
 Enterprise-grade .NET framework with Clean Architecture, CQRS, and 47+ modular features for .NET 8.0/9.0
 
+[![NuGet](https://img.shields.io/nuget/v/Marventa.Framework.svg)](https://www.nuget.org/packages/Marventa.Framework/)
+[![Downloads](https://img.shields.io/nuget/dt/Marventa.Framework.svg)](https://www.nuget.org/packages/Marventa.Framework/)
+
+## What's New in v3.5.1
+
+✅ **Service Registration Fixes**
+- Repository<T> pattern now auto-registered (no manual setup!)
+- Elasticsearch service auto-registered via `EnableSearch` flag
+- Outbox/Inbox pattern services via `EnableMessaging` flag
+- Projection management via `EnableProjections` flag
+
+🔧 **Dependency Management Fixed**
+All dependencies (Serilog, StackExchange.Redis, etc.) now automatically installed - **no manual package installation needed!**
+
+📚 **Accurate Documentation**
+- 27 production-ready features verified
+- Mock/placeholder implementations clearly marked
+- Complete feature status transparency
+
 ## Quick Start
 
 ### Installation
 ```bash
-dotnet add package Marventa.Framework
+dotnet add package Marventa.Framework --version 3.5.1
+# All dependencies automatic - no manual Serilog/Redis install needed!
+```
+
+### Migrating from v3.4.x?
+```bash
+# 1. Remove manually installed dependencies (if any)
+dotnet remove package Serilog
+dotnet remove package Serilog.AspNetCore
+dotnet remove package StackExchange.Redis
+# ... etc
+
+# 2. Update to v3.5.1
+dotnet add package Marventa.Framework --version 3.5.1
+
+# 3. Remove manual Repository registration (now automatic)
+# Delete: services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
 ```
 
 ### Basic Setup
@@ -51,7 +86,7 @@ app.Run();
 - `ValidationBehavior` - Automatic input validation
 - `LoggingBehavior` - Performance monitoring
 - `TransactionBehavior` - Automatic transaction management
-- `IdempotencyBehavior` - Duplicate prevention
+- `IdempotencyBehavior` - Duplicate prevention (implemented, manual registration required)
 
 ## Example: Product CRUD
 
@@ -172,15 +207,21 @@ public class FileService
 }
 ```
 
-## Configuration Features (47 Total)
+## Feature Status (v3.5.1)
 
-- Core Infrastructure (Logging, Caching, Repository, Health Checks)
-- Security (JWT, API Keys, Encryption, Rate Limiting)
-- CQRS + MediatR (Commands, Queries, Behaviors)
-- Event-Driven (Messaging, Event Sourcing, Sagas)
-- Multi-Tenancy (Tenant Isolation, Context Management)
-- API Management (Versioning, Compression, Idempotency)
-- Monitoring (Analytics, Observability, Performance Tracking)
+✅ **Production Ready (27 features)**
+- BaseDbContext, Repository, Unit of Work, CQRS, Saga, Outbox/Inbox, Projections
+- Caching (Memory/Redis), Elasticsearch
+- Email, SMS, Storage (Local/Cloud), CDN (Azure/AWS/CloudFlare)
+- JWT, Encryption, Multi-tenancy, Health Checks
+
+⚠️ **Mock/Development (6 features)**
+- ML Service, Analytics, Mock CDN/Storage (for testing)
+
+🚧 **Roadmap (14 features)**
+- Event Sourcing (infrastructure ready), Background Jobs, E-commerce features
+
+**See full README** for detailed feature breakdown and usage examples.
 
 ## Resources
 

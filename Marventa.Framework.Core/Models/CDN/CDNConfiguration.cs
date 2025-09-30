@@ -46,9 +46,6 @@ public class CachingRule
 /// </summary>
 public class CDNConfigurationResult
 {
-    /// <summary>
-    /// Configuration ID
-    /// </summary>
     public string ConfigurationId { get; set; } = string.Empty;
 
     /// <summary>
@@ -61,9 +58,6 @@ public class CDNConfigurationResult
     /// </summary>
     public Dictionary<CachingRule, string> FailedRules { get; set; } = new();
 
-    /// <summary>
-    /// Deployment timestamp
-    /// </summary>
     public DateTime DeployedAt { get; set; }
 
     /// <summary>
@@ -71,8 +65,5 @@ public class CDNConfigurationResult
     /// </summary>
     public TimeSpan EstimatedPropagationTime { get; set; }
 
-    /// <summary>
-    /// Whether configuration was successful
-    /// </summary>
     public bool Success { get; set; }
 }

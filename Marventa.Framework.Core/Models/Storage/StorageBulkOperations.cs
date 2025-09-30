@@ -31,19 +31,8 @@ public class StorageBulkOptions
 /// </summary>
 public class StorageBulkUploadResult
 {
-    /// <summary>
-    /// Total number of files processed
-    /// </summary>
     public int TotalFiles { get; set; }
-
-    /// <summary>
-    /// Number of successful uploads
-    /// </summary>
     public int SuccessfulUploads { get; set; }
-
-    /// <summary>
-    /// Number of failed uploads
-    /// </summary>
     public int FailedUploads { get; set; }
 
     /// <summary>
@@ -56,14 +45,7 @@ public class StorageBulkUploadResult
     /// </summary>
     public double SuccessRate => TotalFiles > 0 ? (double)SuccessfulUploads / TotalFiles : 0;
 
-    /// <summary>
-    /// Total bytes uploaded
-    /// </summary>
     public long TotalBytesUploaded { get; set; }
-
-    /// <summary>
-    /// Operation duration
-    /// </summary>
     public TimeSpan Duration { get; set; }
 
     /// <summary>
@@ -77,19 +59,8 @@ public class StorageBulkUploadResult
 /// </summary>
 public class StorageBulkDeletionResult
 {
-    /// <summary>
-    /// Total number of files processed
-    /// </summary>
     public int TotalFiles { get; set; }
-
-    /// <summary>
-    /// Number of successful deletions
-    /// </summary>
     public int SuccessfulDeletions { get; set; }
-
-    /// <summary>
-    /// Number of failed deletions
-    /// </summary>
     public int FailedDeletions { get; set; }
 
     /// <summary>
@@ -102,9 +73,6 @@ public class StorageBulkDeletionResult
     /// </summary>
     public double SuccessRate => TotalFiles > 0 ? (double)SuccessfulDeletions / TotalFiles : 0;
 
-    /// <summary>
-    /// Operation duration
-    /// </summary>
     public TimeSpan Duration { get; set; }
 }
 
@@ -113,24 +81,9 @@ public class StorageBulkDeletionResult
 /// </summary>
 public class BulkOperationProgress
 {
-    /// <summary>
-    /// Total number of items to process
-    /// </summary>
     public int TotalItems { get; set; }
-
-    /// <summary>
-    /// Number of items completed
-    /// </summary>
     public int CompletedItems { get; set; }
-
-    /// <summary>
-    /// Number of items that failed
-    /// </summary>
     public int FailedItems { get; set; }
-
-    /// <summary>
-    /// Current operation description
-    /// </summary>
     public string CurrentOperation { get; set; } = string.Empty;
 
     /// <summary>
