@@ -1,145 +1,116 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
-    <!-- NuGet Package Configuration -->
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <!-- NuGet Package Metadata -->
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>3.5.2</PackageVersion>
-    <VersionPrefix>3.5.2</VersionPrefix>
-    <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
-    <Title>Marventa Framework</Title>
-    <Authors>Marventa</Authors>
+    <Version>4.0.0</Version>
+    <Authors>Adem Kinatas</Authors>
     <Company>Marventa</Company>
-    <Description>Enterprise-ready modular framework supporting .NET 8.0 and .NET 9.0 with Clean Architecture. Multi-targeted package includes full support for both frameworks. Features: BaseDbContext with audit/soft-delete/multi-tenancy, 88 organized interfaces across 17 domains, Repository/UnitOfWork patterns, CQRS with MediatR Behaviors (Validation, Logging, Transaction), Sagas, Event Sourcing, CDN integration, and comprehensive infrastructure services. Built with SOLID principles for scalable enterprise applications.</Description>
-    <Copyright>Copyright © Marventa 2024</Copyright>
+    <Product>Marventa Framework</Product>
+    <Description>Enterprise-grade framework for microservices architecture with CQRS, Event Sourcing, and DDD support</Description>
+    <PackageTags>microservices;cqrs;event-sourcing;ddd;enterprise;architecture;dotnet</PackageTags>
     <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageTags>net8.0;net9.0;dotnet8;dotnet9;clean-architecture;basedbcontext;repository-pattern;unit-of-work;cqrs;mediatr;pipeline-behaviors;saga-pattern;event-sourcing;multi-tenancy;soft-delete;audit-trail;mongodb;entity-framework;solid-principles;ddd;enterprise;aspnetcore;modular;microservices</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes><![CDATA[v3.5.2: True single-package deployment - Fixed packaging
-
-🔧 CRITICAL FIX - Unified Package:
-- ✅ Single package installation (no sub-package errors)
-- ✅ All dependencies included (Redis, Serilog, EF Core, etc.)
-- ✅ All 5 framework DLLs embedded
-- ✅ Works worldwide - no regional NuGet issues
-
-📦 WHAT'S INCLUDED:
-Just install Marventa.Framework and get:
-- BaseEntity, BaseRepository, ApiResponse
-- Unified Middleware (Logging, Caching, Exception Handling, CorrelationId)
-- CQRS with MediatR + Validation/Logging Behaviors
-- Redis Cache, Serilog Logging, Hangfire Jobs
-- Repository/UnitOfWork patterns
-- Multi-tenancy, Soft Delete, Audit Trail
-
-🚀 USAGE:
-1. Install: dotnet add package Marventa.Framework
-2. Configure appsettings.json
-3. Add services: AddMarventaFramework()
-4. Use middleware: UseMarventaFramework()
-
-See README for configuration examples]]></PackageReleaseNotes>
-    <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\README.nuget.md" Pack="true" PackagePath="\" />
-    <None Include="..\icon.png" Pack="true" PackagePath="\" />
-    <None Include="Marventa.Framework.targets" Pack="true" PackagePath="build" />
+    <None Include="..\icon.png" Pack="true" PackagePath="" />
+    <None Include="..\README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- PrivateAssets=All: Don't create NuGet dependencies for sub-projects, but still reference them for compilation -->
-    <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Marventa.Framework.Domain\Marventa.Framework.Domain.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Marventa.Framework.Application\Marventa.Framework.Application.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Marventa.Framework.Infrastructure\Marventa.Framework.Infrastructure.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Marventa.Framework.Web\Marventa.Framework.Web.csproj" PrivateAssets="All" />
-  </ItemGroup>
-
-  <!-- Package dependencies - consolidated from all sub-projects -->
-  <ItemGroup>
-    <!-- Core dependencies -->
-    <PackageReference Include="MediatR" Version="13.0.0" />
-    <PackageReference Include="FluentValidation" Version="12.0.0" />
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
-    <PackageReference Include="Mapster" Version="7.4.0" />
-
-    <!-- Entity Framework & Database -->
+    <!-- Core Dependencies -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.9" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="MongoDB.Driver" Version="3.5.0" />
 
-    <!-- Caching & Redis -->
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.9" />
-    <PackageReference Include="StackExchange.Redis" Version="2.9.24" />
-    <PackageReference Include="RedLock.net" Version="2.3.2" />
-
-    <!-- Logging (Serilog) -->
-    <PackageReference Include="Serilog" Version="4.3.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="10.0.0" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
-    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
-    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-    <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
-
-    <!-- Messaging -->
+    <!-- CQRS & Messaging -->
+    <PackageReference Include="MediatR" Version="13.0.0" />
     <PackageReference Include="MassTransit" Version="8.5.3" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.3" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
     <PackageReference Include="Confluent.Kafka" Version="2.11.1" />
+
+    <!-- Caching -->
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.9" />
+    <PackageReference Include="StackExchange.Redis" Version="2.9.25" />
+
+    <!-- Logging -->
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="10.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+
+    <!-- Validation -->
+    <PackageReference Include="FluentValidation" Version="12.0.0" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+
+    <!-- Mapping -->
+    <PackageReference Include="Mapster" Version="7.4.0" />
+    <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
+
+    <!-- API -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
+
+    <!-- Security -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+
+    <!-- Resilience -->
+    <PackageReference Include="Polly" Version="8.6.4" />
+    <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
+
+    <!-- Health Checks -->
+    <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="9.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.RabbitMQ" Version="9.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
+
+    <!-- Search -->
+    <PackageReference Include="NEST" Version="7.17.5" />
+    <PackageReference Include="Elasticsearch.Net" Version="7.17.5" />
 
     <!-- Background Jobs -->
     <PackageReference Include="Hangfire.Core" Version="1.8.21" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.8.21" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.21" />
 
-    <!-- Monitoring & Telemetry -->
+    <!-- Storage -->
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.25.1" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.7.6" />
+
+    <!-- Observability -->
     <PackageReference Include="OpenTelemetry" Version="1.12.0" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Jaeger" Version="1.5.1" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.10.0-beta.1" />
 
-    <!-- Resilience & Security -->
-    <PackageReference Include="Polly" Version="8.6.4" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
-    <PackageReference Include="Azure.Identity" Version="1.16.0" />
-    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
-
-    <!-- API & Versioning -->
-    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
-    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
-  </ItemGroup>
-
-  <!-- Include all assemblies in the package -->
-  <ItemGroup>
-    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Core.dll" PackagePath="lib/net8.0" Condition="'$(TargetFramework)' == 'net8.0'" />
-    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Domain.dll" PackagePath="lib/net8.0" Condition="'$(TargetFramework)' == 'net8.0'" />
-    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Application.dll" PackagePath="lib/net8.0" Condition="'$(TargetFramework)' == 'net8.0'" />
-    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Infrastructure.dll" PackagePath="lib/net8.0" Condition="'$(TargetFramework)' == 'net8.0'" />
-    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Web.dll" PackagePath="lib/net8.0" Condition="'$(TargetFramework)' == 'net8.0'" />
-
-    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Core.dll" PackagePath="lib/net9.0" Condition="'$(TargetFramework)' == 'net9.0'" />
-    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Domain.dll" PackagePath="lib/net9.0" Condition="'$(TargetFramework)' == 'net9.0'" />
-    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Application.dll" PackagePath="lib/net9.0" Condition="'$(TargetFramework)' == 'net9.0'" />
-    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Infrastructure.dll" PackagePath="lib/net9.0" Condition="'$(TargetFramework)' == 'net9.0'" />
-    <TfmSpecificPackageFile Include="$(OutputPath)Marventa.Framework.Web.dll" PackagePath="lib/net9.0" Condition="'$(TargetFramework)' == 'net9.0'" />
+    <!-- Utilities -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="System.Text.Json" Version="9.0.9" />
   </ItemGroup>
 
 </Project>
