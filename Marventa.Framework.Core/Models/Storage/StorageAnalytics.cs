@@ -12,14 +12,7 @@ public class StorageAnalyticsResult
     /// </summary>
     public TimeRange TimeRange { get; set; } = new();
 
-    /// <summary>
-    /// Total storage used in bytes
-    /// </summary>
     public long TotalStorageBytes { get; set; }
-
-    /// <summary>
-    /// Total number of files
-    /// </summary>
     public long TotalFileCount { get; set; }
 
     /// <summary>
@@ -63,14 +56,7 @@ public class StorageAnalyticsResult
 /// </summary>
 public class BandwidthStatistics
 {
-    /// <summary>
-    /// Total upload bandwidth in bytes
-    /// </summary>
     public long TotalUploadBytes { get; set; }
-
-    /// <summary>
-    /// Total download bandwidth in bytes
-    /// </summary>
     public long TotalDownloadBytes { get; set; }
 
     /// <summary>

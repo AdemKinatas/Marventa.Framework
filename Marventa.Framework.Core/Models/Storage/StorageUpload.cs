@@ -51,9 +51,6 @@ public class StorageUploadOptions
 /// </summary>
 public class StorageUploadResult
 {
-    /// <summary>
-    /// Unique file identifier
-    /// </summary>
     public string FileId { get; set; } = string.Empty;
 
     /// <summary>
@@ -66,9 +63,6 @@ public class StorageUploadResult
     /// </summary>
     public string? PublicUrl { get; set; }
 
-    /// <summary>
-    /// File size in bytes
-    /// </summary>
     public long FileSizeBytes { get; set; }
 
     /// <summary>
@@ -81,9 +75,6 @@ public class StorageUploadResult
     /// </summary>
     public string? ETag { get; set; }
 
-    /// <summary>
-    /// Upload timestamp
-    /// </summary>
     public DateTime UploadedAt { get; set; }
 
     /// <summary>
@@ -91,13 +82,6 @@ public class StorageUploadResult
     /// </summary>
     public string? VersionId { get; set; }
 
-    /// <summary>
-    /// Whether upload was successful
-    /// </summary>
     public bool Success { get; set; }
-
-    /// <summary>
-    /// Error message if upload failed
-    /// </summary>
     public string? ErrorMessage { get; set; }
 }

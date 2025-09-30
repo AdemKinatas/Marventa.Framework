@@ -36,9 +36,6 @@ public class StorageAccessControl
 /// </summary>
 public class EncryptionOptions
 {
-    /// <summary>
-    /// Encryption method
-    /// </summary>
     public EncryptionMethod Method { get; set; } = EncryptionMethod.ServerSide;
 
     /// <summary>
@@ -46,8 +43,5 @@ public class EncryptionOptions
     /// </summary>
     public string? KeyId { get; set; }
 
-    /// <summary>
-    /// Encryption algorithm
-    /// </summary>
     public string Algorithm { get; set; } = "AES256";
 }

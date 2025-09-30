@@ -5,9 +5,6 @@ namespace Marventa.Framework.Core.Models.Storage;
 /// </summary>
 public class StorageHealthResult
 {
-    /// <summary>
-    /// Overall health status
-    /// </summary>
     public HealthStatus Status { get; set; }
 
     /// <summary>
@@ -20,14 +17,7 @@ public class StorageHealthResult
     /// </summary>
     public long? AvailableCapacityBytes { get; set; }
 
-    /// <summary>
-    /// Used storage capacity
-    /// </summary>
     public long UsedCapacityBytes { get; set; }
-
-    /// <summary>
-    /// Health check timestamp
-    /// </summary>
     public DateTime CheckedAt { get; set; }
 
     /// <summary>
@@ -46,29 +36,10 @@ public class StorageHealthResult
 /// </summary>
 public class StorageConnectivityResult
 {
-    /// <summary>
-    /// Whether connection test was successful
-    /// </summary>
     public bool Success { get; set; }
-
-    /// <summary>
-    /// Connection response time
-    /// </summary>
     public TimeSpan ResponseTime { get; set; }
-
-    /// <summary>
-    /// Test timestamp
-    /// </summary>
     public DateTime TestedAt { get; set; }
-
-    /// <summary>
-    /// Provider endpoint that was tested
-    /// </summary>
     public string Endpoint { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Error message if connection failed
-    /// </summary>
     public string? ErrorMessage { get; set; }
 
     /// <summary>

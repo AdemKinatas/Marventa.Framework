@@ -5,39 +5,12 @@ namespace Marventa.Framework.Core.Models.Storage;
 /// </summary>
 public class StorageFileInfo
 {
-    /// <summary>
-    /// Unique file identifier
-    /// </summary>
     public string FileId { get; set; } = string.Empty;
-
-    /// <summary>
-    /// File name
-    /// </summary>
     public string FileName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Full file path
-    /// </summary>
     public string FilePath { get; set; } = string.Empty;
-
-    /// <summary>
-    /// File size in bytes
-    /// </summary>
     public long FileSizeBytes { get; set; }
-
-    /// <summary>
-    /// Content type
-    /// </summary>
     public string ContentType { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Creation timestamp
-    /// </summary>
     public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Last modification timestamp
-    /// </summary>
     public DateTime LastModified { get; set; }
 
     /// <summary>
@@ -45,9 +18,6 @@ public class StorageFileInfo
     /// </summary>
     public string? ETag { get; set; }
 
-    /// <summary>
-    /// MD5 hash
-    /// </summary>
     public string? MD5Hash { get; set; }
 
     /// <summary>
@@ -60,9 +30,6 @@ public class StorageFileInfo
     /// </summary>
     public StorageAccessControl? AccessControl { get; set; }
 
-    /// <summary>
-    /// Storage class/tier
-    /// </summary>
     public StorageClass StorageClass { get; set; }
 
     /// <summary>
