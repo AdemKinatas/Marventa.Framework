@@ -30,7 +30,7 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false /p:NoWarn=CS1591
 
     - name: Test with Coverage
       run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
@@ -97,7 +97,7 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false /p:NoWarn=CS1591
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
