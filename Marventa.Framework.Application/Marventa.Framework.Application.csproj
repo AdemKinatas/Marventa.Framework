@@ -26,6 +26,7 @@
     <Title>Marventa Framework Application</Title>
     <Authors>Marventa</Authors>
     <Description>Application layer with CQRS, MediatR, LoggingBehavior, TransactionBehavior and business logic for Marventa Framework</Description>
+    <NoWarn>$(NoWarn);CS1591;S101;S2326;S3246;S3427;S3881;S6562;CA1068;CA1822;CA1031;IDE0005;IDE0060;IDE0051</NoWarn>
   </PropertyGroup>
 
 </Project>

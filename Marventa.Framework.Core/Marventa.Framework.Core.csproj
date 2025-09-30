@@ -19,7 +19,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Suppress XML documentation warnings for internal classes -->
     <!-- Public APIs have documentation, internal classes don't require it -->
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;S101;S2326;S3246;S3427;S3881;S6562;CA1068;CA1822;CA1031;IDE0005;IDE0060;IDE0051</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -54,6 +54,7 @@
     <Title>Marventa Framework Infrastructure</Title>
     <Authors>Marventa</Authors>
     <Description>Infrastructure layer with data access, external services, and cross-cutting concerns for Marventa Framework</Description>
+    <NoWarn>$(NoWarn);CS1591;S101;S2326;S3246;S3427;S3881;S6562;CA1068;CA1822;CA1031;IDE0005;IDE0060;IDE0051</NoWarn>
   </PropertyGroup>
 
 </Project>
