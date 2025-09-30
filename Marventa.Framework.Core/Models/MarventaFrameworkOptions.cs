@@ -82,4 +82,5 @@ public class MarventaFrameworkOptions
     public SecurityOptions SecurityOptions { get; set; } = new();
     public StorageOptions StorageOptions { get; set; } = new();
     public MiddlewareOptions MiddlewareOptions { get; set; } = new();
+    public CqrsOptions CqrsOptions { get; set; } = new();
 }

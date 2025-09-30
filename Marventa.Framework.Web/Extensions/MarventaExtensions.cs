@@ -25,6 +25,7 @@ using Marventa.Framework.Infrastructure.Sagas;
 using Marventa.Framework.Infrastructure.Multitenancy;
 using Marventa.Framework.Infrastructure.Authorization;
 using Marventa.Framework.Web.Middleware;
+using FluentValidation;
 
 namespace Marventa.Framework.Web.Extensions;
 
@@ -558,10 +559,10 @@ public static class MarventaExtensions
             services.AddScoped<ITenantAuthorization, TenantAuthorizationService>();
         }
 
-        // CQRS pattern (future implementation)
+        // CQRS pattern with MediatR and Pipeline Behaviors
         if (options.EnableCQRS)
         {
-            // CQRS services would go here
+            services.AddCqrsServices(options);
         }
 
         // Event-driven architecture
@@ -569,6 +570,59 @@ public static class MarventaExtensions
         {
             // Event bus and handlers would go here
         }
+
+        return services;
+    }
+
+    private static IServiceCollection AddCqrsServices(
+        this IServiceCollection services,
+        MarventaFrameworkOptions options)
+    {
+        var cqrsOptions = options.CqrsOptions;
+
+        if (cqrsOptions.Assemblies == null || !cqrsOptions.Assemblies.Any())
+        {
+            throw new InvalidOperationException(
+                "CQRS is enabled but no assemblies are configured. " +
+                "Please add assemblies to CqrsOptions.Assemblies in your configuration.");
+        }
+
+        // Add MediatR with handlers from configured assemblies
+        services.AddMediatR(cfg =>
+        {
+            foreach (var assembly in cqrsOptions.Assemblies)
+            {
+                cfg.RegisterServicesFromAssembly(assembly);
+            }
+
+            // Add Marventa pipeline behaviors based on configuration
+            if (cqrsOptions.EnableValidationBehavior)
+            {
+                cfg.AddOpenBehavior(typeof(Marventa.Framework.Application.Behaviors.ValidationBehavior<,>));
+            }
+
+            if (cqrsOptions.EnableLoggingBehavior)
+            {
+                cfg.AddOpenBehavior(typeof(Marventa.Framework.Application.Behaviors.LoggingBehavior<,>));
+            }
+
+            if (cqrsOptions.EnableTransactionBehavior)
+            {
+                cfg.AddOpenBehavior(typeof(Marventa.Framework.Application.Behaviors.TransactionBehavior<,>));
+            }
+        });
+
+        // Add FluentValidation validators if ValidationBehavior is enabled
+        if (cqrsOptions.EnableValidationBehavior)
+        {
+            foreach (var assembly in cqrsOptions.Assemblies)
+            {
+                services.AddValidatorsFromAssembly(assembly);
+            }
+        }
+
+        // Add Unit of Work for transaction management
+        services.AddScoped<IUnitOfWork, Marventa.Framework.Infrastructure.Data.UnitOfWork>();
 
         return services;
     }
