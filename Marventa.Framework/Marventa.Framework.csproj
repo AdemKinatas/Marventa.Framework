@@ -8,21 +8,21 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>3.4.0</PackageVersion>
-    <VersionPrefix>3.4.0</VersionPrefix>
+    <PackageVersion>3.4.1</PackageVersion>
+    <VersionPrefix>3.4.1</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
     <Company>Marventa</Company>
-    <Description>Enterprise-ready modular framework for .NET 8.0/9.0 with Clean Architecture. Features: BaseDbContext with audit/soft-delete/multi-tenancy, 88 organized interfaces across 17 domains, Repository/UnitOfWork patterns, CQRS with MediatR Behaviors (Validation, Logging, Transaction), Sagas, Event Sourcing, CDN integration, and comprehensive infrastructure services. Built with SOLID principles for scalable enterprise applications.</Description>
+    <Description>Enterprise-ready modular framework supporting .NET 8.0 and .NET 9.0 with Clean Architecture. Multi-targeted package includes full support for both frameworks. Features: BaseDbContext with audit/soft-delete/multi-tenancy, 88 organized interfaces across 17 domains, Repository/UnitOfWork patterns, CQRS with MediatR Behaviors (Validation, Logging, Transaction), Sagas, Event Sourcing, CDN integration, and comprehensive infrastructure services. Built with SOLID principles for scalable enterprise applications.</Description>
     <Copyright>Copyright © Marventa 2024</Copyright>
     <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageTags>clean-architecture;basedbcontext;repository-pattern;unit-of-work;cqrs;mediatr;pipeline-behaviors;saga-pattern;event-sourcing;multi-tenancy;soft-delete;audit-trail;mongodb;entity-framework;solid-principles;ddd;enterprise;aspnetcore;modular;microservices</PackageTags>
+    <PackageTags>net8.0;net9.0;dotnet8;dotnet9;clean-architecture;basedbcontext;repository-pattern;unit-of-work;cqrs;mediatr;pipeline-behaviors;saga-pattern;event-sourcing;multi-tenancy;soft-delete;audit-trail;mongodb;entity-framework;solid-principles;ddd;enterprise;aspnetcore;modular;microservices</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v3.4.0: Documentation Excellence - Comprehensive NuGet documentation rewritten. Clean, concise guide without HTML issues. Simplified CI/CD with auto-publish on master push. Icon properly included. Complete warning suppression across all projects. Production-ready with zero warnings.</PackageReleaseNotes>
+    <PackageReleaseNotes>v3.4.1: Multi-target clarification - Package explicitly supports both .NET 8.0 and .NET 9.0. Updated description and tags to make framework support clear. Full lib/net8.0 and lib/net9.0 assemblies included. Zero breaking changes from v3.4.0.</PackageReleaseNotes>
     <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
     <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
