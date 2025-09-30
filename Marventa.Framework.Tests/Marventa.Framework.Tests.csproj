@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -30,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Marventa.Framework.Core\Marventa.Framework.Core.csproj" />
+    <ProjectReference Include="..\Marventa.Framework.Application\Marventa.Framework.Application.csproj" />
     <ProjectReference Include="..\Marventa.Framework.Infrastructure\Marventa.Framework.Infrastructure.csproj" />
     <ProjectReference Include="..\Marventa.Framework.Web\Marventa.Framework.Web.csproj" />
   </ItemGroup>
