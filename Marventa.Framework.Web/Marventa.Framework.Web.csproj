@@ -24,8 +24,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
-    <PackageVersion>2.8.0</PackageVersion>
-    <VersionPrefix>2.8.0</VersionPrefix>
+    <PackageVersion>3.3.0</PackageVersion>
+    <VersionPrefix>3.3.0</VersionPrefix>
     <Title>Marventa Framework Web</Title>
     <Authors>Marventa</Authors>
     <Description>Web layer with ASP.NET Core integration, controllers, and web-specific features for Marventa Framework</Description>

@@ -8,8 +8,8 @@
     <!-- NuGet Package Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>Marventa.Framework</PackageId>
-    <PackageVersion>3.2.0</PackageVersion>
-    <VersionPrefix>3.2.0</VersionPrefix>
+    <PackageVersion>3.3.0</PackageVersion>
+    <VersionPrefix>3.3.0</VersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' == ''"></VersionSuffix>
     <Title>Marventa Framework</Title>
     <Authors>Marventa</Authors>
@@ -22,7 +22,7 @@
     <PackageTags>clean-architecture;basedbcontext;repository-pattern;unit-of-work;cqrs;mediatr;pipeline-behaviors;saga-pattern;event-sourcing;multi-tenancy;soft-delete;audit-trail;mongodb;entity-framework;solid-principles;ddd;enterprise;aspnetcore;modular;microservices</PackageTags>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>v3.2.0: Enhanced MediatR Support - Added LoggingBehavior for performance monitoring and TransactionBehavior for automatic transaction management. All behaviors work seamlessly with existing CQRS infrastructure. Improved Application layer with comprehensive pipeline behaviors. No breaking changes - fully backward compatible.</PackageReleaseNotes>
+    <PackageReleaseNotes>v3.3.0: Code Quality and Documentation - Comprehensive XML documentation added for all public APIs. Improved IntelliSense support. Added BasicWebApi sample project demonstrating CQRS, MediatR, and Clean Architecture patterns. Enhanced developer experience with better tooltips and code navigation. No breaking changes - fully backward compatible.</PackageReleaseNotes>
     <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
     <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
