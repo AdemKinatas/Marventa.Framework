@@ -1,0 +1,31 @@
+name: Auto Publish to NuGet
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    name: Build and Publish
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore /p:TreatWarningsAsErrors=false /p:NoWarn="CS1591;S101;S2326;S3246;S3427;S3881;S6562;CA1068;CA1822;CA1031;IDE0005;IDE0060;IDE0051"
+
+    - name: Pack
+      run: dotnet pack Marventa.Framework/Marventa.Framework.csproj --configuration Release --no-build --output ./artifacts
+
+    - name: Publish to NuGet
+      run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
