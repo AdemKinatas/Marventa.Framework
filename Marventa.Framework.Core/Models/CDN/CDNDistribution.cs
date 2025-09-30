@@ -5,9 +5,6 @@ namespace Marventa.Framework.Core.Models.CDN;
 /// </summary>
 public class CDNDistributionStatus
 {
-    /// <summary>
-    /// File identifier
-    /// </summary>
     public string FileId { get; set; } = string.Empty;
 
     /// <summary>
@@ -20,9 +17,6 @@ public class CDNDistributionStatus
     /// </summary>
     public Dictionary<string, EdgeLocationStatus> EdgeStatuses { get; set; } = new();
 
-    /// <summary>
-    /// Total edge locations
-    /// </summary>
     public int TotalEdgeLocations { get; set; }
 
     /// <summary>
@@ -35,9 +29,6 @@ public class CDNDistributionStatus
     /// </summary>
     public double DistributionPercentage => TotalEdgeLocations > 0 ? (double)DistributedEdgeLocations / TotalEdgeLocations : 0;
 
-    /// <summary>
-    /// Last update timestamp
-    /// </summary>
     public DateTime LastUpdated { get; set; }
 }
 
@@ -46,14 +37,7 @@ public class CDNDistributionStatus
 /// </summary>
 public class EdgeLocationStatus
 {
-    /// <summary>
-    /// Edge location identifier
-    /// </summary>
     public string LocationId { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Geographic region
-    /// </summary>
     public string Region { get; set; } = string.Empty;
 
     /// <summary>

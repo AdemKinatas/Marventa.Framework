@@ -26,19 +26,8 @@ public class StorageDeletionOptions
 /// </summary>
 public class StorageDeletionResult
 {
-    /// <summary>
-    /// File identifier that was deleted
-    /// </summary>
     public string FileId { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Whether deletion was successful
-    /// </summary>
     public bool Success { get; set; }
-
-    /// <summary>
-    /// Deletion timestamp
-    /// </summary>
     public DateTime DeletedAt { get; set; }
 
     /// <summary>
@@ -46,9 +35,6 @@ public class StorageDeletionResult
     /// </summary>
     public bool PermanentlyDeleted { get; set; }
 
-    /// <summary>
-    /// Error message if deletion failed
-    /// </summary>
     public string? ErrorMessage { get; set; }
 }
 
@@ -57,14 +43,7 @@ public class StorageDeletionResult
 /// </summary>
 public class StorageCopyOptions
 {
-    /// <summary>
-    /// Whether to overwrite destination if it exists
-    /// </summary>
     public bool OverwriteIfExists { get; set; } = false;
-
-    /// <summary>
-    /// Whether to preserve metadata
-    /// </summary>
     public bool PreserveMetadata { get; set; } = true;
 
     /// <summary>
@@ -72,9 +51,6 @@ public class StorageCopyOptions
     /// </summary>
     public Dictionary<string, string>? NewMetadata { get; set; }
 
-    /// <summary>
-    /// Storage class for the copy
-    /// </summary>
     public StorageClass? StorageClass { get; set; }
 }
 
@@ -83,19 +59,8 @@ public class StorageCopyOptions
 /// </summary>
 public class StorageCopyResult
 {
-    /// <summary>
-    /// New file identifier
-    /// </summary>
     public string NewFileId { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Destination path
-    /// </summary>
     public string DestinationPath { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Whether copy was successful
-    /// </summary>
     public bool Success { get; set; }
 
     /// <summary>

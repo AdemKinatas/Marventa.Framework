@@ -2,9 +2,28 @@
 
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-512BD4)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-v3.3.2-blue)](https://www.nuget.org/packages/Marventa.Framework)
+[![NuGet](https://img.shields.io/badge/NuGet-v3.5.1-blue)](https://www.nuget.org/packages/Marventa.Framework)
 
 > **Enterprise-grade .NET framework with Clean Architecture, CQRS, and 47+ modular features**
+
+---
+
+## What's New in v3.5.1
+
+**Major Quality & Dependency Fixes**
+
+- **NEW**: Repository<T> pattern auto-registered - no manual setup needed
+- **NEW**: Elasticsearch service registration via `EnableSearch` flag
+- **NEW**: Outbox/Inbox pattern services via `EnableMessaging` flag
+- **NEW**: Projection management via `EnableProjections` flag
+- **FIX**: All dependencies now properly exported - no more manual Serilog/Redis installation!
+- **QUALITY**: ~3,000 lines refactored for better maintainability and clarity
+
+**Migration from v3.4.x**:
+1. Update to v3.5.1: `dotnet add package Marventa.Framework --version 3.5.1`
+2. Remove manually installed dependencies (Serilog.\*, StackExchange.Redis, etc.) - they're now included
+3. Repository pattern is auto-registered - remove manual registrations
+4. Use new feature flags: `EnableSearch`, `EnableMessaging`, `EnableProjections`
 
 ---
 
@@ -12,42 +31,43 @@
 
 ### Getting Started
 1. [Introduction](#-1-introduction)
-2. [Installation](#-2-installation)
-3. [Quick Start](#-3-quick-start)
-4. [Project Structure](#-4-project-structure)
+2. [Feature Status](#-2-feature-status)
+3. [Installation](#-3-installation)
+4. [Quick Start](#-4-quick-start)
+5. [Project Structure](#-5-project-structure)
 
 ### Core Concepts
-5. [Entity Base Classes](#-5-entity-base-classes)
-6. [DbContext Setup](#-6-dbcontext-setup)
-7. [Repository Pattern](#-7-repository-pattern)
-8. [Unit of Work](#-8-unit-of-work)
+6. [Entity Base Classes](#-6-entity-base-classes)
+7. [DbContext Setup](#-7-dbcontext-setup)
+8. [Repository Pattern](#-8-repository-pattern)
+9. [Unit of Work](#-9-unit-of-work)
 
 ### CQRS & MediatR
-9. [Commands](#-9-commands)
-10. [Queries](#-10-queries)
-11. [Validation](#-11-validation)
-12. [Pipeline Behaviors](#-12-pipeline-behaviors)
+10. [Commands](#-10-commands)
+11. [Queries](#-11-queries)
+12. [Validation](#-12-validation)
+13. [Pipeline Behaviors](#-13-pipeline-behaviors)
 
 ### Advanced Features
-13. [Multi-Tenancy](#-13-multi-tenancy)
-14. [Soft Delete](#-14-soft-delete)
-15. [Audit Tracking](#-15-audit-tracking)
-16. [Event Sourcing](#-16-event-sourcing)
-17. [Saga Pattern](#-17-saga-pattern)
+14. [Multi-Tenancy](#-14-multi-tenancy)
+15. [Soft Delete](#-15-soft-delete)
+16. [Audit Tracking](#-16-audit-tracking)
+17. [Event Sourcing](#-17-event-sourcing)
+18. [Saga Pattern](#-18-saga-pattern)
 
 ### Infrastructure
-18. [Caching](#-18-caching)
-19. [Logging](#-19-logging)
-20. [Health Checks](#-20-health-checks)
-21. [CDN Integration](#-21-cdn-integration)
+19. [Caching](#-19-caching)
+20. [Logging](#-20-logging)
+21. [Health Checks](#-21-health-checks)
+22. [CDN Integration](#-22-cdn-integration)
 
 ### Configuration
-22. [Feature Flags](#-22-feature-flags)
-23. [appsettings.json](#-23-appsettingsjson)
+23. [Feature Flags](#-23-feature-flags)
+24. [appsettings.json](#-24-appsettingsjson)
 
 ### Examples
-24. [Complete Example](#-24-complete-example)
-25. [Best Practices](#-25-best-practices)
+25. [Complete Example](#-25-complete-example)
+26. [Best Practices](#-26-best-practices)
 
 ---
 
@@ -59,12 +79,12 @@ Marventa Framework is a complete enterprise solution implementing **Clean Archit
 
 ✅ **Clean Architecture** - Proper separation of concerns
 ✅ **CQRS Pattern** - Command Query Responsibility Segregation
-✅ **Repository Pattern** - Clean data access
+✅ **Repository Pattern** - Auto-registered and ready to use
 ✅ **MediatR Behaviors** - Automatic validation, logging, transactions
 ✅ **Multi-Tenancy** - Built-in tenant isolation
 ✅ **Soft Delete** - Never lose data
 ✅ **Audit Tracking** - Who did what, when
-✅ **47 Features** - Enable only what you need
+✅ **47 Features** - Enable only what you need (27 production-ready)
 
 ### When to Use
 
@@ -76,13 +96,117 @@ Marventa Framework is a complete enterprise solution implementing **Clean Archit
 
 ---
 
-## 🚀 2. Installation
+## 📊 2. Feature Status
+
+### Production-Ready Features (27 features)
+
+These features are fully implemented, tested, and ready for production use:
+
+**Core Infrastructure**
+- ✅ BaseDbContext with audit trail, soft delete, multi-tenancy
+- ✅ Repository<T> pattern (auto-registered in v3.5.1)
+- ✅ Unit of Work pattern
+- ✅ CQRS with MediatR
+- ✅ Pipeline Behaviors (Validation, Logging, Transaction)
+- ✅ Saga pattern orchestration
+- ✅ Outbox/Inbox pattern (new in v3.5.1)
+- ✅ Projection management (new in v3.5.1)
+
+**Data & Caching**
+- ✅ Memory caching
+- ✅ Redis caching (dependencies now properly exported)
+- ✅ Elasticsearch integration (new in v3.5.1)
+
+**Communication**
+- ✅ Email service (SMTP)
+- ✅ SMS service
+- ✅ Notification services
+
+**Storage & CDN**
+- ✅ Local file storage
+- ✅ Azure Blob Storage
+- ✅ AWS S3 Storage
+- ✅ Azure CDN
+- ✅ AWS CloudFront
+- ✅ CloudFlare CDN
+
+**Security**
+- ✅ JWT Authentication
+- ✅ API Key Authentication
+- ✅ Encryption services
+- ✅ Multi-tenancy support
+
+**Infrastructure**
+- ✅ Structured logging (Serilog - now properly exported)
+- ✅ Health checks
+- ✅ Exception handling middleware
+- ✅ CORS configuration
+
+### Mock/Development Features (6 features)
+
+These features exist but are placeholders for development only:
+
+- ⚠️ Mock ML Service - Placeholder only, not functional
+- ⚠️ Analytics Service - Placeholder only, not functional
+- ⚠️ Mock CDN Provider - For development/testing
+- ⚠️ Mock Storage Provider - For development/testing
+- ⚠️ Mock Payment Service - Placeholder for future implementation
+- ⚠️ Mock Blockchain Service - Placeholder for future implementation
+
+### Roadmap/Partial Features (14 features)
+
+These features have infrastructure but are disabled or incomplete:
+
+**Event-Driven Architecture**
+- 🚧 Event Sourcing - Infrastructure ready, disabled by default
+- 🚧 Domain Event Dispatcher - Exists but not fully integrated
+
+**Pipeline Behaviors**
+- 🚧 IdempotencyBehavior - Implemented but not registered in pipeline
+
+**Background Processing**
+- 🚧 Background Jobs - Requires Hangfire integration
+- 🚧 Scheduled Tasks - Not implemented
+
+**Business Features**
+- 🚧 E-commerce Services - Partial implementation
+- 🚧 Inventory Management - Not implemented
+- 🚧 Order Processing - Basic structure only
+- 🚧 Payment Integration - Interface only
+- 🚧 Shipping Services - Not implemented
+
+**Resilience**
+- 🚧 Circuit Breaker - Not implemented
+- 🚧 Retry Policies - Not implemented
+- 🚧 Distributed Locking - Not implemented
+- 🚧 Rate Limiting - Basic implementation only
+
+### Feature Count Summary
+
+| Status | Count | Percentage |
+|--------|-------|------------|
+| Production Ready | 27 | 57% |
+| Mock/Development | 6 | 13% |
+| Roadmap/Partial | 14 | 30% |
+| **Total** | **47** | **100%** |
+
+---
+
+## 🚀 3. Installation
 
 ### Step 1: Install NuGet Package
 
 ```bash
-dotnet add package Marventa.Framework
+# Install latest version (v3.5.1)
+dotnet add package Marventa.Framework --version 3.5.1
 ```
+
+**What's included automatically in v3.5.1:**
+- All dependencies are now properly exported
+- No need to manually install Serilog packages
+- No need to manually install StackExchange.Redis
+- No need to manually install Elasticsearch.Net
+- Repository pattern is auto-registered
 
 ### Step 2: Install Database Provider
 
@@ -104,9 +228,45 @@ dotnet restore
 dotnet build
 ```
 
+### Migration from v3.4.x
+
+If you're upgrading from v3.4.x, follow these steps:
+
+1. **Update the package:**
+   ```bash
+   dotnet add package Marventa.Framework --version 3.5.1
+   ```
+
+2. **Remove manually installed dependencies** (they're now included):
+   ```bash
+   # Remove these if you installed them manually
+   dotnet remove package Serilog
+   dotnet remove package Serilog.Sinks.Console
+   dotnet remove package Serilog.Sinks.File
+   dotnet remove package StackExchange.Redis
+   dotnet remove package Elasticsearch.Net
+   dotnet remove package NEST
+   ```
+
+3. **Remove manual Repository registration** (now auto-registered):
+   ```csharp
+   // ❌ Remove this - no longer needed
+   builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+   ```
+
+4. **Use new feature flags:**
+   ```csharp
+   builder.Services.AddMarventaFramework(builder.Configuration, options =>
+   {
+       options.EnableSearch = true;        // NEW: Elasticsearch
+       options.EnableMessaging = true;     // NEW: Outbox/Inbox
+       options.EnableProjections = true;   // NEW: Projections
+   });
+   ```
+
 ---
 
-## ⚡ 3. Quick Start
+## ⚡ 4. Quick Start
 
 ### Minimal Setup (3 Steps)
 
@@ -163,14 +323,14 @@ public class ApplicationDbContext : BaseDbContext
 ```
 
 **Done!** You now have:
-- ✅ Repository pattern ready
+- ✅ Repository pattern ready (auto-registered in v3.5.1)
 - ✅ Soft delete enabled
 - ✅ Audit tracking active
 - ✅ CQRS setup complete
 
 ---
 
-## 📁 4. Project Structure
+## 📁 5. Project Structure
 
 ### Recommended Structure
 
@@ -194,7 +354,7 @@ YourProject/
 
 ---
 
-## 🏗️ 5. Entity Base Classes
+## 🏗️ 6. Entity Base Classes
 
 ### BaseEntity - Standard Entities
 
@@ -270,7 +430,7 @@ public class Customer : TenantBaseEntity
 
 ---
 
-## 💾 6. DbContext Setup
+## 💾 7. DbContext Setup
 
 ### Basic Setup
 
@@ -335,7 +495,7 @@ builder.Services.AddScoped<BaseDbContext>(provider =>
 
 ---
 
-## 🗄️ 7. Repository Pattern
+## 🗄️ 8. Repository Pattern
 
 ### Basic Usage
 
@@ -441,7 +601,7 @@ public class ProductService
 
 ---
 
-## 🔄 8. Unit of Work
+## 🔄 9. Unit of Work
 
 ### Why Unit of Work?
 
@@ -521,7 +681,7 @@ public class OrderService
 
 ---
 
-## ⚡ 9. Commands
+## ⚡ 10. Commands
 
 Commands represent **write operations** (Create, Update, Delete).
 
@@ -623,7 +783,7 @@ When you send a command:
 
 ---
 
-## 🔍 10. Queries
+## 🔍 11. Queries
 
 Queries represent **read operations** (Get, List, Search).
 
@@ -762,7 +922,7 @@ public class ProductsController : ControllerBase
 
 ---
 
-## ✅ 11. Validation
+## ✅ 12. Validation
 
 Validation happens **automatically** before your handler executes.
 
@@ -846,7 +1006,7 @@ builder.Services.AddMarventaFramework(builder.Configuration, options =>
 
 ---
 
-## 🔧 12. Pipeline Behaviors
+## 🔧 13. Pipeline Behaviors
 
 Behaviors wrap your handlers with cross-cutting concerns.
 
@@ -857,7 +1017,7 @@ Behaviors wrap your handlers with cross-cutting concerns.
 | **ValidationBehavior** | Validates input | Before handler |
 | **LoggingBehavior** | Logs execution time | Before/After handler |
 | **TransactionBehavior** | Manages transactions | Wraps handler |
-| **IdempotencyBehavior** | Prevents duplicates | Before handler |
+| **IdempotencyBehavior** | Prevents duplicates | Before handler (not registered by default) |
 
 ### Enable Behaviors
 
@@ -890,10 +1050,11 @@ builder.Services.AddMarventaFramework(builder.Configuration, options =>
 - Rollbacks on exceptions
 - Skips queries (read-only)
 
-**IdempotencyBehavior**
+**IdempotencyBehavior** (Note: Implemented but not registered by default in v3.5.1)
 - Prevents duplicate command execution
 - Uses command hash as key
 - Returns cached result for duplicates
+- Requires manual registration if needed
 
 ### Execution Order
 
@@ -917,7 +1078,7 @@ Response
 
 ---
 
-## 🏢 13. Multi-Tenancy
+## 🏢 14. Multi-Tenancy
 
 ### Step 1: Use TenantBaseEntity
 
@@ -1002,7 +1163,7 @@ var allCustomers = await _context.Customers
 
 ---
 
-## 🗑️ 14. Soft Delete
+## 🗑️ 15. Soft Delete
 
 Entities are **never physically deleted** from the database.
 
@@ -1053,7 +1214,7 @@ if (product != null)
 
 ---
 
-## 📝 15. Audit Tracking
+## 📝 16. Audit Tracking
 
 Every change is **automatically tracked**.
 
@@ -1139,7 +1300,7 @@ if (product.IsDeleted)
 
 ---
 
-## 🎯 16. Event Sourcing
+## 🎯 17. Event Sourcing
 
 Capture **all changes** as events.
 
@@ -1237,7 +1398,7 @@ public class ProductPriceChangedEventHandler : INotificationHandler<ProductPrice
 builder.Services.AddMarventaFramework(builder.Configuration, options =>
 {
     options.EnableEventDriven = true;
-    options.EnableEventSourcing = true;
+    options.EnableEventSourcing = true;  // Note: Infrastructure ready but disabled by default in v3.5.1
 });
 ```
 
@@ -1249,9 +1410,11 @@ builder.Services.AddMarventaFramework(builder.Configuration, options =>
 4. All handlers execute
 5. Events stored in database (if enabled)
 
+**Note**: Event sourcing infrastructure is present in v3.5.1 but disabled by default. The feature is on the roadmap for full production readiness.
+
 ---
 
-## 🔄 17. Saga Pattern
+## 🔄 18. Saga Pattern
 
 Manage **distributed transactions** across multiple services.
 
@@ -1385,7 +1548,7 @@ public class OrderService
 
 ---
 
-## 💨 18. Caching
+## 💨 19. Caching
 
 Speed up your application with **built-in caching**.
 
@@ -1444,6 +1607,8 @@ builder.Services.AddMarventaFramework(builder.Configuration, options =>
     options.EnableCaching = true;
     options.CachingOptions.Provider = "Redis";
 });
+
+// Note: StackExchange.Redis is now automatically included in v3.5.1 - no manual installation needed!
 ```
 
 ### Cache Methods
@@ -1467,9 +1632,9 @@ await _cache.RemoveByPatternAsync("product:*");
 
 ---
 
-## 📊 19. Logging
+## 📊 20. Logging
 
-Structured logging with **Serilog**.
+Structured logging with **Serilog** (now automatically included in v3.5.1).
 
 ### Enable Logging
 
@@ -1480,6 +1645,8 @@ builder.Services.AddMarventaFramework(builder.Configuration, options =>
     options.EnableCQRS = true;
     options.CqrsOptions.EnableLoggingBehavior = true; // Auto-log all requests
 });
+
+// Note: Serilog packages are now automatically included - no manual installation needed!
 ```
 
 ### Manual Logging
@@ -1541,7 +1708,7 @@ _logger.LogCritical(exception, "Critical error");
 
 ---
 
-## ❤️ 20. Health Checks
+## ❤️ 21. Health Checks
 
 Monitor application health.
 
@@ -1610,7 +1777,7 @@ GET /health/live
 
 ---
 
-## 🌐 21. CDN Integration
+## 🌐 22. CDN Integration
 
 Integrate with Azure, AWS, or CloudFlare CDN.
 
@@ -1654,70 +1821,74 @@ public class FileService
 
 ---
 
-## ⚙️ 22. Feature Flags
+## ⚙️ 23. Feature Flags
 
 Enable only the features you need.
 
-### All Features
+### All Features (v3.5.1)
 
 ```csharp
 builder.Services.AddMarventaFramework(builder.Configuration, options =>
 {
-    // Core Infrastructure
-    options.EnableLogging = true;
-    options.EnableCaching = true;
-    options.EnableRepository = true;
-    options.EnableHealthChecks = true;
-    options.EnableValidation = true;
-    options.EnableExceptionHandling = true;
+    // Core Infrastructure (Production Ready)
+    options.EnableLogging = true;                    // ✅ Serilog - now auto-included
+    options.EnableCaching = true;                    // ✅ Memory/Redis - auto-included
+    options.EnableRepository = true;                 // ✅ Auto-registered in v3.5.1
+    options.EnableHealthChecks = true;               // ✅ Production ready
+    options.EnableValidation = true;                 // ✅ FluentValidation
+    options.EnableExceptionHandling = true;          // ✅ Global exception handler
 
-    // Security
-    options.EnableSecurity = true;
-    options.EnableJWT = true;
-    options.EnableApiKeys = true;
-    options.EnableEncryption = true;
+    // Security (Production Ready)
+    options.EnableSecurity = true;                   // ✅ Production ready
+    options.EnableJWT = true;                        // ✅ Production ready
+    options.EnableApiKeys = true;                    // ✅ Production ready
+    options.EnableEncryption = true;                 // ✅ Production ready
 
-    // CQRS + MediatR
-    options.EnableCQRS = true;
+    // CQRS + MediatR (Production Ready)
+    options.EnableCQRS = true;                       // ✅ Production ready
     options.CqrsOptions.Assemblies.Add(typeof(Program).Assembly);
-    options.CqrsOptions.EnableValidationBehavior = true;
-    options.CqrsOptions.EnableLoggingBehavior = true;
-    options.CqrsOptions.EnableTransactionBehavior = true;
-    options.CqrsOptions.EnableIdempotencyBehavior = false;
+    options.CqrsOptions.EnableValidationBehavior = true;    // ✅ Production ready
+    options.CqrsOptions.EnableLoggingBehavior = true;       // ✅ Production ready
+    options.CqrsOptions.EnableTransactionBehavior = true;   // ✅ Production ready
+    options.CqrsOptions.EnableIdempotencyBehavior = false;  // 🚧 Not registered by default
 
-    // API Management
-    options.EnableVersioning = true;
-    options.EnableRateLimiting = true;
-    options.EnableCompression = true;
-    options.EnableCORS = true;
-    options.EnableSwagger = true;
+    // API Management (Production Ready)
+    options.EnableVersioning = true;                 // ✅ Production ready
+    options.EnableRateLimiting = true;               // 🚧 Basic implementation
+    options.EnableCompression = true;                // ✅ Production ready
+    options.EnableCORS = true;                       // ✅ Production ready
+    options.EnableSwagger = true;                    // ✅ Production ready
 
-    // Monitoring
-    options.EnableAnalytics = true;
-    options.EnableObservability = true;
-    options.EnableMetrics = true;
+    // Monitoring (Mixed)
+    options.EnableAnalytics = true;                  // ⚠️ Placeholder only
+    options.EnableObservability = true;              // ✅ Production ready
+    options.EnableMetrics = true;                    // ✅ Production ready
 
-    // Event-Driven
-    options.EnableEventDriven = true;
-    options.EnableMessaging = false; // Requires RabbitMQ/Kafka
-    options.EnableEventSourcing = true;
-    options.EnableSagas = false; // Advanced feature
+    // Event-Driven (Mixed)
+    options.EnableEventDriven = true;                // ✅ Production ready
+    options.EnableMessaging = true;                  // ✅ NEW in v3.5.1 - Outbox/Inbox
+    options.EnableEventSourcing = false;             // 🚧 Infrastructure ready, disabled
+    options.EnableSagas = true;                      // ✅ Production ready
 
-    // Multi-Tenancy
-    options.EnableMultiTenancy = true;
+    // NEW in v3.5.1
+    options.EnableSearch = true;                     // ✅ Elasticsearch - auto-included
+    options.EnableProjections = true;                // ✅ Projection management
 
-    // File Services
-    options.EnableFileService = false;
-    options.EnableCDN = false;
+    // Multi-Tenancy (Production Ready)
+    options.EnableMultiTenancy = true;               // ✅ Production ready
 
-    // Background Jobs
-    options.EnableBackgroundJobs = false; // Requires Hangfire
+    // File Services (Production Ready)
+    options.EnableFileService = true;                // ✅ Production ready
+    options.EnableCDN = true;                        // ✅ Azure/AWS/CloudFlare
+
+    // Background Jobs (Roadmap)
+    options.EnableBackgroundJobs = false;            // 🚧 Requires Hangfire integration
 });
 ```
 
 ---
 
-## 📄 23. appsettings.json
+## 📄 24. appsettings.json
 
 Complete configuration example.
 
@@ -1768,7 +1939,7 @@ Complete configuration example.
 
 ---
 
-## 🎯 24. Complete Example
+## 🎯 25. Complete Example
 
 Full working example of a Product Management API.
 
@@ -1958,7 +2129,7 @@ app.Run();
 
 ---
 
-## ✨ 25. Best Practices
+## ✨ 26. Best Practices
 
 ### 1. Always Use BaseEntity
 
@@ -2107,6 +2278,59 @@ public async Task<List<ProductDto>> GetFeaturedProductsAsync()
 // ❌ Bad - Query database every time
 // Slow, expensive, unnecessary load
 ```
+
+### 9. Leverage v3.5.1 Improvements
+
+```csharp
+// ✅ Good - Use auto-registered Repository
+public class ProductService
+{
+    private readonly IRepository<Product> _repository;  // Auto-registered!
+
+    public ProductService(IRepository<Product> repository)
+    {
+        _repository = repository;
+    }
+}
+
+// ✅ Good - Dependencies are now included
+// No need to manually install Serilog, Redis, or Elasticsearch packages
+dotnet add package Marventa.Framework --version 3.5.1
+
+// ✅ Good - Use new feature flags
+builder.Services.AddMarventaFramework(builder.Configuration, options =>
+{
+    options.EnableSearch = true;        // Elasticsearch
+    options.EnableMessaging = true;     // Outbox/Inbox
+    options.EnableProjections = true;   // Projections
+});
+
+// ❌ Bad - Manual repository registration (no longer needed)
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+// ❌ Bad - Manual dependency installation (no longer needed)
+dotnet add package Serilog
+dotnet add package StackExchange.Redis
+```
+
+### 10. Understand Feature Status
+
+```csharp
+// ✅ Production Ready - Use with confidence
+options.EnableCaching = true;           // Memory/Redis caching
+options.EnableCQRS = true;              // CQRS with MediatR
+options.EnableSagas = true;             // Saga orchestration
+options.EnableSearch = true;            // Elasticsearch
+
+// ⚠️ Development Only - Don't use in production
+options.EnableAnalytics = true;         // Placeholder only
+
+// 🚧 Roadmap - Infrastructure exists but incomplete
+options.EnableEventSourcing = false;    // Disabled by default
+options.EnableBackgroundJobs = false;   // Requires integration
+```
+
+**Refer to the [Feature Status](#-2-feature-status) section for complete details.**
 
 ---
 
