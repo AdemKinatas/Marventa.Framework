@@ -7,29 +7,52 @@
 
 ---
 
-## 📚 Table of Contents
+## 📖 What is Marventa.Framework?
 
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Features](#-features)
-- [Usage Examples](#-usage-examples)
-  - [Authentication & Authorization](#authentication--authorization)
-  - [CQRS & MediatR](#cqrs--mediatr)
-  - [Database & Repository](#database--repository)
-  - [Caching](#caching)
-  - [Event Bus](#event-bus-rabbitmq--kafka)
-  - [Multi-Tenancy](#multi-tenancy)
-  - [Rate Limiting](#rate-limiting)
-  - [Health Checks](#health-checks)
-  - [Logging](#logging)
-  - [Storage](#storage-azure--aws)
-  - [Search](#search-elasticsearch)
-- [Configuration](#-configuration-reference)
-- [Migration Guide](#-migration-guide)
+Marventa.Framework is an **enterprise-grade .NET framework** that provides:
+
+### Core Architecture Patterns (Always Available)
+- **CQRS** - Command/Query separation with MediatR
+- **DDD** - Entity, AggregateRoot, ValueObject, DomainEvent
+- **Repository & UnitOfWork** - Generic and custom repositories
+- **FluentValidation** - Request validation pipeline
+- **Result Pattern** - Type-safe error handling
+- **API Responses** - Standardized response format
+- **Exception Handling** - Global error handling middleware
+
+### Infrastructure Features (Auto-Configured)
+
+**🔒 Security & Authentication**
+- JWT Authentication & Authorization (permission-based)
+- Rate Limiting (IP/User/ApiKey strategies)
+- Password Hashing (BCrypt)
+- AES Encryption
+
+**💾 Data & Storage**
+- Caching (InMemory, Redis, Hybrid)
+- Local File Storage
+- Azure Blob Storage
+- AWS S3 Storage
+- MongoDB
+- Elasticsearch
+
+**📨 Event-Driven Architecture**
+- RabbitMQ Event Bus
+- Kafka Event Streaming
+- MassTransit Integration
+
+**🏢 Enterprise Features**
+- Multi-Tenancy (Header/Subdomain/Claim)
+- Health Checks (Database, Redis, RabbitMQ)
+- Serilog Structured Logging
+- OpenTelemetry Tracing
+- Polly Resilience Patterns
 
 ---
 
-## 📦 Installation
+## 🚀 How to Use
+
+### Installation
 
 ```bash
 dotnet add package Marventa.Framework
@@ -37,61 +60,49 @@ dotnet add package Marventa.Framework
 
 ---
 
-## 🚀 Quick Start
+## 📋 Feature Categories
 
-### 1. Basic Setup (Auto-Configuration)
+### 1️⃣ Features That Work Without Configuration
 
-```csharp
-var builder = WebApplication.CreateBuilder(args);
-
-// ✨ Auto-detects features from appsettings.json
-builder.Services.AddMarventa(builder.Configuration);
-builder.Services.AddControllers();
-
-var app = builder.Build();
-
-app.UseMarventa();  // ✨ Automatically configures middleware pipeline
-app.MapControllers();
-app.Run();
-```
-
-**What `UseMarventa()` does automatically:**
-```
-1. Exception Handling
-2. HTTPS Redirection
-3. Routing
-4. Authentication & Authorization (if JWT configured)
-5. Multi-Tenancy (if configured)
-6. Rate Limiting (if configured)
-```
-
-### 2. Full Setup (with CQRS & Validation)
+These features are **always available** after installing the package - no configuration needed:
 
 ```csharp
-var builder = WebApplication.CreateBuilder(args);
-
-// Infrastructure (auto-configured)
+// In Program.cs
 builder.Services.AddMarventa(builder.Configuration);
-
-// CQRS + Validation (manual - requires your assembly)
-builder.Services.AddMarventaMediatR(typeof(Program).Assembly);
-builder.Services.AddMarventaValidation(typeof(Program).Assembly);
-
-// Database (manual - requires your DbContext)
-builder.Services.AddMarventaDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddControllers();
-
-var app = builder.Build();
-
-app.UseMarventa();
-app.MapControllers();
-app.Run();
 ```
 
-### 3. Minimal Configuration
+**What you get immediately:**
+- ✅ Exception Handling (global error handling)
+- ✅ API Response standardization
+- ✅ CQRS patterns (Entity, ValueObject, Result)
+- ✅ In-Memory Caching (default)
 
+**Usage:**
+```csharp
+// Use Result pattern
+public Result<User> GetUser(Guid id)
+{
+    var user = _repository.GetById(id);
+    if (user == null)
+        return Result<User>.Failure("User not found");
+
+    return Result<User>.Success(user);
+}
+
+// Use In-Memory Cache
+await _cache.SetAsync("key", value, TimeSpan.FromMinutes(10));
+var cached = await _cache.GetAsync<MyType>("key");
+```
+
+---
+
+### 2️⃣ Features That Require Configuration
+
+These features **auto-activate** when you add their configuration to `appsettings.json`:
+
+#### JWT Authentication
+
+**Add to appsettings.json:**
 ```json
 {
   "Jwt": {
@@ -103,107 +114,20 @@ app.Run();
 }
 ```
 
-### 4. Done! 🎉
-
-- ✅ JWT Authentication & Authorization
-- ✅ Cache (InMemory)
-- ✅ Exception Handling
-- ✅ Validation
-- ✅ API Responses
-
----
-
-## 🎯 Features
-
-### ✅ Auto-Configured (Convention over Configuration)
-
-**Security:**
-- **JWT Authentication** - Token-based auth with permissions
-- **Rate Limiting** - IP/User/ApiKey based throttling
-- **Password Hashing** - BCrypt implementation
-- **AES Encryption** - Data encryption utilities
-
-**Data & Storage:**
-- **Caching** - InMemory, Redis, Hybrid strategies
-- **MongoDB** - NoSQL database support
-- **Elasticsearch** - Full-text search
-- **Local Storage** - File system storage
-- **Azure Blob Storage** - Cloud file storage
-- **AWS S3** - Cloud file storage
-
-**Event-Driven:**
-- **RabbitMQ** - Message bus for events
-- **Kafka** - High-throughput event streaming
-- **MassTransit** - Advanced messaging with RabbitMQ
-
-**Infrastructure:**
-- **Multi-Tenancy** - Header/Subdomain/Claim strategies
-- **Exception Handling** - Global error handling
-- **Serilog** - Structured logging
-- **Health Checks** - Database, Redis, RabbitMQ monitoring
-- **API Responses** - Standardized format
-
-### ⚙️ Manual Configuration (Requires User Setup)
-
-**Application Patterns:**
-- **CQRS** - Command/Query with MediatR
-- **DDD** - Entity, AggregateRoot, ValueObject, DomainEvent
-- **Repository & UnitOfWork** - Generic & custom repositories
-- **FluentValidation** - Request validation
-- **Result Pattern** - Type-safe error handling
-
-**Database:**
-- **EF Core** - SQL Server, PostgreSQL support
-- **Generic Repository** - CRUD operations
-- **Base DbContext** - Multi-tenancy aware
-
-**Observability (Advanced):**
-- **OpenTelemetry** - Distributed tracing (manual setup)
-- **Resilience** - Polly retry/circuit breaker utilities
-
----
-
-## 💡 Usage Examples
-
-### Authentication & Authorization
-
-**Setup (auto-configured from appsettings.json):**
-```json
-{
-  "Jwt": {
-    "Secret": "your-super-secret-key-at-least-32-characters-long",
-    "Issuer": "MyApp",
-    "Audience": "MyApp",
-    "ExpirationMinutes": 60
-  }
-}
-```
-
-**Login:**
+**Usage:**
 ```csharp
-[HttpPost("login")]
-public async Task<IActionResult> Login(LoginRequest request)
-{
-    var user = await _userRepository.GetByEmailAsync(request.Email);
-    if (user == null || !PasswordHasher.Verify(request.Password, user.PasswordHash))
-        return Unauthorized();
+// Generate token
+var token = _jwtTokenGenerator.GenerateToken(
+    userId: user.Id.ToString(),
+    email: user.Email,
+    roles: new[] { "Admin" },
+    permissions: new[] { "users.read", "users.write" }
+);
 
-    var token = _jwtTokenGenerator.GenerateToken(
-        userId: user.Id.ToString(),
-        email: user.Email,
-        roles: user.Roles
-    );
-
-    return Ok(new { token });
-}
-```
-
-**Protected Endpoint:**
-```csharp
+// Protect endpoints
 [Authorize]
-[RequirePermission("products.create")]
-[HttpPost("products")]
-public async Task<IActionResult> Create(CreateProductCommand command)
+[RequirePermission("users.write")]
+public async Task<IActionResult> CreateUser(CreateUserCommand command)
 {
     var result = await _mediator.Send(command);
     return Ok(result);
@@ -212,154 +136,83 @@ public async Task<IActionResult> Create(CreateProductCommand command)
 
 ---
 
-### CQRS & MediatR
+#### Redis Caching
 
-**Setup:**
-```csharp
-// In Program.cs
-builder.Services.AddMarventa(builder.Configuration);
-builder.Services.AddMarventaMediatR(typeof(Program).Assembly);
-builder.Services.AddMarventaValidation(typeof(Program).Assembly);
-```
-
-**Command:**
-```csharp
-public record CreateProductCommand : ICommand<Guid>
-{
-    public string Name { get; init; }
-    public decimal Price { get; init; }
-}
-
-public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Result<Guid>>
-{
-    private readonly IRepository<Product, Guid> _repository;
-    private readonly IUnitOfWork _unitOfWork;
-
-    public async Task<Result<Guid>> Handle(CreateProductCommand request, CancellationToken ct)
-    {
-        var product = new Product { Name = request.Name, Price = request.Price };
-        await _repository.AddAsync(product, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
-
-        return Result.Success(product.Id);
-    }
-}
-```
-
-**Validation:**
-```csharp
-public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
-{
-    public CreateProductCommandValidator()
-    {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
-        RuleFor(x => x.Price).GreaterThan(0);
-    }
-}
-```
-
-**Controller:**
-```csharp
-[ApiController]
-[Route("api/[controller]")]
-public class ProductsController : ControllerBase
-{
-    private readonly IMediator _mediator;
-
-    [HttpPost]
-    public async Task<IActionResult> Create(CreateProductCommand command)
-    {
-        var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
-    }
-}
-```
-
----
-
-### Database & Repository
-
-**Setup:**
-```csharp
-// In Program.cs
-builder.Services.AddMarventaDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Generic Repository
-builder.Services.AddMarventaGenericRepository<Product, Guid>();
-
-// Or Custom Repository
-builder.Services.AddMarventaRepository<Product, Guid, ProductRepository>();
-```
-
-**DbContext:**
-```csharp
-public class AppDbContext : BaseDbContext
-{
-    public DbSet<Product> Products { get; set; }
-
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-}
-```
-
-**Entity (DDD):**
-```csharp
-public class Product : AuditableEntity<Guid>
-{
-    public string Name { get; set; }
-    public decimal Price { get; set; }
-    public Guid? TenantId { get; set; }  // For multi-tenancy
-
-    // Domain Events
-    public void UpdatePrice(decimal newPrice)
-    {
-        Price = newPrice;
-        AddDomainEvent(new ProductPriceChangedEvent(Id, newPrice));
-    }
-}
-```
-
----
-
-### Caching
-
-**InMemory (default):**
-```csharp
-public class ProductService
-{
-    private readonly ICacheService _cache;
-
-    public async Task<Product> GetAsync(string id)
-    {
-        var cached = await _cache.GetAsync<Product>($"product:{id}");
-        if (cached != null) return cached;
-
-        var product = await _repository.GetByIdAsync(id);
-        await _cache.SetAsync($"product:{id}", product,
-            CacheOptions.WithAbsoluteExpiration(TimeSpan.FromMinutes(30)));
-
-        return product;
-    }
-}
-```
-
-**Redis:**
+**Add to appsettings.json:**
 ```json
 {
-  "Redis": {
-    "ConnectionString": "localhost:6379"
-  },
   "Caching": {
     "Type": "Redis"
+  },
+  "Redis": {
+    "ConnectionString": "localhost:6379",
+    "InstanceName": "MyApp:"
   }
 }
 ```
 
+**Usage:** (Same interface as in-memory cache)
+```csharp
+await _cache.SetAsync("user:123", user, TimeSpan.FromHours(1));
+var user = await _cache.GetAsync<User>("user:123");
+```
+
 ---
 
-### Event Bus (RabbitMQ & Kafka)
+#### Multi-Tenancy
 
-**RabbitMQ:**
+**Add to appsettings.json:**
+```json
+{
+  "MultiTenancy": {
+    "Strategy": "Header",
+    "HeaderName": "X-Tenant-Id"
+  }
+}
+```
+
+**Usage:**
+```csharp
+public class MyService
+{
+    private readonly ITenantContext _tenantContext;
+
+    public MyService(ITenantContext tenantContext)
+    {
+        _tenantContext = tenantContext;
+    }
+
+    public void DoSomething()
+    {
+        var tenantId = _tenantContext.TenantId;
+        var tenantName = _tenantContext.TenantName;
+        // Your tenant-specific logic
+    }
+}
+```
+
+---
+
+#### Rate Limiting
+
+**Add to appsettings.json:**
+```json
+{
+  "RateLimiting": {
+    "Strategy": "IpAddress",
+    "RequestsPerMinute": 60,
+    "Enabled": true
+  }
+}
+```
+
+**What it does:** Automatically limits requests to 60 per minute per IP address.
+
+---
+
+#### RabbitMQ Event Bus
+
+**Add to appsettings.json:**
 ```json
 {
   "RabbitMQ": {
@@ -370,51 +223,53 @@ public class ProductService
 }
 ```
 
+**Usage:**
 ```csharp
-// Publish
-await _eventBus.PublishAsync(new OrderCreatedEvent
-{
-    OrderId = order.Id,
-    Total = order.Total
-});
+// Publish event
+var @event = new UserCreatedEvent(userId, email);
+await _eventBus.PublishAsync(@event);
 
-// Subscribe
-public class OrderCreatedEventHandler : IIntegrationEventHandler<OrderCreatedEvent>
+// Subscribe to event
+public class UserCreatedEventHandler : IEventHandler<UserCreatedEvent>
 {
-    public async Task HandleAsync(OrderCreatedEvent @event, CancellationToken ct)
+    public async Task HandleAsync(UserCreatedEvent @event)
     {
-        // Send confirmation email, update inventory, etc.
+        // Handle the event
     }
 }
 ```
 
-**Kafka (high-throughput):**
+---
+
+#### Kafka Event Streaming
+
+**Add to appsettings.json:**
 ```json
 {
   "Kafka": {
     "BootstrapServers": "localhost:9092",
-    "GroupId": "myapp-group"
+    "GroupId": "my-consumer-group"
   }
 }
 ```
 
+**Usage:**
 ```csharp
-// Producer
-await _kafkaProducer.ProduceAsync("orders", new OrderCreatedEvent
-{
-    OrderId = order.Id,
-    Total = order.Total
-});
+// Produce
+await _kafkaProducer.ProduceAsync("my-topic", new { UserId = 123, Action = "Created" });
 
-// Consumer
-await _kafkaConsumer.SubscribeAsync("orders", async (message) =>
+// Consume
+await _kafkaConsumer.ConsumeAsync("my-topic", async message =>
 {
-    var orderEvent = JsonSerializer.Deserialize<OrderCreatedEvent>(message);
-    // Process event
+    Console.WriteLine($"Received: {message}");
 });
 ```
 
-**MassTransit (advanced messaging):**
+---
+
+#### MassTransit
+
+**Add to appsettings.json:**
 ```json
 {
   "MassTransit": {
@@ -429,136 +284,39 @@ await _kafkaConsumer.SubscribeAsync("orders", async (message) =>
 }
 ```
 
+**Usage:**
 ```csharp
 // Consumer
-public class OrderCreatedConsumer : IConsumer<OrderCreatedEvent>
+public class OrderCreatedConsumer : IConsumer<OrderCreated>
 {
-    public async Task Consume(ConsumeContext<OrderCreatedEvent> context)
+    public async Task Consume(ConsumeContext<OrderCreated> context)
     {
-        var order = context.Message;
-        // Process order
-        await context.Publish(new OrderProcessedEvent { OrderId = order.OrderId });
+        await Console.Out.WriteLineAsync($"Order {context.Message.OrderId} created");
     }
 }
 
-// Register consumer in Program.cs
-builder.Services.AddMassTransit(x =>
-{
-    x.AddConsumer<OrderCreatedConsumer>();
-    // UseMarventa() will configure RabbitMQ automatically
-});
+// Publish
+await _publishEndpoint.Publish(new OrderCreated { OrderId = 123 });
 ```
 
 ---
 
-### Multi-Tenancy
+#### Local File Storage
 
-**Config:**
-```json
-{
-  "MultiTenancy": {
-    "Strategy": "Header",
-    "HeaderName": "X-Tenant-Id",
-    "RequireTenant": true
-  }
-}
-```
-
-**Usage:**
-```csharp
-public class ProductService
-{
-    private readonly ITenantContext _tenantContext;
-
-    public async Task<List<Product>> GetAllAsync()
-    {
-        var tenantId = _tenantContext.TenantId;
-        return await _repository.GetAllAsync(p => p.TenantId == tenantId);
-    }
-}
-```
-
-### Rate Limiting
-
-**Config:**
-```json
-{
-  "RateLimiting": {
-    "RequestLimit": 100,
-    "TimeWindowSeconds": 60,
-    "Strategy": "IpAddress",
-    "ReturnRateLimitHeaders": true
-  }
-}
-```
-
-**Response Headers:**
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 45
-X-RateLimit-Reset: 1234567890
-```
-
----
-
-### Logging
-
-**Setup (auto-configured):**
-```csharp
-// In Program.cs
-builder.Services.AddMarventa(builder.Configuration);
-```
-
-**Usage:**
-```csharp
-public class ProductService
-{
-    private readonly ILogger<ProductService> _logger;
-
-    public async Task<Product> GetAsync(Guid id)
-    {
-        _logger.LogInformation("Fetching product {ProductId}", id);
-
-        var product = await _repository.GetByIdAsync(id);
-
-        if (product == null)
-            _logger.LogWarning("Product {ProductId} not found", id);
-
-        return product;
-    }
-}
-```
-
-**Configuration (appsettings.json):**
-```json
-{
-  "Serilog": {
-    "MinimumLevel": "Information",
-    "WriteTo": [
-      { "Name": "Console" },
-      { "Name": "File", "Args": { "path": "logs/app.log", "rollingInterval": "Day" } }
-    ]
-  }
-}
-```
-
----
-
-### Storage (Local, Azure & AWS)
-
-**Local File System (default):**
+**Add to appsettings.json:**
 ```json
 {
   "LocalStorage": {
     "BasePath": "D:/uploads",
-    "BaseUrl": "https://myapp.com/files"  // Optional - for generating URLs
+    "BaseUrl": "https://myapp.com/files"
   }
 }
 ```
 
+**Usage:**
 ```csharp
 // Upload
-await _storage.UploadAsync(fileStream, "documents/file.pdf", "application/pdf");
+await _storage.UploadAsync(fileStream, "documents/file.pdf");
 
 // Download
 var stream = await _storage.DownloadAsync("documents/file.pdf");
@@ -566,15 +324,16 @@ var stream = await _storage.DownloadAsync("documents/file.pdf");
 // Delete
 await _storage.DeleteAsync("documents/file.pdf");
 
-// Check if exists
-var exists = await _storage.ExistsAsync("documents/file.pdf");
-
 // Get URL
 var url = await _storage.GetUrlAsync("documents/file.pdf");
-// Returns: "https://myapp.com/files/documents/file.pdf" or local path
+// Returns: "https://myapp.com/files/documents/file.pdf"
 ```
 
-**Azure Blob Storage:**
+---
+
+#### Azure Blob Storage
+
+**Add to appsettings.json:**
 ```json
 {
   "Azure": {
@@ -586,21 +345,13 @@ var url = await _storage.GetUrlAsync("documents/file.pdf");
 }
 ```
 
-```csharp
-// Upload
-await _storage.UploadAsync(fileStream, "documents/file.pdf", "application/pdf");
+**Usage:** Same interface as Local Storage.
 
-// Download
-var stream = await _storage.DownloadAsync("documents/file.pdf");
+---
 
-// Delete
-await _storage.DeleteAsync("documents/file.pdf");
+#### AWS S3 Storage
 
-// List
-var files = await _storage.ListAsync("documents/");
-```
-
-**AWS S3:**
+**Add to appsettings.json:**
 ```json
 {
   "AWS": {
@@ -612,70 +363,46 @@ var files = await _storage.ListAsync("documents/");
 }
 ```
 
+**Usage:** Same interface as Local Storage.
+
 ---
 
-### Health Checks
+#### MongoDB
 
-**Setup (auto-configured):**
+**Add to appsettings.json:**
 ```json
 {
-  "HealthChecks": {
-    "Enabled": "true"
-  },
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=MyApp;..."
-  },
-  "Redis": {
-    "ConnectionString": "localhost:6379"
-  },
-  "RabbitMQ": {
-    "Host": "localhost"
+  "MongoDB": {
+    "ConnectionString": "mongodb://localhost:27017",
+    "DatabaseName": "MyDatabase"
   }
 }
 ```
 
-**Access:**
-```
-GET /health
-
-Response:
-{
-  "status": "Healthy",
-  "entries": {
-    "database": { "status": "Healthy" },
-    "redis": { "status": "Healthy" },
-    "rabbitmq": { "status": "Healthy" }
-  }
-}
-```
-
-**Custom Health Check:**
+**Usage:**
 ```csharp
-public class CustomHealthCheck : IHealthCheck
+public class MyService
 {
-    public async Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context,
-        CancellationToken cancellationToken = default)
-    {
-        // Custom logic
-        var isHealthy = await CheckSomethingAsync();
+    private readonly IMongoDatabase _database;
 
-        return isHealthy
-            ? HealthCheckResult.Healthy("All systems operational")
-            : HealthCheckResult.Unhealthy("System is down");
+    public MyService(IMongoDatabase database)
+    {
+        _database = database;
+    }
+
+    public async Task<User> GetUser(string id)
+    {
+        var collection = _database.GetCollection<User>("users");
+        return await collection.Find(x => x.Id == id).FirstOrDefaultAsync();
     }
 }
-
-// Register
-builder.Services.AddHealthChecks()
-    .AddCheck<CustomHealthCheck>("custom");
 ```
 
 ---
 
-### Search (Elasticsearch)
+#### Elasticsearch
 
-**Setup:**
+**Add to appsettings.json:**
 ```json
 {
   "Elasticsearch": {
@@ -686,179 +413,351 @@ builder.Services.AddHealthChecks()
 
 **Usage:**
 ```csharp
-// Index a document
-await _elasticsearchService.IndexDocumentAsync("products", product, product.Id);
+// Index document
+await _elasticsearchService.IndexAsync("products", product);
 
 // Search
-var results = await _elasticsearchService.SearchAsync<Product>("products", "laptop gaming");
-
-// Advanced search with filters
-var searchResults = await _elasticsearchService.SearchAsync<Product>(
-    "products",
-    searchText: "laptop",
-    filters: new Dictionary<string, object>
-    {
-        { "category", "electronics" },
-        { "price", new { gte = 500, lte = 2000 } }
-    }
-);
+var results = await _elasticsearchService.SearchAsync<Product>("products", "laptop");
 ```
 
 ---
 
-## ⚙️ Configuration
+#### Health Checks
 
-### Auto-Detection Table
-
-Add these sections to `appsettings.json` to enable features:
-
-| Config Section | Feature | Example |
-|---------------|---------|---------|
-| `Jwt` | Authentication | `"Secret": "your-key"` |
-| `Redis` + `Caching` | Redis Cache | `"ConnectionString": "localhost:6379"` |
-| `MultiTenancy` | Multi-Tenant | `"Strategy": "Header"` |
-| `RateLimiting` | Rate Limiting | `"RequestLimit": 100` |
-| `RabbitMQ` | Event Bus | `"Host": "localhost"` |
-| `Kafka` | Event Streaming | `"BootstrapServers": "localhost:9092"` |
-| `MassTransit` | Advanced Messaging | `"Enabled": "true"` |
-| `Elasticsearch` | Search | `"Uri": "http://localhost:9200"` |
-| `MongoDB` | NoSQL | `"ConnectionString": "mongodb://..."` |
-| `HealthChecks` | Health Monitoring | `"Enabled": "true"` |
-| `LocalStorage` | Local Files | `"BasePath": "D:/uploads"` |
-| `Azure:Storage` | Azure Blob | `"ConnectionString": "..."` |
-| `AWS` | AWS S3 | `"AccessKey": "...", "SecretKey": "..."` |
-
-### Manual Extensions
-
-Features that need your code:
-
-```csharp
-// CQRS + Validation
-builder.Services.AddMarventaMediatR(typeof(Program).Assembly);
-builder.Services.AddMarventaValidation(typeof(Program).Assembly);
-
-// Database
-builder.Services.AddMarventaDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
-
-// Repository (choose one)
-builder.Services.AddMarventaGenericRepository<Product, Guid>();
-builder.Services.AddMarventaRepository<Product, Guid, ProductRepository>();
-
-// OpenTelemetry
-builder.Services.AddMarventaOpenTelemetry(builder.Configuration, "MyService");
+**Add to appsettings.json:**
+```json
+{
+  "HealthChecks": {
+    "Enabled": "true"
+  }
+}
 ```
 
-### Custom Middleware
+**What it does:**
+- Automatically adds `/health` endpoint
+- Auto-detects Database, Redis, RabbitMQ and monitors them
 
+**Check health:**
+```bash
+curl http://localhost:5000/health
+```
+
+---
+
+### 3️⃣ Features That Require Manual Setup
+
+These features need **your application-specific code**, so they require manual configuration:
+
+#### CQRS & MediatR
+
+**Setup in Program.cs:**
 ```csharp
+builder.Services.AddMarventa(builder.Configuration);
+builder.Services.AddMarventaMediatR(typeof(Program).Assembly);
+builder.Services.AddMarventaValidation(typeof(Program).Assembly);
+```
+
+**Usage:**
+```csharp
+// Command
+public record CreateUserCommand(string Email, string Password) : IRequest<Result<Guid>>;
+
+// Handler
+public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<Guid>>
+{
+    public async Task<Result<Guid>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+    {
+        var user = User.Create(request.Email, request.Password);
+        await _repository.AddAsync(user);
+        return Result<Guid>.Success(user.Id);
+    }
+}
+
+// Validator
+public class CreateUserValidator : AbstractValidator<CreateUserCommand>
+{
+    public CreateUserValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Password).MinimumLength(8);
+    }
+}
+
+// Controller
+[HttpPost]
+public async Task<IActionResult> CreateUser(CreateUserCommand command)
+{
+    var result = await _mediator.Send(command);
+    return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
+}
+```
+
+---
+
+#### Database & Repository
+
+**Setup in Program.cs:**
+```csharp
+builder.Services.AddMarventa(builder.Configuration);
+
+builder.Services.AddMarventaDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+```
+
+**DbContext:**
+```csharp
+public class AppDbContext : BaseDbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAccessor httpContextAccessor)
+        : base(options, httpContextAccessor)
+    {
+    }
+
+    public DbSet<User> Users => Set<User>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
+}
+```
+
+**Repository:**
+```csharp
+public interface IUserRepository : IGenericRepository<User>
+{
+    Task<User?> GetByEmailAsync(string email);
+}
+
+public class UserRepository : GenericRepository<User>, IUserRepository
+{
+    public UserRepository(AppDbContext context) : base(context) { }
+
+    public async Task<User?> GetByEmailAsync(string email)
+    {
+        return await _dbSet.FirstOrDefaultAsync(x => x.Email == email);
+    }
+}
+```
+
+---
+
+#### Logging (Serilog)
+
+**Setup in Program.cs:**
+```csharp
+builder.Services.AddMarventaLogging(builder.Configuration, "MyApp");
+```
+
+**Add to appsettings.json:**
+```json
+{
+  "Serilog": {
+    "MinimumLevel": "Information",
+    "WriteTo": [
+      { "Name": "Console" },
+      { "Name": "File", "Args": { "path": "logs/log-.txt", "rollingInterval": "Day" } }
+    ]
+  }
+}
+```
+
+**Usage:**
+```csharp
+public class MyService
+{
+    private readonly ILogger<MyService> _logger;
+
+    public MyService(ILogger<MyService> logger)
+    {
+        _logger = logger;
+    }
+
+    public void DoSomething()
+    {
+        _logger.LogInformation("Operation started with {UserId}", userId);
+    }
+}
+```
+
+---
+
+## 🎯 Complete Setup Guide
+
+### Option 1: Use Everything Together (Recommended)
+
+**Program.cs:**
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// 1. Auto-configured infrastructure
+builder.Services.AddMarventa(builder.Configuration, builder.Environment);
+
+// 2. Manual features (require your code)
+builder.Services.AddMarventaMediatR(typeof(Program).Assembly);
+builder.Services.AddMarventaValidation(typeof(Program).Assembly);
+builder.Services.AddMarventaLogging(builder.Configuration, "MyApp");
+
+builder.Services.AddMarventaDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// 3. Your repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
-app.UseMarventa();        // Standard pipeline
-app.UseCors("MyPolicy");  // Your custom middleware
-app.UseStaticFiles();     // Your static files
+// 4. Middleware pipeline (auto-configured)
+app.UseMarventa();
 app.MapControllers();
+
 app.Run();
 ```
 
----
-
-## 🔄 Migration Guide
-
-### v3.x → v4.0.2
-
-**Old:**
-```csharp
-builder.Services.AddMarventaFramework(builder.Configuration);
-builder.Services.AddMarventaMediatR(typeof(Program).Assembly);
-builder.Services.AddMarventaValidation(typeof(Program).Assembly);
-builder.Services.AddMarventaJwtAuthentication(builder.Configuration);
-builder.Services.AddMarventaCaching(builder.Configuration, CacheType.InMemory);
-
-app.UseMarventaFramework(app.Environment);
-```
-
-**New:**
-```csharp
-builder.Services.AddMarventa(builder.Configuration);
-app.UseMarventa();
-```
-
-**That's it!** Everything else is automatic.
-
----
-
-## 🎨 API Response Format
-
-### Success
+**appsettings.json:**
 ```json
 {
-  "success": true,
-  "data": { "id": "123", "name": "Product" },
-  "message": null,
-  "errorCode": null
-}
-```
-
-### Error
-```json
-{
-  "success": false,
-  "data": null,
-  "message": "Product not found",
-  "errorCode": "NOT_FOUND"
-}
-```
-
-### Validation Error
-```json
-{
-  "success": false,
-  "message": "Validation failed",
-  "errorCode": "VALIDATION_ERROR",
-  "errors": {
-    "Name": ["Product name is required"],
-    "Price": ["Price must be greater than zero"]
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=MyDb;Trusted_Connection=true;"
+  },
+  "Jwt": {
+    "Secret": "your-super-secret-key-at-least-32-characters-long",
+    "Issuer": "MyApp",
+    "Audience": "MyApp",
+    "ExpirationMinutes": 60
+  },
+  "Caching": {
+    "Type": "Redis"
+  },
+  "Redis": {
+    "ConnectionString": "localhost:6379",
+    "InstanceName": "MyApp:"
+  },
+  "RabbitMQ": {
+    "Host": "localhost",
+    "Username": "guest",
+    "Password": "guest"
+  },
+  "MultiTenancy": {
+    "Strategy": "Header",
+    "HeaderName": "X-Tenant-Id"
+  },
+  "RateLimiting": {
+    "Strategy": "IpAddress",
+    "RequestsPerMinute": 60,
+    "Enabled": true
+  },
+  "LocalStorage": {
+    "BasePath": "D:/uploads",
+    "BaseUrl": "https://myapp.com/files"
+  },
+  "HealthChecks": {
+    "Enabled": "true"
   }
 }
 ```
 
 ---
 
+### Option 2: Use Individual Features
 
-## 📝 What's New in v4.0.2
+You can also configure features individually instead of using `AddMarventa()`:
 
-- ✨ **Convention over Configuration** - Zero config by default
-- ✨ **Auto-Detection** - Framework scans appsettings.json automatically
-- ✨ **One Line Setup** - `AddMarventa()` + `UseMarventa()`
-- ✨ **Simplified Documentation** - Single README with everything
-- ✨ **Advanced Rate Limiting** - Multiple strategies
-- ✨ **Enhanced Multi-Tenancy** - Multiple resolution strategies
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Configure only what you need
+builder.Services.AddMarventaJwtAuthentication(builder.Configuration);
+builder.Services.AddMarventaRabbitMq(builder.Configuration);
+builder.Services.AddMarventaElasticsearch(builder.Configuration);
+builder.Services.AddMarventaMultiTenancy(builder.Configuration);
+builder.Services.AddMarventaLocalStorage(builder.Configuration);
+builder.Services.AddMarventaHealthChecks(builder.Configuration);
+
+builder.Services.AddControllers();
+
+var app = builder.Build();
+
+// Manually configure middleware
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();
+```
 
 ---
 
-## 🤝 Contributing
+## 📊 Configuration Reference
 
-Contributions welcome! Please submit a Pull Request.
+| Feature | Configuration Section | Required Fields | Auto-Activated |
+|---------|---------------------|-----------------|----------------|
+| **JWT Auth** | `Jwt` | `Secret`, `Issuer`, `Audience` | ✅ Yes |
+| **Caching** | `Caching`, `Redis` | `Type`, `ConnectionString` | ✅ Yes |
+| **Multi-Tenancy** | `MultiTenancy` | `Strategy` | ✅ Yes |
+| **Rate Limiting** | `RateLimiting` | `Strategy`, `RequestsPerMinute` | ✅ Yes |
+| **RabbitMQ** | `RabbitMQ` | `Host` | ✅ Yes |
+| **Kafka** | `Kafka` | `BootstrapServers` | ✅ Yes |
+| **MassTransit** | `MassTransit` | `Enabled: "true"` | ✅ Yes |
+| **Elasticsearch** | `Elasticsearch` | `Uri` | ✅ Yes |
+| **MongoDB** | `MongoDB` | `ConnectionString`, `DatabaseName` | ✅ Yes |
+| **LocalStorage** | `LocalStorage` | `BasePath` | ✅ Yes |
+| **Azure Storage** | `Azure:Storage` | `ConnectionString` | ✅ Yes |
+| **AWS S3** | `AWS` | `AccessKey`, `SecretKey`, `BucketName` | ✅ Yes |
+| **Health Checks** | `HealthChecks` | `Enabled: "true"` | ✅ Yes |
+| **CQRS/MediatR** | - | Manual setup in Program.cs | ❌ No |
+| **Database/EF** | - | Manual setup in Program.cs | ❌ No |
+| **Logging** | `Serilog` | Manual setup in Program.cs | ❌ No |
+
+---
+
+## 🔄 Migration Guide
+
+### From v4.0.x to v4.1.0
+
+**New Features:**
+- ✅ Local File Storage support
+- ✅ MassTransit integration
+- ✅ Health Checks auto-configuration
+
+**Breaking Changes:**
+- None
+
+**To Use New Features:**
+```json
+{
+  "LocalStorage": {
+    "BasePath": "D:/uploads"
+  },
+  "MassTransit": {
+    "Enabled": "true"
+  },
+  "HealthChecks": {
+    "Enabled": "true"
+  }
+}
+```
 
 ---
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE)
+MIT License - see [LICENSE](LICENSE) for details
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
 
 ---
 
 ## 📧 Support
 
-[GitHub Issues](https://github.com/AdemKinatas/Marventa.Framework/issues)
-
----
-
-## 🌟 Show Your Support
-
-⭐️ Star this repo if it helped you!
-
----
-
-**Built with ❤️ using .NET 8.0 & 9.0**
+For questions and support, please open an issue on [GitHub](https://github.com/AdemKinatas/Marventa.Framework/issues).
