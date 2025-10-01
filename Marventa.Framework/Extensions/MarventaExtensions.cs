@@ -1,152 +1,160 @@
+using Amazon.S3;
+using FluentValidation;
+using Mapster;
+using Marventa.Framework.Configuration;
 using Marventa.Framework.Features.Caching.Abstractions;
 using Marventa.Framework.Features.Caching.Distributed;
 using Marventa.Framework.Features.Caching.Hybrid;
 using Marventa.Framework.Features.Caching.InMemory;
-using Marventa.Framework.Configuration;
 using Marventa.Framework.Features.EventBus.Abstractions;
 using Marventa.Framework.Features.EventBus.Kafka;
 using Marventa.Framework.Features.EventBus.RabbitMQ;
 using Marventa.Framework.Features.Logging;
-using Marventa.Framework.Infrastructure.MultiTenancy;
 using Marventa.Framework.Features.Search.Elasticsearch;
-using Marventa.Framework.Security.Authentication;
-using Marventa.Framework.Security.Authorization;
-using Marventa.Framework.Security.Encryption;
 using Marventa.Framework.Features.Storage.Abstractions;
 using Marventa.Framework.Features.Storage.AWS;
 using Marventa.Framework.Features.Storage.Azure;
-using Marventa.Framework.Features.Storage.Local;
+using Marventa.Framework.Infrastructure.MultiTenancy;
+using Marventa.Framework.Security.Authentication;
+using Marventa.Framework.Security.Authorization;
+using Marventa.Framework.Security.Encryption;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using Nest;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using RabbitMQ.Client;
 using Serilog;
 using System.Text;
-using Amazon.S3;
-using MassTransit;
-using OpenTelemetry.Trace;
-using OpenTelemetry.Resources;
 
 namespace Marventa.Framework.Extensions;
 
-/// <summary>
-/// 🚀 MARVENTA - Convention over Configuration
-/// Smart configuration of the entire framework with a single method
-/// </summary>
 public static class MarventaExtensions
 {
-    /// <summary>
-    /// 🎯 ONE METHOD - Configures all Marventa.Framework services
-    /// Auto-activates features based on appsettings.json configuration
-    /// </summary>
-    public static IServiceCollection AddMarventa(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddMarventa(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        params System.Reflection.Assembly[] assemblies)
     {
-        // Always required
+        services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            });
+
+        services.AddEndpointsApiExplorer();
         services.AddHttpContextAccessor();
         services.Configure<ExceptionHandlingOptions>(configuration.GetSection(ExceptionHandlingOptions.SectionName));
 
-        // JWT Authentication (if configured)
+        var corsOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+        if (corsOrigins?.Length > 0)
+        {
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder => builder
+                    .WithOrigins(corsOrigins)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+            });
+        }
+
+        var assembliesToScan = assemblies.Length > 0
+            ? assemblies
+            : new[] { System.Reflection.Assembly.GetCallingAssembly() };
+
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assembliesToScan));
+        services.AddValidatorsFromAssemblies(assembliesToScan);
+        services.AddMapster();
+        foreach (var assembly in assembliesToScan)
+        {
+            TypeAdapterConfig.GlobalSettings.Scan(assembly);
+        }
+
         if (HasSection(configuration, "Jwt"))
             ConfigureJwtAuthentication(services, configuration);
 
-        // Caching (smart selection)
         ConfigureCaching(services, configuration);
 
-        // Multi-Tenancy (if configured)
         if (HasSection(configuration, "MultiTenancy"))
             ConfigureMultiTenancy(services, configuration);
 
-        // Rate Limiting (if configured)
         if (HasSection(configuration, "RateLimiting"))
             ConfigureRateLimiting(services, configuration);
 
-        // RabbitMQ (if configured)
         if (HasSection(configuration, "RabbitMQ"))
             ConfigureRabbitMq(services, configuration);
 
-        // Kafka (if configured)
         if (HasSection(configuration, "Kafka"))
             ConfigureKafka(services, configuration);
 
-        // MassTransit (if configured)
         if (configuration.GetSection("MassTransit")["Enabled"] == "true")
-            ConfigureMassTransit(services, configuration);
+            ConfigureMassTransit(services, configuration, assembliesToScan);
 
-        // Elasticsearch (if configured)
         if (HasSection(configuration, "Elasticsearch"))
             ConfigureElasticsearch(services, configuration);
 
-        // MongoDB (if configured)
         if (HasSection(configuration, "MongoDB"))
             ConfigureMongoDB(services, configuration);
 
-        // Azure Storage (if configured)
         if (HasSection(configuration, "Azure:Storage"))
             ConfigureAzureStorage(services, configuration);
 
-        // AWS Storage (if configured)
         if (HasSection(configuration, "AWS"))
             ConfigureAwsStorage(services, configuration);
 
-        // Local Storage (if configured)
         if (HasSection(configuration, "LocalStorage"))
             ConfigureLocalStorage(services, configuration);
 
-        // Health Checks (if configured)
         if (HasSection(configuration, "HealthChecks") && configuration.GetSection("HealthChecks")["Enabled"] != "false")
             ConfigureHealthChecks(services, configuration);
 
-        // Serilog Logging (if configured)
         if (HasSection(configuration, "Serilog"))
             ConfigureSerilog(configuration);
 
-        // OpenTelemetry (if configured)
         if (HasSection(configuration, "OpenTelemetry"))
             ConfigureOpenTelemetry(services, configuration);
 
         return services;
     }
 
-    /// <summary>
-    /// 🎯 ONE METHOD - Configures all Marventa.Framework middleware
-    /// Automatically builds middleware pipeline based on registered services
-    /// </summary>
     public static IApplicationBuilder UseMarventa(this IApplicationBuilder app, IConfiguration configuration)
     {
-        // 1. Exception Handling (must be first)
         app.UseMiddleware<Middleware.ExceptionMiddleware>();
-
-        // 2. HTTPS Redirection (security)
         app.UseHttpsRedirection();
-
-        // 3. Routing (must be before Authentication)
+        app.UseStaticFiles();
         app.UseRouting();
 
-        // 4. Authentication & Authorization
-        if (HasSection(configuration, "Jwt"))
-        {
-            app.UseAuthentication();
-            app.UseAuthorization();
-        }
+        var corsOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+        if (corsOrigins?.Length > 0)
+            app.UseCors();
 
-        // 5. Multi-Tenancy (after Authentication, to read tenant from claims)
+        if (HasSection(configuration, "Jwt"))
+            app.UseAuthentication();
+
         if (HasSection(configuration, "MultiTenancy"))
             app.UseMiddleware<TenantMiddleware>();
 
-        // 6. Rate Limiting (after Authentication, for user-based limiting)
+        if (HasSection(configuration, "Jwt"))
+            app.UseAuthorization();
+
         if (HasSection(configuration, "RateLimiting"))
             app.UseMiddleware<Security.RateLimiting.RateLimiterMiddleware>();
 
-        // 7. Health Checks endpoint (if configured)
-        if (HasSection(configuration, "HealthChecks") && configuration.GetSection("HealthChecks")["Enabled"] != "false")
-            app.UseHealthChecks("/health");
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+
+            if (HasSection(configuration, "HealthChecks") && configuration.GetSection("HealthChecks")["Enabled"] != "false")
+                endpoints.MapHealthChecks("/health");
+        });
 
         return app;
     }
@@ -228,7 +236,7 @@ public static class MarventaExtensions
                 });
                 break;
 
-            default: // InMemory
+            default:
                 services.AddMemoryCache();
                 services.AddSingleton<ICacheService, MemoryCacheService>();
                 break;
@@ -358,37 +366,35 @@ public static class MarventaExtensions
     {
         var healthChecks = services.AddHealthChecks();
 
-        // Add database health check if connection string exists
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         if (!string.IsNullOrEmpty(connectionString))
-        {
             healthChecks.AddSqlServer(connectionString, name: "database");
-        }
 
-        // Add Redis health check if configured
         var redisConnection = configuration["Redis:ConnectionString"];
         if (!string.IsNullOrEmpty(redisConnection))
-        {
             healthChecks.AddRedis(redisConnection, name: "redis");
-        }
 
-        // Add RabbitMQ health check if configured
         var rabbitMqHost = configuration["RabbitMQ:Host"];
         if (!string.IsNullOrEmpty(rabbitMqHost))
-        {
             healthChecks.AddCheck<Infrastructure.HealthChecks.RabbitMqHealthCheck>("rabbitmq");
-        }
     }
 
-    private static void ConfigureMassTransit(IServiceCollection services, IConfiguration configuration)
+    private static void ConfigureMassTransit(IServiceCollection services, IConfiguration configuration, params System.Reflection.Assembly[] assemblies)
     {
         var rabbitMqHost = configuration["RabbitMQ:Host"] ?? "localhost";
         var rabbitMqVirtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
         var rabbitMqUsername = configuration["RabbitMQ:Username"] ?? "guest";
         var rabbitMqPassword = configuration["RabbitMQ:Password"] ?? "guest";
 
+        var assembliesToScan = assemblies.Length > 0
+            ? assemblies
+            : new[] { System.Reflection.Assembly.GetCallingAssembly() };
+
         services.AddMassTransit(x =>
         {
+            foreach (var assembly in assembliesToScan)
+                x.AddConsumers(assembly);
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(rabbitMqHost, rabbitMqVirtualHost, h =>

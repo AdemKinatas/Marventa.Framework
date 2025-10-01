@@ -1,6 +1,6 @@
 using FluentValidation;
-using MediatR;
 using Marventa.Framework.Core.Application;
+using MediatR;
 
 namespace Marventa.Framework.Behaviors;
 
