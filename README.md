@@ -22,6 +22,7 @@
    - 4.1. [Persistence - Create DbContext](#41-persistence---create-dbcontext)
    - 4.2. [Persistence - Repository Pattern](#42-persistence---repository-pattern)
    - 4.3. [Persistence - Unit of Work](#43-persistence---unit-of-work)
+   - 4.4. [Persistence - Data Seeding](#44-persistence---data-seeding)
 5. [Behaviors - CQRS with MediatR](#5-behaviors---cqrs-with-mediatr)
    - 5.1. [Create Command](#51-create-command)
    - 5.2. [Create Query](#52-create-query)
@@ -54,8 +55,10 @@
 13. [Security - Rate Limiting](#13-security---rate-limiting)
 14. [Infrastructure - Multi-Tenancy](#14-infrastructure---multi-tenancy)
 15. [Infrastructure - Health Checks](#15-infrastructure---health-checks)
-16. [Middleware - Exception Handling](#16-middleware---exception-handling)
-17. [Configuration - appsettings.json](#17-configuration---appsettingsjson)
+16. [Infrastructure - API Versioning](#16-infrastructure---api-versioning)
+17. [Infrastructure - Swagger/OpenAPI](#17-infrastructure---swaggeropenapi)
+18. [Middleware - Exception Handling](#18-middleware---exception-handling)
+19. [Configuration - appsettings.json](#19-configuration---appsettingsjson)
 
 ---
 
@@ -349,6 +352,52 @@ public class ProductService
 
         return Result<Guid>.Success(product.Id);
     }
+}
+```
+
+### 4.4. Persistence - Data Seeding
+
+**Purpose:** Seed initial data into database with helper infrastructure.
+
+```csharp
+// Create a seeder
+public class UserSeeder : DataSeederBase<ApplicationDbContext>
+{
+    public UserSeeder(ApplicationDbContext context) : base(context)
+    {
+    }
+
+    public override int Order => 1; // Execution order
+
+    public override async Task SeedAsync(CancellationToken cancellationToken = default)
+    {
+        if (await AnyAsync<User>(cancellationToken))
+            return;
+
+        var users = new List<User>
+        {
+            User.Create("admin@example.com", "Admin User"),
+            User.Create("user@example.com", "Regular User")
+        };
+
+        await AddRangeAsync(users, cancellationToken);
+    }
+}
+```
+
+**Register Seeders:**
+```csharp
+builder.Services.AddScoped<IDataSeeder, UserSeeder>();
+builder.Services.AddScoped<IDataSeeder, ProductSeeder>();
+```
+
+**Run Seeders:**
+```csharp
+// In Program.cs after app.Build()
+using (var scope = app.Services.CreateScope())
+{
+    var seederRunner = scope.ServiceProvider.GetRequiredService<DataSeederRunner>();
+    await seederRunner.RunAsync();
 }
 ```
 
@@ -883,7 +932,141 @@ curl http://localhost:5000/health
 
 ---
 
-## 16. Middleware - Exception Handling
+## 16. Infrastructure - API Versioning
+
+**Purpose:** Provides flexible API versioning strategies.
+
+**Configuration:**
+```json
+{
+  "ApiVersioning": {
+    "Enabled": true,
+    "DefaultVersion": "1.0",
+    "ReportApiVersions": true,
+    "AssumeDefaultVersionWhenUnspecified": true,
+    "VersioningType": "UrlSegment",
+    "HeaderName": "X-API-Version",
+    "QueryStringParameterName": "api-version"
+  }
+}
+```
+
+**Versioning Types:**
+- `UrlSegment` - `/api/v1/products` (default)
+- `QueryString` - `/api/products?api-version=1.0`
+- `Header` - Header: `X-API-Version: 1.0`
+- `MediaType` - Accept: `application/json;v=1.0`
+
+**Usage in Controllers:**
+```csharp
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiController]
+public class ProductsV1Controller : ControllerBase
+{
+    [HttpGet]
+    public IActionResult GetProducts()
+    {
+        return Ok(new[] { "Product 1", "Product 2" });
+    }
+}
+
+[ApiVersion("2.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiController]
+public class ProductsV2Controller : ControllerBase
+{
+    [HttpGet]
+    public IActionResult GetProducts()
+    {
+        return Ok(new { products = new[] { "Product 1", "Product 2" }, version = "2.0" });
+    }
+}
+```
+
+**Response Headers:**
+```
+api-supported-versions: 1.0, 2.0
+api-deprecated-versions: (none)
+```
+
+---
+
+## 17. Infrastructure - Swagger/OpenAPI
+
+**Purpose:** Auto-configured OpenAPI documentation with JWT support and environment restrictions.
+
+**Configuration:**
+```json
+{
+  "Swagger": {
+    "Enabled": true,
+    "Title": "My API",
+    "Description": "My API Documentation",
+    "Version": "v1",
+    "RequireAuthorization": true,
+    "EnvironmentRestriction": ["Development", "Staging"],
+    "Contact": {
+      "Name": "API Support",
+      "Email": "support@example.com",
+      "Url": "https://example.com/support"
+    },
+    "License": {
+      "Name": "MIT",
+      "Url": "https://opensource.org/licenses/MIT"
+    }
+  }
+}
+```
+
+**Features:**
+- ✅ Automatic JWT Bearer integration
+- ✅ Multi-version support (when API Versioning enabled)
+- ✅ XML comments auto-included
+- ✅ Environment-based restrictions
+- ✅ Swagger UI auto-configured
+
+**Access:**
+```bash
+# Development/Staging only (based on EnvironmentRestriction)
+https://localhost:5001/swagger
+```
+
+**Usage in Program.cs:**
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMarventa(builder.Configuration);
+
+var app = builder.Build();
+
+// Pass IWebHostEnvironment for environment-based Swagger
+app.UseMarventa(builder.Configuration, app.Environment);
+
+app.Run();
+```
+
+**Controller XML Comments:**
+```csharp
+/// <summary>
+/// Creates a new product
+/// </summary>
+/// <param name="command">Product creation data</param>
+/// <returns>The created product ID</returns>
+/// <response code="200">Product created successfully</response>
+/// <response code="400">Invalid request</response>
+[HttpPost]
+[ProducesResponseType(StatusCodes.Status200OK)]
+[ProducesResponseType(StatusCodes.Status400BadRequest)]
+public async Task<IActionResult> Create([FromBody] CreateProductCommand command)
+{
+    var result = await _mediator.Send(command);
+    return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
+}
+```
+
+---
+
+## 18. Middleware - Exception Handling
 
 **Purpose:** Catches all exceptions and returns standard format.
 **Auto-active!**
@@ -897,7 +1080,7 @@ throw new UnauthorizedException("Invalid credentials");
 
 ---
 
-## 17. Configuration - appsettings.json
+## 19. Configuration - appsettings.json
 
 **Complete configuration example:**
 
@@ -911,6 +1094,23 @@ throw new UnauthorizedException("Invalid credentials");
 
   "Cors": {
     "AllowedOrigins": ["http://localhost:3000", "https://myapp.com"]
+  },
+
+  "ApiVersioning": {
+    "Enabled": true,
+    "DefaultVersion": "1.0",
+    "ReportApiVersions": true,
+    "AssumeDefaultVersionWhenUnspecified": true,
+    "VersioningType": "UrlSegment"
+  },
+
+  "Swagger": {
+    "Enabled": true,
+    "Title": "My API",
+    "Description": "My API Documentation",
+    "Version": "v1",
+    "RequireAuthorization": true,
+    "EnvironmentRestriction": ["Development", "Staging"]
   },
 
   "Jwt": {
@@ -1024,20 +1224,21 @@ Your application now has:
 
 ✅ **Core:** Domain Driven Design (Entity, Aggregate, ValueObject, DomainEvent)
 ✅ **Behaviors:** CQRS (MediatR + FluentValidation + Mapster + Logging + Performance)
-✅ **Infrastructure:** Repository Pattern, Unit of Work, Multi-Tenancy, Health Checks
+✅ **Infrastructure:** Repository Pattern, Unit of Work, Multi-Tenancy, Health Checks, Data Seeding
+✅ **API:** Swagger/OpenAPI, API Versioning (URL/Query/Header), XML Documentation
 ✅ **Features:** Caching, Event Bus (RabbitMQ/Kafka/MassTransit), Storage, Search, Logging
 ✅ **Security:** JWT Auth, CORS, Permission Authorization, Rate Limiting, Password Hashing
 ✅ **Middleware:** Global Exception Handling with correct pipeline order
 
 **With just 2 lines of setup!** 🚀
 
-### 🆕 What's New in v4.3.0
+### 🆕 What's New in v4.4.0
 
-- **Auto-Registration:** MediatR handlers, FluentValidation validators, and Mapster mappings are automatically discovered
-- **CORS Support:** Configure cross-origin requests via appsettings.json
-- **Complete Setup:** AddControllers, UseEndpoints, and all ASP.NET Core essentials included
-- **Optimized Pipeline:** Middleware executed in correct order for maximum security and performance
-- **Cleaner Code:** Removed unnecessary comments for better readability
+- **Swagger/OpenAPI:** Auto-configured with JWT integration and environment-based restrictions
+- **API Versioning:** Flexible versioning (URL/Query/Header/MediaType) with Swagger integration
+- **Data Seeding:** Infrastructure for seeding initial data with execution order control
+- **Environment Helpers:** Utilities for environment-based feature configuration
+- **Enhanced Documentation:** Comprehensive examples for all new features
 
 ---
 

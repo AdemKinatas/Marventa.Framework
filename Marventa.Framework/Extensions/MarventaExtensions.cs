@@ -15,6 +15,7 @@ using Marventa.Framework.Features.Storage.Abstractions;
 using Marventa.Framework.Features.Storage.AWS;
 using Marventa.Framework.Features.Storage.Azure;
 using Marventa.Framework.Infrastructure.MultiTenancy;
+using Marventa.Framework.Infrastructure.Seeding;
 using Marventa.Framework.Security.Authentication;
 using Marventa.Framework.Security.Authorization;
 using Marventa.Framework.Security.Encryption;
@@ -22,9 +23,14 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 using Nest;
 using OpenTelemetry.Resources;
@@ -49,9 +55,14 @@ public static class MarventaExtensions
                 options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
             });
 
-        services.AddEndpointsApiExplorer();
         services.AddHttpContextAccessor();
         services.Configure<ExceptionHandlingOptions>(configuration.GetSection(ExceptionHandlingOptions.SectionName));
+
+        if (HasSection(configuration, "ApiVersioning") || configuration.GetSection("ApiVersioning")["Enabled"] != "false")
+            ConfigureApiVersioning(services, configuration);
+
+        if (HasSection(configuration, "Swagger") && configuration.GetSection("Swagger")["Enabled"] != "false")
+            ConfigureSwagger(services, configuration);
 
         var corsOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
         if (corsOrigins?.Length > 0)
@@ -122,10 +133,12 @@ public static class MarventaExtensions
         if (HasSection(configuration, "OpenTelemetry"))
             ConfigureOpenTelemetry(services, configuration);
 
+        services.AddScoped<DataSeederRunner>();
+
         return services;
     }
 
-    public static IApplicationBuilder UseMarventa(this IApplicationBuilder app, IConfiguration configuration)
+    public static IApplicationBuilder UseMarventa(this IApplicationBuilder app, IConfiguration configuration, IWebHostEnvironment? env = null)
     {
         app.UseMiddleware<Middleware.ExceptionMiddleware>();
         app.UseHttpsRedirection();
@@ -155,6 +168,47 @@ public static class MarventaExtensions
             if (HasSection(configuration, "HealthChecks") && configuration.GetSection("HealthChecks")["Enabled"] != "false")
                 endpoints.MapHealthChecks("/health");
         });
+
+        if (env != null && HasSection(configuration, "Swagger"))
+        {
+            var swaggerOptions = configuration.GetSection(SwaggerOptions.SectionName).Get<SwaggerOptions>() ?? new SwaggerOptions();
+            if (swaggerOptions.Enabled)
+            {
+                var shouldEnable = Infrastructure.Environment.EnvironmentHelper.ShouldEnableFeature(
+                    swaggerOptions.EnvironmentRestriction,
+                    env.EnvironmentName);
+
+                if (shouldEnable)
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI(c =>
+                    {
+                        if (HasSection(configuration, "ApiVersioning"))
+                        {
+                            var provider = app.ApplicationServices.GetService<IApiVersionDescriptionProvider>();
+                            if (provider != null)
+                            {
+                                foreach (var description in provider.ApiVersionDescriptions)
+                                {
+                                    c.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json",
+                                        $"{swaggerOptions.Title} {description.GroupName.ToUpperInvariant()}");
+                                }
+                            }
+                            else
+                            {
+                                c.SwaggerEndpoint($"/swagger/{swaggerOptions.Version}/swagger.json",
+                                    $"{swaggerOptions.Title} {swaggerOptions.Version}");
+                            }
+                        }
+                        else
+                        {
+                            c.SwaggerEndpoint($"/swagger/{swaggerOptions.Version}/swagger.json",
+                                $"{swaggerOptions.Title} {swaggerOptions.Version}");
+                        }
+                    });
+                }
+            }
+        }
 
         return app;
     }
@@ -435,6 +489,146 @@ public static class MarventaExtensions
                     });
                 }
             });
+    }
+
+    private static void ConfigureApiVersioning(IServiceCollection services, IConfiguration configuration)
+    {
+        var options = configuration.GetSection(ApiVersioningOptions.SectionName).Get<ApiVersioningOptions>()
+            ?? new ApiVersioningOptions();
+
+        services.Configure<ApiVersioningOptions>(configuration.GetSection(ApiVersioningOptions.SectionName));
+
+        services.AddApiVersioning(config =>
+        {
+            config.DefaultApiVersion = ApiVersion.Parse(options.DefaultVersion);
+            config.AssumeDefaultVersionWhenUnspecified = options.AssumeDefaultVersionWhenUnspecified;
+            config.ReportApiVersions = options.ReportApiVersions;
+
+            switch (options.VersioningType)
+            {
+                case VersioningType.QueryString:
+                    config.ApiVersionReader = new Microsoft.AspNetCore.Mvc.Versioning.QueryStringApiVersionReader(options.QueryStringParameterName);
+                    break;
+                case VersioningType.Header:
+                    config.ApiVersionReader = new Microsoft.AspNetCore.Mvc.Versioning.HeaderApiVersionReader(options.HeaderName);
+                    break;
+                case VersioningType.MediaType:
+                    config.ApiVersionReader = new Microsoft.AspNetCore.Mvc.Versioning.MediaTypeApiVersionReader();
+                    break;
+                case VersioningType.UrlSegment:
+                default:
+                    config.ApiVersionReader = new Microsoft.AspNetCore.Mvc.Versioning.UrlSegmentApiVersionReader();
+                    break;
+            }
+        });
+
+        services.AddVersionedApiExplorer(explorerOptions =>
+        {
+            explorerOptions.GroupNameFormat = "'v'VVV";
+            explorerOptions.SubstituteApiVersionInUrl = options.VersioningType == VersioningType.UrlSegment;
+        });
+    }
+
+    private static void ConfigureSwagger(IServiceCollection services, IConfiguration configuration)
+    {
+        var swaggerOptions = configuration.GetSection(SwaggerOptions.SectionName).Get<SwaggerOptions>()
+            ?? new SwaggerOptions();
+
+        services.Configure<SwaggerOptions>(configuration.GetSection(SwaggerOptions.SectionName));
+        services.AddEndpointsApiExplorer();
+
+        services.AddSwaggerGen(c =>
+        {
+            if (HasSection(configuration, "ApiVersioning"))
+            {
+                var provider = services.BuildServiceProvider().GetService<IApiVersionDescriptionProvider>();
+                if (provider != null)
+                {
+                    foreach (var description in provider.ApiVersionDescriptions)
+                    {
+                        c.SwaggerDoc(description.GroupName, new OpenApiInfo
+                        {
+                            Title = swaggerOptions.Title,
+                            Version = description.ApiVersion.ToString(),
+                            Description = swaggerOptions.Description,
+                            Contact = swaggerOptions.Contact != null ? new OpenApiContact
+                            {
+                                Name = swaggerOptions.Contact.Name,
+                                Email = swaggerOptions.Contact.Email,
+                                Url = string.IsNullOrEmpty(swaggerOptions.Contact.Url) ? null : new Uri(swaggerOptions.Contact.Url)
+                            } : null,
+                            License = swaggerOptions.License != null ? new OpenApiLicense
+                            {
+                                Name = swaggerOptions.License.Name,
+                                Url = string.IsNullOrEmpty(swaggerOptions.License.Url) ? null : new Uri(swaggerOptions.License.Url)
+                            } : null
+                        });
+                    }
+                }
+                else
+                {
+                    c.SwaggerDoc(swaggerOptions.Version, CreateOpenApiInfo(swaggerOptions));
+                }
+            }
+            else
+            {
+                c.SwaggerDoc(swaggerOptions.Version, CreateOpenApiInfo(swaggerOptions));
+            }
+
+            if (swaggerOptions.RequireAuthorization && HasSection(configuration, "Jwt"))
+            {
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            }
+
+            var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml", SearchOption.TopDirectoryOnly);
+            foreach (var xmlFile in xmlFiles)
+            {
+                c.IncludeXmlComments(xmlFile);
+            }
+        });
+    }
+
+    private static OpenApiInfo CreateOpenApiInfo(SwaggerOptions options)
+    {
+        return new OpenApiInfo
+        {
+            Title = options.Title,
+            Version = options.Version,
+            Description = options.Description,
+            Contact = options.Contact != null ? new OpenApiContact
+            {
+                Name = options.Contact.Name,
+                Email = options.Contact.Email,
+                Url = string.IsNullOrEmpty(options.Contact.Url) ? null : new Uri(options.Contact.Url)
+            } : null,
+            License = options.License != null ? new OpenApiLicense
+            {
+                Name = options.License.Name,
+                Url = string.IsNullOrEmpty(options.License.Url) ? null : new Uri(options.License.Url)
+            } : null
+        };
     }
 
     #endregion
