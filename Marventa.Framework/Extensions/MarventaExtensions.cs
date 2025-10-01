@@ -1,20 +1,21 @@
-using Marventa.Framework.Caching.Abstractions;
-using Marventa.Framework.Caching.Distributed;
-using Marventa.Framework.Caching.Hybrid;
-using Marventa.Framework.Caching.InMemory;
+using Marventa.Framework.Features.Caching.Abstractions;
+using Marventa.Framework.Features.Caching.Distributed;
+using Marventa.Framework.Features.Caching.Hybrid;
+using Marventa.Framework.Features.Caching.InMemory;
 using Marventa.Framework.Configuration;
-using Marventa.Framework.EventBus.Abstractions;
-using Marventa.Framework.EventBus.Kafka;
-using Marventa.Framework.EventBus.RabbitMQ;
-using Marventa.Framework.Logging;
-using Marventa.Framework.MultiTenancy;
-using Marventa.Framework.Search.Elasticsearch;
+using Marventa.Framework.Features.EventBus.Abstractions;
+using Marventa.Framework.Features.EventBus.Kafka;
+using Marventa.Framework.Features.EventBus.RabbitMQ;
+using Marventa.Framework.Features.Logging;
+using Marventa.Framework.Infrastructure.MultiTenancy;
+using Marventa.Framework.Features.Search.Elasticsearch;
 using Marventa.Framework.Security.Authentication;
 using Marventa.Framework.Security.Authorization;
 using Marventa.Framework.Security.Encryption;
-using Marventa.Framework.Storage.Abstractions;
-using Marventa.Framework.Storage.AWS;
-using Marventa.Framework.Storage.Azure;
+using Marventa.Framework.Features.Storage.Abstractions;
+using Marventa.Framework.Features.Storage.AWS;
+using Marventa.Framework.Features.Storage.Azure;
+using Marventa.Framework.Features.Storage.Local;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -29,6 +30,9 @@ using RabbitMQ.Client;
 using Serilog;
 using System.Text;
 using Amazon.S3;
+using MassTransit;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Resources;
 
 namespace Marventa.Framework.Extensions;
 
@@ -39,117 +43,85 @@ namespace Marventa.Framework.Extensions;
 public static class MarventaExtensions
 {
     /// <summary>
-    /// 🎯 ONE METHOD - Intelligently configures the entire framework
+    /// 🎯 ONE METHOD - Configures all Marventa.Framework services
     /// Auto-activates features based on appsettings.json configuration
     /// </summary>
-    public static IServiceCollection AddMarventa(this IServiceCollection services, IConfiguration configuration, IHostEnvironment? environment = null)
+    public static IServiceCollection AddMarventa(this IServiceCollection services, IConfiguration configuration)
     {
-        var autoConfig = new MarventaAutoConfiguration(configuration, environment);
-
         // Always required
         services.AddHttpContextAccessor();
-
-        // Exception Handling Options
         services.Configure<ExceptionHandlingOptions>(configuration.GetSection(ExceptionHandlingOptions.SectionName));
 
         // JWT Authentication (if configured)
-        if (autoConfig.HasJwtConfiguration())
-        {
+        if (HasSection(configuration, "Jwt"))
             ConfigureJwtAuthentication(services, configuration);
-        }
 
         // Caching (smart selection)
-        ConfigureCaching(services, configuration, autoConfig);
+        ConfigureCaching(services, configuration);
 
         // Multi-Tenancy (if configured)
-        if (autoConfig.HasMultiTenancyConfiguration())
-        {
+        if (HasSection(configuration, "MultiTenancy"))
             ConfigureMultiTenancy(services, configuration);
-        }
 
         // Rate Limiting (if configured)
-        if (autoConfig.HasRateLimitingConfiguration())
-        {
+        if (HasSection(configuration, "RateLimiting"))
             ConfigureRateLimiting(services, configuration);
-        }
 
         // RabbitMQ (if configured)
-        if (autoConfig.HasRabbitMqConfiguration())
-        {
+        if (HasSection(configuration, "RabbitMQ"))
             ConfigureRabbitMq(services, configuration);
-        }
 
         // Kafka (if configured)
-        if (autoConfig.HasKafkaConfiguration())
-        {
+        if (HasSection(configuration, "Kafka"))
             ConfigureKafka(services, configuration);
-        }
-
-        // Elasticsearch (if configured)
-        if (autoConfig.HasElasticsearchConfiguration())
-        {
-            ConfigureElasticsearch(services, configuration);
-        }
-
-        // MongoDB (if configured)
-        if (autoConfig.HasMongoDbConfiguration())
-        {
-            ConfigureMongoDB(services, configuration);
-        }
-
-        // Azure Storage (if configured)
-        if (autoConfig.HasAzureStorageConfiguration())
-        {
-            ConfigureAzureStorage(services, configuration);
-        }
-
-        // AWS Storage (if configured)
-        if (autoConfig.HasAwsStorageConfiguration())
-        {
-            ConfigureAwsStorage(services, configuration);
-        }
-
-        // Local Storage (if configured)
-        if (autoConfig.HasLocalStorageConfiguration())
-        {
-            services.AddMarventaLocalStorage(configuration);
-        }
 
         // MassTransit (if configured)
-        if (autoConfig.HasMassTransitConfiguration())
-        {
-            services.AddMarventaMassTransit(configuration);
-        }
+        if (configuration.GetSection("MassTransit")["Enabled"] == "true")
+            ConfigureMassTransit(services, configuration);
+
+        // Elasticsearch (if configured)
+        if (HasSection(configuration, "Elasticsearch"))
+            ConfigureElasticsearch(services, configuration);
+
+        // MongoDB (if configured)
+        if (HasSection(configuration, "MongoDB"))
+            ConfigureMongoDB(services, configuration);
+
+        // Azure Storage (if configured)
+        if (HasSection(configuration, "Azure:Storage"))
+            ConfigureAzureStorage(services, configuration);
+
+        // AWS Storage (if configured)
+        if (HasSection(configuration, "AWS"))
+            ConfigureAwsStorage(services, configuration);
+
+        // Local Storage (if configured)
+        if (HasSection(configuration, "LocalStorage"))
+            ConfigureLocalStorage(services, configuration);
 
         // Health Checks (if configured)
-        if (autoConfig.HasHealthChecksConfiguration())
-        {
-            services.AddMarventaHealthChecks(configuration);
-        }
+        if (HasSection(configuration, "HealthChecks") && configuration.GetSection("HealthChecks")["Enabled"] != "false")
+            ConfigureHealthChecks(services, configuration);
+
+        // Serilog Logging (if configured)
+        if (HasSection(configuration, "Serilog"))
+            ConfigureSerilog(configuration);
+
+        // OpenTelemetry (if configured)
+        if (HasSection(configuration, "OpenTelemetry"))
+            ConfigureOpenTelemetry(services, configuration);
 
         return services;
     }
 
     /// <summary>
-    /// 🎯 ONE METHOD - Intelligently configures all middleware
+    /// 🎯 ONE METHOD - Configures all Marventa.Framework middleware
     /// Automatically builds middleware pipeline based on registered services
     /// </summary>
-    public static IApplicationBuilder UseMarventa(this IApplicationBuilder app, IHostEnvironment? environment = null)
+    public static IApplicationBuilder UseMarventa(this IApplicationBuilder app, IConfiguration configuration)
     {
-        var config = app.ApplicationServices.GetService<IConfiguration>();
-        if (config == null) return app;
-
-        var autoConfig = new MarventaAutoConfiguration(config, environment);
-
         // 1. Exception Handling (must be first)
-        if (autoConfig.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseMiddleware<ExceptionHandling.ExceptionMiddleware>();
-        }
+        app.UseMiddleware<Middleware.ExceptionMiddleware>();
 
         // 2. HTTPS Redirection (security)
         app.UseHttpsRedirection();
@@ -157,90 +129,36 @@ public static class MarventaExtensions
         // 3. Routing (must be before Authentication)
         app.UseRouting();
 
-        // 4. CORS (if needed, before Authentication)
-        // User can add: app.UseCors("PolicyName");
-
-        // 5. Authentication & Authorization
-        if (autoConfig.HasJwtConfiguration())
+        // 4. Authentication & Authorization
+        if (HasSection(configuration, "Jwt"))
         {
             app.UseAuthentication();
             app.UseAuthorization();
         }
 
-        // 6. Multi-Tenancy (after Authentication, to read tenant from claims)
-        if (autoConfig.HasMultiTenancyConfiguration())
-        {
+        // 5. Multi-Tenancy (after Authentication, to read tenant from claims)
+        if (HasSection(configuration, "MultiTenancy"))
             app.UseMiddleware<TenantMiddleware>();
-        }
 
-        // 7. Rate Limiting (after Authentication, for user-based limiting)
-        if (autoConfig.HasRateLimitingConfiguration())
-        {
+        // 6. Rate Limiting (after Authentication, for user-based limiting)
+        if (HasSection(configuration, "RateLimiting"))
             app.UseMiddleware<Security.RateLimiting.RateLimiterMiddleware>();
-        }
 
-        // 8. Health Checks endpoint (if configured)
-        if (autoConfig.HasHealthChecksConfiguration())
-        {
+        // 7. Health Checks endpoint (if configured)
+        if (HasSection(configuration, "HealthChecks") && configuration.GetSection("HealthChecks")["Enabled"] != "false")
             app.UseHealthChecks("/health");
-        }
 
         return app;
     }
 
-    /// <summary>
-    /// For advanced users: Customizable configuration
-    /// </summary>
-    public static IServiceCollection AddMarventa(this IServiceCollection services, IConfiguration configuration, Action<MarventaOptions> configure)
+    #region Helper Methods
+
+    private static bool HasSection(IConfiguration configuration, string sectionName)
     {
-        var options = new MarventaOptions();
-        configure(options);
-
-        services.AddHttpContextAccessor();
-
-        if (options.UseAuthentication)
-        {
-            ConfigureJwtAuthentication(services, configuration);
-        }
-
-        if (options.UseCache)
-        {
-            var autoConfig = new MarventaAutoConfiguration(configuration);
-            ConfigureCaching(services, configuration, autoConfig);
-        }
-
-        if (options.UseMultiTenancy)
-        {
-            ConfigureMultiTenancy(services, configuration);
-        }
-
-        if (options.UseRateLimiting)
-        {
-            ConfigureRateLimiting(services, configuration);
-        }
-
-        if (options.UseRabbitMQ)
-        {
-            ConfigureRabbitMq(services, configuration);
-        }
-
-        if (options.UseKafka)
-        {
-            ConfigureKafka(services, configuration);
-        }
-
-        if (options.UseElasticsearch)
-        {
-            ConfigureElasticsearch(services, configuration);
-        }
-
-        if (options.UseMongoDB)
-        {
-            ConfigureMongoDB(services, configuration);
-        }
-
-        return services;
+        return configuration.GetSection(sectionName).Exists();
     }
+
+    #endregion
 
     #region Private Configuration Methods
 
@@ -276,9 +194,9 @@ public static class MarventaExtensions
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
     }
 
-    private static void ConfigureCaching(IServiceCollection services, IConfiguration configuration, MarventaAutoConfiguration autoConfig)
+    private static void ConfigureCaching(IServiceCollection services, IConfiguration configuration)
     {
-        var cacheType = autoConfig.GetCacheType();
+        var cacheType = GetCacheType(configuration);
 
         switch (cacheType)
         {
@@ -315,6 +233,22 @@ public static class MarventaExtensions
                 services.AddSingleton<ICacheService, MemoryCacheService>();
                 break;
         }
+    }
+
+    private static CacheType GetCacheType(IConfiguration configuration)
+    {
+        var cachingSection = configuration.GetSection("Caching");
+        if (cachingSection.Exists())
+        {
+            var typeValue = cachingSection["Type"];
+            if (Enum.TryParse<CacheType>(typeValue, true, out var cacheType))
+                return cacheType;
+        }
+
+        var redisSection = configuration.GetSection("Redis");
+        return redisSection.Exists() && !string.IsNullOrEmpty(redisSection["ConnectionString"])
+            ? CacheType.Redis
+            : CacheType.InMemory;
     }
 
     private static void ConfigureMultiTenancy(IServiceCollection services, IConfiguration configuration)
@@ -412,20 +346,90 @@ public static class MarventaExtensions
         services.AddSingleton<IStorageService>(new S3Storage(s3Client, bucketName));
     }
 
-    #endregion
-}
+    private static void ConfigureLocalStorage(IServiceCollection services, IConfiguration configuration)
+    {
+        var basePath = configuration["LocalStorage:BasePath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+        var baseUrl = configuration["LocalStorage:BaseUrl"];
 
-/// <summary>
-/// Customization options for advanced users
-/// </summary>
-public class MarventaOptions
-{
-    public bool UseAuthentication { get; set; } = true;
-    public bool UseCache { get; set; } = true;
-    public bool UseMultiTenancy { get; set; } = false;
-    public bool UseRateLimiting { get; set; } = false;
-    public bool UseRabbitMQ { get; set; } = false;
-    public bool UseKafka { get; set; } = false;
-    public bool UseElasticsearch { get; set; } = false;
-    public bool UseMongoDB { get; set; } = false;
+        services.AddSingleton<IStorageService>(new Features.Storage.Local.LocalFileStorage(basePath, baseUrl));
+    }
+
+    private static void ConfigureHealthChecks(IServiceCollection services, IConfiguration configuration)
+    {
+        var healthChecks = services.AddHealthChecks();
+
+        // Add database health check if connection string exists
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (!string.IsNullOrEmpty(connectionString))
+        {
+            healthChecks.AddSqlServer(connectionString, name: "database");
+        }
+
+        // Add Redis health check if configured
+        var redisConnection = configuration["Redis:ConnectionString"];
+        if (!string.IsNullOrEmpty(redisConnection))
+        {
+            healthChecks.AddRedis(redisConnection, name: "redis");
+        }
+
+        // Add RabbitMQ health check if configured
+        var rabbitMqHost = configuration["RabbitMQ:Host"];
+        if (!string.IsNullOrEmpty(rabbitMqHost))
+        {
+            healthChecks.AddCheck<Infrastructure.HealthChecks.RabbitMqHealthCheck>("rabbitmq");
+        }
+    }
+
+    private static void ConfigureMassTransit(IServiceCollection services, IConfiguration configuration)
+    {
+        var rabbitMqHost = configuration["RabbitMQ:Host"] ?? "localhost";
+        var rabbitMqVirtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
+        var rabbitMqUsername = configuration["RabbitMQ:Username"] ?? "guest";
+        var rabbitMqPassword = configuration["RabbitMQ:Password"] ?? "guest";
+
+        services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(rabbitMqHost, rabbitMqVirtualHost, h =>
+                {
+                    h.Username(rabbitMqUsername);
+                    h.Password(rabbitMqPassword);
+                });
+
+                cfg.ConfigureEndpoints(context);
+            });
+        });
+    }
+
+    private static void ConfigureSerilog(IConfiguration configuration)
+    {
+        Log.Logger = SerilogConfiguration.ConfigureSerilog(configuration, configuration["ApplicationName"] ?? "Marventa");
+    }
+
+    private static void ConfigureOpenTelemetry(IServiceCollection services, IConfiguration configuration)
+    {
+        var serviceName = configuration["OpenTelemetry:ServiceName"] ?? configuration["ApplicationName"] ?? "Marventa";
+        var otlpEndpoint = configuration["OpenTelemetry:OtlpEndpoint"];
+
+        services.AddOpenTelemetry()
+            .WithTracing(builder =>
+            {
+                builder
+                    .AddSource(serviceName)
+                    .ConfigureResource(resource => resource.AddService(serviceName))
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation();
+
+                if (!string.IsNullOrEmpty(otlpEndpoint))
+                {
+                    builder.AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri(otlpEndpoint);
+                    });
+                }
+            });
+    }
+
+    #endregion
 }

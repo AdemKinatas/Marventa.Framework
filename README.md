@@ -1,58 +1,65 @@
-# Marventa.Framework v4.1.0
+# 🚀 Marventa.Framework
 
-**Enterprise .NET 8.0 & 9.0 framework - Convention over Configuration**
+**Enterprise .NET Framework - Convention over Configuration**
 
 [![NuGet](https://img.shields.io/nuget/v/Marventa.Framework.svg)](https://www.nuget.org/packages/Marventa.Framework/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
-## 📖 What is Marventa.Framework?
+## 📖 Table of Contents
 
-Marventa.Framework is an **enterprise-grade .NET framework** that provides:
-
-### Core Architecture Patterns (Always Available)
-- **CQRS** - Command/Query separation with MediatR
-- **DDD** - Entity, AggregateRoot, ValueObject, DomainEvent
-- **Repository & UnitOfWork** - Generic and custom repositories
-- **FluentValidation** - Request validation pipeline
-- **Result Pattern** - Type-safe error handling
-- **API Responses** - Standardized response format
-- **Exception Handling** - Global error handling middleware
-
-### Infrastructure Features (Auto-Configured)
-
-**🔒 Security & Authentication**
-- JWT Authentication & Authorization (permission-based)
-- Rate Limiting (IP/User/ApiKey strategies)
-- Password Hashing (BCrypt)
-- AES Encryption
-
-**💾 Data & Storage**
-- Caching (InMemory, Redis, Hybrid)
-- Local File Storage
-- Azure Blob Storage
-- AWS S3 Storage
-- MongoDB
-- Elasticsearch
-
-**📨 Event-Driven Architecture**
-- RabbitMQ Event Bus
-- Kafka Event Streaming
-- MassTransit Integration
-
-**🏢 Enterprise Features**
-- Multi-Tenancy (Header/Subdomain/Claim)
-- Health Checks (Database, Redis, RabbitMQ)
-- Serilog Structured Logging
-- OpenTelemetry Tracing
-- Polly Resilience Patterns
+1. [Installation](#1-installation)
+2. [Basic Setup (2 Lines!)](#2-basic-setup)
+3. [Core - Domain Driven Design (DDD)](#3-core---domain-driven-design)
+   - 3.1. [Domain - Entity](#31-domain---entity)
+   - 3.2. [Domain - Aggregate Root](#32-domain---aggregate-root)
+   - 3.3. [Domain - Value Object](#33-domain---value-object)
+   - 3.4. [Domain - Domain Events](#34-domain---domain-events)
+   - 3.5. [Domain - Auditable Entity](#35-domain---auditable-entity)
+   - 3.6. [Application - Result Pattern](#36-application---result-pattern)
+4. [Infrastructure - Database & Repository](#4-infrastructure---database--repository)
+   - 4.1. [Persistence - Create DbContext](#41-persistence---create-dbcontext)
+   - 4.2. [Persistence - Repository Pattern](#42-persistence---repository-pattern)
+   - 4.3. [Persistence - Unit of Work](#43-persistence---unit-of-work)
+5. [Behaviors - CQRS with MediatR](#5-behaviors---cqrs-with-mediatr)
+   - 5.1. [Create Command](#51-create-command)
+   - 5.2. [Create Query](#52-create-query)
+   - 5.3. [Validation Behavior](#53-validation-behavior)
+   - 5.4. [Logging Behavior](#54-logging-behavior)
+   - 5.5. [Performance Behavior](#55-performance-behavior)
+6. [Features - Caching](#6-features---caching)
+   - 6.1. [InMemory Cache](#61-inmemory-cache)
+   - 6.2. [Redis Cache](#62-redis-cache)
+   - 6.3. [Hybrid Cache](#63-hybrid-cache)
+7. [Features - Event Bus](#7-features---event-bus)
+   - 7.1. [RabbitMQ Event Bus](#71-rabbitmq-event-bus)
+   - 7.2. [Kafka Producer/Consumer](#72-kafka-producerconsumer)
+   - 7.3. [MassTransit Integration](#73-masstransit-integration)
+8. [Features - Storage](#8-features---storage)
+   - 8.1. [Local File Storage](#81-local-file-storage)
+   - 8.2. [Azure Blob Storage](#82-azure-blob-storage)
+   - 8.3. [AWS S3 Storage](#83-aws-s3-storage)
+9. [Features - Search](#9-features---search)
+   - 9.1. [Elasticsearch](#91-elasticsearch)
+10. [Features - Logging](#10-features---logging)
+    - 10.1. [Serilog](#101-serilog)
+    - 10.2. [OpenTelemetry Tracing](#102-opentelemetry-tracing)
+11. [Security - Authentication](#11-security---authentication)
+    - 11.1. [JWT Token Generator](#111-jwt-token-generator)
+    - 11.2. [Password Hasher](#112-password-hasher)
+    - 11.3. [AES Encryption](#113-aes-encryption)
+12. [Security - Authorization](#12-security---authorization)
+    - 12.1. [Permission Based Authorization](#121-permission-based-authorization)
+13. [Security - Rate Limiting](#13-security---rate-limiting)
+14. [Infrastructure - Multi-Tenancy](#14-infrastructure---multi-tenancy)
+15. [Infrastructure - Health Checks](#15-infrastructure---health-checks)
+16. [Middleware - Exception Handling](#16-middleware---exception-handling)
+17. [Configuration - appsettings.json](#17-configuration---appsettingsjson)
 
 ---
 
-## 🚀 How to Use
-
-### Installation
+## 1. Installation
 
 ```bash
 dotnet add package Marventa.Framework
@@ -60,90 +67,407 @@ dotnet add package Marventa.Framework
 
 ---
 
-## 📋 Feature Categories
+## 2. Basic Setup
 
-### 1️⃣ Features That Work Without Configuration
-
-These features are **always available** after installing the package - no configuration needed:
+### Program.cs - Just 2 Lines!
 
 ```csharp
-// In Program.cs
+var builder = WebApplication.CreateBuilder(args);
+
+// ✨ ONE LINE - All services registered
 builder.Services.AddMarventa(builder.Configuration);
+
+builder.Services.AddControllers();
+
+var app = builder.Build();
+
+// ✨ ONE LINE - All middleware configured
+app.UseMarventa(builder.Configuration);
+
+app.MapControllers();
+app.Run();
 ```
 
-**What you get immediately:**
-- ✅ Exception Handling (global error handling)
-- ✅ API Response standardization
-- ✅ CQRS patterns (Entity, ValueObject, Result)
-- ✅ In-Memory Caching (default)
+That's it! Now activate features via `appsettings.json`.
 
-**Usage:**
+---
+
+## 3. Core - Domain Driven Design
+
+### 3.1. Domain - Entity
+
+**Purpose:** Represents domain objects with identity.
+
 ```csharp
-// Use Result pattern
-public Result<User> GetUser(Guid id)
+using Marventa.Framework.Core.Domain;
+
+public class Product : Entity<Guid>
 {
-    var user = _repository.GetById(id);
-    if (user == null)
-        return Result<User>.Failure("User not found");
+    public string Name { get; private set; }
+    public decimal Price { get; private set; }
+    public int Stock { get; private set; }
 
-    return Result<User>.Success(user);
+    private Product() { }
+
+    public static Product Create(string name, decimal price, int stock)
+    {
+        return new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Price = price,
+            Stock = stock
+        };
+    }
+
+    public void UpdateStock(int quantity)
+    {
+        Stock += quantity;
+    }
 }
+```
 
-// Use In-Memory Cache
-await _cache.SetAsync("key", value, TimeSpan.FromMinutes(10));
-var cached = await _cache.GetAsync<MyType>("key");
+### 3.2. Domain - Aggregate Root
+
+**Purpose:** Root entity that manages business rules and dispatches domain events.
+
+```csharp
+public class Order : AggregateRoot<Guid>
+{
+    private readonly List<OrderItem> _items = new();
+
+    public string OrderNumber { get; private set; }
+    public OrderStatus Status { get; private set; }
+    public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
+
+    public static Order Create(string orderNumber)
+    {
+        var order = new Order
+        {
+            Id = Guid.NewGuid(),
+            OrderNumber = orderNumber,
+            Status = OrderStatus.Pending
+        };
+
+        order.AddDomainEvent(new OrderCreatedEvent(order.Id));
+        return order;
+    }
+
+    public void Confirm()
+    {
+        Status = OrderStatus.Confirmed;
+        AddDomainEvent(new OrderConfirmedEvent(Id));
+    }
+}
+```
+
+### 3.3. Domain - Value Object
+
+**Purpose:** Objects without identity, compared by their values.
+
+```csharp
+public class Address : ValueObject
+{
+    public string Street { get; private set; }
+    public string City { get; private set; }
+    public string ZipCode { get; private set; }
+
+    public Address(string street, string city, string zipCode)
+    {
+        Street = street;
+        City = city;
+        ZipCode = zipCode;
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        yield return Street;
+        yield return City;
+        yield return ZipCode;
+    }
+}
+```
+
+### 3.4. Domain - Domain Events
+
+**Purpose:** Represents events that occur within the domain.
+
+```csharp
+public record ProductCreatedEvent(Guid ProductId, string Name) : DomainEvent;
+public record OrderCreatedEvent(Guid OrderId) : DomainEvent;
+public record OrderConfirmedEvent(Guid OrderId) : DomainEvent;
+```
+
+### 3.5. Domain - Auditable Entity
+
+**Purpose:** Automatically tracks creation and update information.
+
+```csharp
+public class Customer : AuditableEntity<Guid>
+{
+    public string Name { get; set; }
+    public string Email { get; set; }
+
+    // CreatedAt, UpdatedAt, CreatedBy, UpdatedBy tracked automatically!
+}
+```
+
+### 3.6. Application - Result Pattern
+
+**Purpose:** Type-safe way to return success/failure states.
+
+```csharp
+public async Task<Result<Guid>> CreateProduct(string name, decimal price)
+{
+    if (price <= 0)
+        return Result<Guid>.Failure("Price must be positive");
+
+    var product = Product.Create(name, price, 0);
+    await _repository.AddAsync(product);
+
+    return Result<Guid>.Success(product.Id);
+}
 ```
 
 ---
 
-### 2️⃣ Features That Require Configuration
+## 4. Infrastructure - Database & Repository
 
-These features **auto-activate** when you add their configuration to `appsettings.json`:
+### 4.1. Persistence - Create DbContext
 
-#### JWT Authentication
+**Purpose:** Database connection with Entity Framework Core.
 
-**Add to appsettings.json:**
+```csharp
+using Marventa.Framework.Infrastructure.Persistence;
+
+public class ApplicationDbContext : BaseDbContext
+{
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options,
+        IHttpContextAccessor httpContextAccessor)
+        : base(options, httpContextAccessor)
+    {
+    }
+
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Order> Orders => Set<Order>();
+}
+```
+
+**Add to Program.cs:**
+```csharp
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<ApplicationDbContext>>();
+```
+
+**appsettings.json:**
 ```json
 {
-  "Jwt": {
-    "Secret": "your-super-secret-key-at-least-32-characters-long",
-    "Issuer": "MyApp",
-    "Audience": "MyApp",
-    "ExpirationMinutes": 60
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=MyDb;Trusted_Connection=true;"
   }
 }
 ```
 
-**Usage:**
-```csharp
-// Generate token
-var token = _jwtTokenGenerator.GenerateToken(
-    userId: user.Id.ToString(),
-    email: user.Email,
-    roles: new[] { "Admin" },
-    permissions: new[] { "users.read", "users.write" }
-);
+### 4.2. Persistence - Repository Pattern
 
-// Protect endpoints
-[Authorize]
-[RequirePermission("users.write")]
-public async Task<IActionResult> CreateUser(CreateUserCommand command)
+**Purpose:** Abstracts database operations.
+
+```csharp
+// Interface
+public interface IProductRepository : IRepository<Product, Guid>
 {
-    var result = await _mediator.Send(command);
-    return Ok(result);
+    Task<Product?> GetByNameAsync(string name);
+    Task<List<Product>> SearchAsync(string searchTerm);
+}
+
+// Implementation
+public class ProductRepository : GenericRepository<Product, Guid>, IProductRepository
+{
+    public ProductRepository(ApplicationDbContext context) : base(context)
+    {
+    }
+
+    public async Task<Product?> GetByNameAsync(string name)
+    {
+        return await _dbSet.FirstOrDefaultAsync(p => p.Name == name);
+    }
+
+    public async Task<List<Product>> SearchAsync(string searchTerm)
+    {
+        return await _dbSet.Where(p => p.Name.Contains(searchTerm)).ToListAsync();
+    }
+}
+```
+
+**Add to Program.cs:**
+```csharp
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+```
+
+### 4.3. Persistence - Unit of Work
+
+**Purpose:** Manages transactions and dispatches domain events.
+
+```csharp
+public class ProductService
+{
+    private readonly IProductRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public async Task<Result<Guid>> CreateProductAsync(string name, decimal price)
+    {
+        var product = Product.Create(name, price, 0);
+        await _repository.AddAsync(product);
+
+        // Transaction + Domain Events
+        await _unitOfWork.SaveChangesAsync();
+
+        return Result<Guid>.Success(product.Id);
+    }
 }
 ```
 
 ---
 
-#### Redis Caching
+## 5. Behaviors - CQRS with MediatR
 
-**Add to appsettings.json:**
+**Purpose:** MediatR is auto-registered with validation/logging/performance behaviors active.
+
+### 5.1. Create Command
+
+```csharp
+// Command
+public record CreateProductCommand(string Name, decimal Price) : IRequest<Result<Guid>>;
+
+// Handler
+public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Result<Guid>>
+{
+    private readonly IProductRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public async Task<Result<Guid>> Handle(CreateProductCommand request, CancellationToken ct)
+    {
+        var product = Product.Create(request.Name, request.Price, 0);
+        await _repository.AddAsync(product);
+        await _unitOfWork.SaveChangesAsync(ct);
+
+        return Result<Guid>.Success(product.Id);
+    }
+}
+
+// Validator
+public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
+{
+    public CreateProductCommandValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Price).GreaterThan(0);
+    }
+}
+```
+
+### 5.2. Create Query
+
+```csharp
+// Query
+public record GetProductByIdQuery(Guid Id) : IRequest<Result<ProductDto>>;
+
+// Handler
+public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, Result<ProductDto>>
+{
+    private readonly IProductRepository _repository;
+
+    public async Task<Result<ProductDto>> Handle(GetProductByIdQuery request, CancellationToken ct)
+    {
+        var product = await _repository.GetByIdAsync(request.Id);
+        if (product == null)
+            return Result<ProductDto>.Failure("Product not found");
+
+        return Result<ProductDto>.Success(new ProductDto(product.Id, product.Name, product.Price));
+    }
+}
+
+public record ProductDto(Guid Id, string Name, decimal Price);
+```
+
+**Usage in Controller:**
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateProductCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var result = await _mediator.Send(new GetProductByIdQuery(id));
+        return result.IsSuccess ? Ok(result.Value) : NotFound(result.ErrorMessage);
+    }
+}
+```
+
+### 5.3. Validation Behavior
+
+**Purpose:** Automatically validates all requests with FluentValidation.
+**Auto-active!** Just write validator classes.
+
+### 5.4. Logging Behavior
+
+**Purpose:** Logs all requests/responses.
+**Auto-active!**
+
+### 5.5. Performance Behavior
+
+**Purpose:** Warns about requests taking longer than 500ms.
+**Auto-active!**
+
+---
+
+## 6. Features - Caching
+
+### 6.1. InMemory Cache
+
+**Purpose:** Default cache, no configuration required.
+
+```csharp
+using Marventa.Framework.Features.Caching.Abstractions;
+
+public class ProductService
+{
+    private readonly ICacheService _cache;
+
+    public async Task<Product?> GetProductAsync(Guid id)
+    {
+        var cacheKey = $"product:{id}";
+
+        var cached = await _cache.GetAsync<Product>(cacheKey);
+        if (cached != null) return cached;
+
+        var product = await _repository.GetByIdAsync(id);
+        await _cache.SetAsync(cacheKey, product, TimeSpan.FromHours(1));
+
+        return product;
+    }
+}
+```
+
+### 6.2. Redis Cache
+
+**Configuration (appsettings.json):**
 ```json
 {
-  "Caching": {
-    "Type": "Redis"
-  },
+  "Caching": { "Type": "Redis" },
   "Redis": {
     "ConnectionString": "localhost:6379",
     "InstanceName": "MyApp:"
@@ -151,68 +475,30 @@ public async Task<IActionResult> CreateUser(CreateUserCommand command)
 }
 ```
 
-**Usage:** (Same interface as in-memory cache)
-```csharp
-await _cache.SetAsync("user:123", user, TimeSpan.FromHours(1));
-var user = await _cache.GetAsync<User>("user:123");
-```
+**Usage:** Same interface as InMemory (`ICacheService`).
 
----
+### 6.3. Hybrid Cache
 
-#### Multi-Tenancy
+**Purpose:** Reads from InMemory first, then Redis.
 
-**Add to appsettings.json:**
+**Configuration:**
 ```json
 {
-  "MultiTenancy": {
-    "Strategy": "Header",
-    "HeaderName": "X-Tenant-Id"
+  "Caching": { "Type": "Hybrid" },
+  "Redis": {
+    "ConnectionString": "localhost:6379",
+    "InstanceName": "MyApp:"
   }
 }
 ```
 
-**Usage:**
-```csharp
-public class MyService
-{
-    private readonly ITenantContext _tenantContext;
-
-    public MyService(ITenantContext tenantContext)
-    {
-        _tenantContext = tenantContext;
-    }
-
-    public void DoSomething()
-    {
-        var tenantId = _tenantContext.TenantId;
-        var tenantName = _tenantContext.TenantName;
-        // Your tenant-specific logic
-    }
-}
-```
-
 ---
 
-#### Rate Limiting
+## 7. Features - Event Bus
 
-**Add to appsettings.json:**
-```json
-{
-  "RateLimiting": {
-    "Strategy": "IpAddress",
-    "RequestsPerMinute": 60,
-    "Enabled": true
-  }
-}
-```
+### 7.1. RabbitMQ Event Bus
 
-**What it does:** Automatically limits requests to 60 per minute per IP address.
-
----
-
-#### RabbitMQ Event Bus
-
-**Add to appsettings.json:**
+**Configuration:**
 ```json
 {
   "RabbitMQ": {
@@ -223,32 +509,45 @@ public class MyService
 }
 ```
 
-**Usage:**
+**Publish:**
 ```csharp
-// Publish event
-var @event = new UserCreatedEvent(userId, email);
-await _eventBus.PublishAsync(@event);
-
-// Subscribe to event
-public class UserCreatedEventHandler : IEventHandler<UserCreatedEvent>
+public class OrderCreatedEvent : IntegrationEvent
 {
-    public async Task HandleAsync(UserCreatedEvent @event)
+    public Guid OrderId { get; }
+    public string OrderNumber { get; }
+
+    public OrderCreatedEvent(Guid orderId, string orderNumber)
     {
-        // Handle the event
+        OrderId = orderId;
+        OrderNumber = orderNumber;
     }
 }
+
+await _eventBus.PublishAsync(new OrderCreatedEvent(orderId, orderNumber));
 ```
 
----
+**Subscribe:**
+```csharp
+public class OrderCreatedEventHandler : IIntegrationEventHandler<OrderCreatedEvent>
+{
+    public async Task HandleAsync(OrderCreatedEvent @event)
+    {
+        Console.WriteLine($"Order created: {@event.OrderNumber}");
+    }
+}
 
-#### Kafka Event Streaming
+// Add to Program.cs
+builder.Services.AddScoped<IIntegrationEventHandler<OrderCreatedEvent>, OrderCreatedEventHandler>();
+```
 
-**Add to appsettings.json:**
+### 7.2. Kafka Producer/Consumer
+
+**Configuration:**
 ```json
 {
   "Kafka": {
     "BootstrapServers": "localhost:9092",
-    "GroupId": "my-consumer-group"
+    "GroupId": "myapp-group"
   }
 }
 ```
@@ -256,7 +555,7 @@ public class UserCreatedEventHandler : IEventHandler<UserCreatedEvent>
 **Usage:**
 ```csharp
 // Produce
-await _kafkaProducer.ProduceAsync("my-topic", new { UserId = 123, Action = "Created" });
+await _kafkaProducer.ProduceAsync("my-topic", new { UserId = 123 });
 
 // Consume
 await _kafkaConsumer.ConsumeAsync("my-topic", async message =>
@@ -265,19 +564,14 @@ await _kafkaConsumer.ConsumeAsync("my-topic", async message =>
 });
 ```
 
----
+### 7.3. MassTransit Integration
 
-#### MassTransit
-
-**Add to appsettings.json:**
+**Configuration:**
 ```json
 {
-  "MassTransit": {
-    "Enabled": "true"
-  },
+  "MassTransit": { "Enabled": "true" },
   "RabbitMQ": {
     "Host": "localhost",
-    "VirtualHost": "/",
     "Username": "guest",
     "Password": "guest"
   }
@@ -291,7 +585,7 @@ public class OrderCreatedConsumer : IConsumer<OrderCreated>
 {
     public async Task Consume(ConsumeContext<OrderCreated> context)
     {
-        await Console.Out.WriteLineAsync($"Order {context.Message.OrderId} created");
+        Console.WriteLine($"Order {context.Message.OrderId}");
     }
 }
 
@@ -301,9 +595,11 @@ await _publishEndpoint.Publish(new OrderCreated { OrderId = 123 });
 
 ---
 
-#### Local File Storage
+## 8. Features - Storage
 
-**Add to appsettings.json:**
+### 8.1. Local File Storage
+
+**Configuration:**
 ```json
 {
   "LocalStorage": {
@@ -326,14 +622,11 @@ await _storage.DeleteAsync("documents/file.pdf");
 
 // Get URL
 var url = await _storage.GetUrlAsync("documents/file.pdf");
-// Returns: "https://myapp.com/files/documents/file.pdf"
 ```
 
----
+### 8.2. Azure Blob Storage
 
-#### Azure Blob Storage
-
-**Add to appsettings.json:**
+**Configuration:**
 ```json
 {
   "Azure": {
@@ -345,64 +638,31 @@ var url = await _storage.GetUrlAsync("documents/file.pdf");
 }
 ```
 
-**Usage:** Same interface as Local Storage.
+**Usage:** Same as Local Storage.
 
----
+### 8.3. AWS S3 Storage
 
-#### AWS S3 Storage
-
-**Add to appsettings.json:**
+**Configuration:**
 ```json
 {
   "AWS": {
-    "AccessKey": "your-access-key",
-    "SecretKey": "your-secret-key",
+    "AccessKey": "your-key",
+    "SecretKey": "your-secret",
     "Region": "us-east-1",
     "BucketName": "my-bucket"
   }
 }
 ```
 
-**Usage:** Same interface as Local Storage.
+**Usage:** Same as Local Storage.
 
 ---
 
-#### MongoDB
+## 9. Features - Search
 
-**Add to appsettings.json:**
-```json
-{
-  "MongoDB": {
-    "ConnectionString": "mongodb://localhost:27017",
-    "DatabaseName": "MyDatabase"
-  }
-}
-```
+### 9.1. Elasticsearch
 
-**Usage:**
-```csharp
-public class MyService
-{
-    private readonly IMongoDatabase _database;
-
-    public MyService(IMongoDatabase database)
-    {
-        _database = database;
-    }
-
-    public async Task<User> GetUser(string id)
-    {
-        var collection = _database.GetCollection<User>("users");
-        return await collection.Find(x => x.Id == id).FirstOrDefaultAsync();
-    }
-}
-```
-
----
-
-#### Elasticsearch
-
-**Add to appsettings.json:**
+**Configuration:**
 ```json
 {
   "Elasticsearch": {
@@ -413,7 +673,7 @@ public class MyService
 
 **Usage:**
 ```csharp
-// Index document
+// Index
 await _elasticsearchService.IndexAsync("products", product);
 
 // Search
@@ -422,139 +682,14 @@ var results = await _elasticsearchService.SearchAsync<Product>("products", "lapt
 
 ---
 
-#### Health Checks
+## 10. Features - Logging
 
-**Add to appsettings.json:**
+### 10.1. Serilog
+
+**Configuration:**
 ```json
 {
-  "HealthChecks": {
-    "Enabled": "true"
-  }
-}
-```
-
-**What it does:**
-- Automatically adds `/health` endpoint
-- Auto-detects Database, Redis, RabbitMQ and monitors them
-
-**Check health:**
-```bash
-curl http://localhost:5000/health
-```
-
----
-
-### 3️⃣ Features That Require Manual Setup
-
-These features need **your application-specific code**, so they require manual configuration:
-
-#### CQRS & MediatR
-
-**Setup in Program.cs:**
-```csharp
-builder.Services.AddMarventa(builder.Configuration);
-builder.Services.AddMarventaMediatR(typeof(Program).Assembly);
-builder.Services.AddMarventaValidation(typeof(Program).Assembly);
-```
-
-**Usage:**
-```csharp
-// Command
-public record CreateUserCommand(string Email, string Password) : IRequest<Result<Guid>>;
-
-// Handler
-public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<Guid>>
-{
-    public async Task<Result<Guid>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
-    {
-        var user = User.Create(request.Email, request.Password);
-        await _repository.AddAsync(user);
-        return Result<Guid>.Success(user.Id);
-    }
-}
-
-// Validator
-public class CreateUserValidator : AbstractValidator<CreateUserCommand>
-{
-    public CreateUserValidator()
-    {
-        RuleFor(x => x.Email).NotEmpty().EmailAddress();
-        RuleFor(x => x.Password).MinimumLength(8);
-    }
-}
-
-// Controller
-[HttpPost]
-public async Task<IActionResult> CreateUser(CreateUserCommand command)
-{
-    var result = await _mediator.Send(command);
-    return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
-}
-```
-
----
-
-#### Database & Repository
-
-**Setup in Program.cs:**
-```csharp
-builder.Services.AddMarventa(builder.Configuration);
-
-builder.Services.AddMarventaDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-```
-
-**DbContext:**
-```csharp
-public class AppDbContext : BaseDbContext
-{
-    public AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAccessor httpContextAccessor)
-        : base(options, httpContextAccessor)
-    {
-    }
-
-    public DbSet<User> Users => Set<User>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-    }
-}
-```
-
-**Repository:**
-```csharp
-public interface IUserRepository : IGenericRepository<User>
-{
-    Task<User?> GetByEmailAsync(string email);
-}
-
-public class UserRepository : GenericRepository<User>, IUserRepository
-{
-    public UserRepository(AppDbContext context) : base(context) { }
-
-    public async Task<User?> GetByEmailAsync(string email)
-    {
-        return await _dbSet.FirstOrDefaultAsync(x => x.Email == email);
-    }
-}
-```
-
----
-
-#### Logging (Serilog)
-
-**Setup in Program.cs:**
-```csharp
-builder.Services.AddMarventaLogging(builder.Configuration, "MyApp");
-```
-
-**Add to appsettings.json:**
-```json
-{
+  "ApplicationName": "MyApp",
   "Serilog": {
     "MinimumLevel": "Information",
     "WriteTo": [
@@ -567,197 +702,317 @@ builder.Services.AddMarventaLogging(builder.Configuration, "MyApp");
 
 **Usage:**
 ```csharp
-public class MyService
+_logger.LogInformation("Product {ProductId} created", productId);
+_logger.LogError(ex, "Failed to create product");
+```
+
+### 10.2. OpenTelemetry Tracing
+
+**Configuration:**
+```json
 {
-    private readonly ILogger<MyService> _logger;
+  "OpenTelemetry": {
+    "ServiceName": "MyApp",
+    "OtlpEndpoint": "http://localhost:4317"
+  }
+}
+```
 
-    public MyService(ILogger<MyService> logger)
-    {
-        _logger = logger;
-    }
+**Purpose:** Automatically traces HTTP, Database, and External API calls.
 
-    public void DoSomething()
-    {
-        _logger.LogInformation("Operation started with {UserId}", userId);
-    }
+---
+
+## 11. Security - Authentication
+
+### 11.1. JWT Token Generator
+
+**Configuration:**
+```json
+{
+  "Jwt": {
+    "Secret": "your-super-secret-key-at-least-32-characters",
+    "Issuer": "MyApp",
+    "Audience": "MyApp",
+    "ExpirationMinutes": 60
+  }
+}
+```
+
+**Usage:**
+```csharp
+var token = _jwtTokenGenerator.GenerateToken(
+    userId: user.Id.ToString(),
+    email: user.Email,
+    roles: new[] { "Admin" },
+    permissions: new[] { "products.read", "products.write" }
+);
+```
+
+### 11.2. Password Hasher
+
+```csharp
+// Hash
+var hashedPassword = _passwordHasher.HashPassword("password123");
+
+// Verify
+bool isValid = _passwordHasher.VerifyPassword("password123", hashedPassword);
+```
+
+### 11.3. AES Encryption
+
+```csharp
+var encryption = new AesEncryption(
+    key: "your-32-character-secret-key!",
+    iv: "your-16-char-iv"
+);
+
+var encrypted = encryption.Encrypt("sensitive data");
+var decrypted = encryption.Decrypt(encrypted);
+```
+
+---
+
+## 12. Security - Authorization
+
+### 12.1. Permission Based Authorization
+
+```csharp
+[Authorize]
+[RequirePermission("products.write")]
+public async Task<IActionResult> Create([FromBody] CreateProductCommand command)
+{
+    var result = await _mediator.Send(command);
+    return Ok(result);
 }
 ```
 
 ---
 
-## 🎯 Complete Setup Guide
+## 13. Security - Rate Limiting
 
-### Option 1: Use Everything Together (Recommended)
-
-**Program.cs:**
-```csharp
-var builder = WebApplication.CreateBuilder(args);
-
-// 1. Auto-configured infrastructure
-builder.Services.AddMarventa(builder.Configuration, builder.Environment);
-
-// 2. Manual features (require your code)
-builder.Services.AddMarventaMediatR(typeof(Program).Assembly);
-builder.Services.AddMarventaValidation(typeof(Program).Assembly);
-builder.Services.AddMarventaLogging(builder.Configuration, "MyApp");
-
-builder.Services.AddMarventaDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// 3. Your repositories
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-builder.Services.AddControllers();
-
-var app = builder.Build();
-
-// 4. Middleware pipeline (auto-configured)
-app.UseMarventa();
-app.MapControllers();
-
-app.Run();
-```
-
-**appsettings.json:**
+**Configuration:**
 ```json
 {
+  "RateLimiting": {
+    "Strategy": "IpAddress",
+    "RequestsPerMinute": 100,
+    "Enabled": true
+  }
+}
+```
+
+**Purpose:** Automatically limits to 100 requests/minute per IP.
+
+**Response Headers:**
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1633024800
+```
+
+---
+
+## 14. Infrastructure - Multi-Tenancy
+
+**Configuration:**
+```json
+{
+  "MultiTenancy": {
+    "Strategy": "Header",
+    "HeaderName": "X-Tenant-Id"
+  }
+}
+```
+
+**Usage:**
+```csharp
+var tenantId = _tenantContext.TenantId;
+var tenantName = _tenantContext.TenantName;
+
+var data = _repository.GetAll()
+    .Where(x => x.TenantId == tenantId)
+    .ToList();
+```
+
+**Client Request:**
+```bash
+curl -H "X-Tenant-Id: tenant-123" https://api.myapp.com/products
+```
+
+---
+
+## 15. Infrastructure - Health Checks
+
+**Configuration:**
+```json
+{
+  "HealthChecks": {
+    "Enabled": "true"
+  }
+}
+```
+
+**Purpose:** Creates `/health` endpoint, automatically monitors Database/Redis/RabbitMQ.
+
+**Check:**
+```bash
+curl http://localhost:5000/health
+```
+
+---
+
+## 16. Middleware - Exception Handling
+
+**Purpose:** Catches all exceptions and returns standard format.
+**Auto-active!**
+
+**Custom Exceptions:**
+```csharp
+throw new NotFoundException("Product not found");
+throw new BusinessException("Insufficient stock");
+throw new UnauthorizedException("Invalid credentials");
+```
+
+---
+
+## 17. Configuration - appsettings.json
+
+**Complete configuration example:**
+
+```json
+{
+  "ApplicationName": "MyApp",
+
   "ConnectionStrings": {
     "DefaultConnection": "Server=localhost;Database=MyDb;Trusted_Connection=true;"
   },
+
   "Jwt": {
     "Secret": "your-super-secret-key-at-least-32-characters-long",
     "Issuer": "MyApp",
     "Audience": "MyApp",
     "ExpirationMinutes": 60
   },
+
   "Caching": {
-    "Type": "Redis"
+    "Type": "Hybrid"
   },
+
   "Redis": {
     "ConnectionString": "localhost:6379",
     "InstanceName": "MyApp:"
   },
-  "RabbitMQ": {
-    "Host": "localhost",
-    "Username": "guest",
-    "Password": "guest"
-  },
+
   "MultiTenancy": {
     "Strategy": "Header",
     "HeaderName": "X-Tenant-Id"
   },
+
   "RateLimiting": {
     "Strategy": "IpAddress",
-    "RequestsPerMinute": 60,
+    "RequestsPerMinute": 100,
     "Enabled": true
   },
+
+  "RabbitMQ": {
+    "Host": "localhost",
+    "VirtualHost": "/",
+    "Username": "guest",
+    "Password": "guest"
+  },
+
+  "Kafka": {
+    "BootstrapServers": "localhost:9092",
+    "GroupId": "myapp-group"
+  },
+
+  "MassTransit": {
+    "Enabled": "true"
+  },
+
   "LocalStorage": {
     "BasePath": "D:/uploads",
     "BaseUrl": "https://myapp.com/files"
   },
+
+  "Azure": {
+    "Storage": {
+      "ConnectionString": "DefaultEndpointsProtocol=https;AccountName=...",
+      "ContainerName": "uploads"
+    }
+  },
+
+  "AWS": {
+    "AccessKey": "your-access-key",
+    "SecretKey": "your-secret-key",
+    "Region": "us-east-1",
+    "BucketName": "my-bucket"
+  },
+
+  "MongoDB": {
+    "ConnectionString": "mongodb://localhost:27017",
+    "DatabaseName": "MyDatabase"
+  },
+
+  "Elasticsearch": {
+    "Uri": "http://localhost:9200"
+  },
+
   "HealthChecks": {
     "Enabled": "true"
+  },
+
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      { "Name": "Console" },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/log-.txt",
+          "rollingInterval": "Day",
+          "retainedFileCountLimit": 7
+        }
+      }
+    ]
+  },
+
+  "OpenTelemetry": {
+    "ServiceName": "MyApp",
+    "OtlpEndpoint": "http://localhost:4317"
   }
 }
 ```
 
 ---
 
-### Option 2: Use Individual Features
+## 🎉 That's It!
 
-You can also configure features individually instead of using `AddMarventa()`:
+Your application now has:
 
-```csharp
-var builder = WebApplication.CreateBuilder(args);
+✅ **Core:** Domain Driven Design (Entity, Aggregate, ValueObject, DomainEvent)
+✅ **Behaviors:** CQRS (MediatR + Validation + Logging + Performance)
+✅ **Infrastructure:** Repository Pattern, Unit of Work, Multi-Tenancy, Health Checks
+✅ **Features:** Caching, Event Bus, Storage, Search, Logging
+✅ **Security:** JWT Auth, Permission Authorization, Rate Limiting, Password Hashing
+✅ **Middleware:** Global Exception Handling
 
-// Configure only what you need
-builder.Services.AddMarventaJwtAuthentication(builder.Configuration);
-builder.Services.AddMarventaRabbitMq(builder.Configuration);
-builder.Services.AddMarventaElasticsearch(builder.Configuration);
-builder.Services.AddMarventaMultiTenancy(builder.Configuration);
-builder.Services.AddMarventaLocalStorage(builder.Configuration);
-builder.Services.AddMarventaHealthChecks(builder.Configuration);
-
-builder.Services.AddControllers();
-
-var app = builder.Build();
-
-// Manually configure middleware
-app.UseHttpsRedirection();
-app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
-
-app.Run();
-```
-
----
-
-## 📊 Configuration Reference
-
-| Feature | Configuration Section | Required Fields | Auto-Activated |
-|---------|---------------------|-----------------|----------------|
-| **JWT Auth** | `Jwt` | `Secret`, `Issuer`, `Audience` | ✅ Yes |
-| **Caching** | `Caching`, `Redis` | `Type`, `ConnectionString` | ✅ Yes |
-| **Multi-Tenancy** | `MultiTenancy` | `Strategy` | ✅ Yes |
-| **Rate Limiting** | `RateLimiting` | `Strategy`, `RequestsPerMinute` | ✅ Yes |
-| **RabbitMQ** | `RabbitMQ` | `Host` | ✅ Yes |
-| **Kafka** | `Kafka` | `BootstrapServers` | ✅ Yes |
-| **MassTransit** | `MassTransit` | `Enabled: "true"` | ✅ Yes |
-| **Elasticsearch** | `Elasticsearch` | `Uri` | ✅ Yes |
-| **MongoDB** | `MongoDB` | `ConnectionString`, `DatabaseName` | ✅ Yes |
-| **LocalStorage** | `LocalStorage` | `BasePath` | ✅ Yes |
-| **Azure Storage** | `Azure:Storage` | `ConnectionString` | ✅ Yes |
-| **AWS S3** | `AWS` | `AccessKey`, `SecretKey`, `BucketName` | ✅ Yes |
-| **Health Checks** | `HealthChecks` | `Enabled: "true"` | ✅ Yes |
-| **CQRS/MediatR** | - | Manual setup in Program.cs | ❌ No |
-| **Database/EF** | - | Manual setup in Program.cs | ❌ No |
-| **Logging** | `Serilog` | Manual setup in Program.cs | ❌ No |
-
----
-
-## 🔄 Migration Guide
-
-### From v4.0.x to v4.1.0
-
-**New Features:**
-- ✅ Local File Storage support
-- ✅ MassTransit integration
-- ✅ Health Checks auto-configuration
-
-**Breaking Changes:**
-- None
-
-**To Use New Features:**
-```json
-{
-  "LocalStorage": {
-    "BasePath": "D:/uploads"
-  },
-  "MassTransit": {
-    "Enabled": "true"
-  },
-  "HealthChecks": {
-    "Enabled": "true"
-  }
-}
-```
+**With just 2 lines of setup!** 🚀
 
 ---
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) for details
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
+MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
 ## 📧 Support
 
-For questions and support, please open an issue on [GitHub](https://github.com/AdemKinatas/Marventa.Framework/issues).
+For questions, please open an issue on [GitHub Issues](https://github.com/AdemKinatas/Marventa.Framework/issues).
