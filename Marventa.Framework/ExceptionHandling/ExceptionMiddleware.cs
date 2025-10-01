@@ -1,7 +1,9 @@
 using Marventa.Framework.ApiResponse;
+using Marventa.Framework.Configuration;
 using Marventa.Framework.Core.Constants;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Net;
 using System.Text.Json;
 
@@ -11,11 +13,13 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly ExceptionHandlingOptions _options;
 
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IOptions<ExceptionHandlingOptions> options)
     {
         _next = next;
         _logger = logger;
+        _options = options.Value;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -26,15 +30,18 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred");
+            if (_options.LogExceptions)
+            {
+                _logger.LogError(ex, "An unhandled exception occurred");
+            }
             await HandleExceptionAsync(context, ex);
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         var statusCode = HttpStatusCode.InternalServerError;
-        var message = ResponseMessages.InternalServerError;
+        var message = _options.DefaultErrorMessage;
         var errorCode = ErrorCodes.InternalServerError;
         Dictionary<string, string[]>? errors = null;
 
@@ -75,12 +82,31 @@ public class ExceptionMiddleware
                 break;
         }
 
-        var response = ApiResponse<object>.ErrorResponse(message, errors);
+        var response = CreateErrorResponse(message, errors, exception);
         var result = JsonSerializer.Serialize(response);
 
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)statusCode;
 
         return context.Response.WriteAsync(result);
+    }
+
+    private object CreateErrorResponse(string message, Dictionary<string, string[]>? errors, Exception exception)
+    {
+        var response = ApiResponse<object>.ErrorResponse(message, errors);
+
+        if (_options.IncludeExceptionDetails)
+        {
+            return new
+            {
+                response.Success,
+                response.Message,
+                response.Errors,
+                ExceptionType = exception.GetType().Name,
+                StackTrace = _options.IncludeStackTrace ? exception.StackTrace : null
+            };
+        }
+
+        return response;
     }
 }

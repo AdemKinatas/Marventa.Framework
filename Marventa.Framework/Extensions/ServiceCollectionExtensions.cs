@@ -1,9 +1,8 @@
 using Amazon.S3;
-using Azure.Storage.Blobs;
+using MassTransit;
 using Marventa.Framework.Caching.Abstractions;
-using Marventa.Framework.Caching.Distributed;
-using Marventa.Framework.Caching.Hybrid;
 using Marventa.Framework.Caching.InMemory;
+using Marventa.Framework.Configuration;
 using Marventa.Framework.EventBus.Abstractions;
 using Marventa.Framework.EventBus.Kafka;
 using Marventa.Framework.EventBus.RabbitMQ;
@@ -16,6 +15,7 @@ using Marventa.Framework.Security.Encryption;
 using Marventa.Framework.Storage.Abstractions;
 using Marventa.Framework.Storage.AWS;
 using Marventa.Framework.Storage.Azure;
+using Marventa.Framework.Storage.Local;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -29,14 +29,11 @@ using System.Text;
 
 namespace Marventa.Framework.Extensions;
 
+/// <summary>
+/// Individual feature extension methods - used internally by MarventaExtensions
+/// </summary>
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddMarventaFramework(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddHttpContextAccessor();
-        return services;
-    }
-
     public static IServiceCollection AddMarventaJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
         var jwtConfig = configuration.GetSection("Jwt").Get<JwtConfiguration>() ?? new JwtConfiguration();
@@ -67,47 +64,6 @@ public static class ServiceCollectionExtensions
         services.AddAuthorization();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddMarventaCaching(this IServiceCollection services, IConfiguration configuration, CacheType cacheType = CacheType.InMemory)
-    {
-        switch (cacheType)
-        {
-            case CacheType.InMemory:
-                services.AddMemoryCache();
-                services.AddSingleton<ICacheService, MemoryCacheService>();
-                break;
-
-            case CacheType.Redis:
-                var redisConfig = configuration.GetSection("Redis").Get<RedisCacheConfiguration>() ?? new RedisCacheConfiguration();
-                services.AddStackExchangeRedisCache(options =>
-                {
-                    options.Configuration = redisConfig.ConnectionString;
-                    options.InstanceName = redisConfig.InstanceName;
-                });
-                services.AddSingleton<ICacheService, RedisCache>();
-                break;
-
-            case CacheType.Hybrid:
-                var redisHybridConfig = configuration.GetSection("Redis").Get<RedisCacheConfiguration>() ?? new RedisCacheConfiguration();
-                services.AddMemoryCache();
-                services.AddStackExchangeRedisCache(options =>
-                {
-                    options.Configuration = redisHybridConfig.ConnectionString;
-                    options.InstanceName = redisHybridConfig.InstanceName;
-                });
-                services.AddSingleton<MemoryCacheService>();
-                services.AddSingleton<RedisCache>();
-                services.AddSingleton<ICacheService, HybridCacheService>(sp =>
-                {
-                    var memoryCache = sp.GetRequiredService<MemoryCacheService>();
-                    var redisCache = sp.GetRequiredService<RedisCache>();
-                    return new HybridCacheService(memoryCache, redisCache);
-                });
-                break;
-        }
 
         return services;
     }
@@ -143,8 +99,12 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddMarventaMultiTenancy(this IServiceCollection services)
+    public static IServiceCollection AddMarventaMultiTenancy(this IServiceCollection services, IConfiguration configuration)
     {
+        var options = configuration.GetSection(MultiTenancyOptions.SectionName).Get<MultiTenancyOptions>()
+            ?? new MultiTenancyOptions();
+
+        services.Configure<MultiTenancyOptions>(configuration.GetSection(MultiTenancyOptions.SectionName));
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<TenantResolver>();
         return services;
@@ -182,6 +142,15 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddMarventaLocalStorage(this IServiceCollection services, IConfiguration configuration)
+    {
+        var basePath = configuration["LocalStorage:BasePath"] ?? Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+        var baseUrl = configuration["LocalStorage:BaseUrl"]; // Optional
+
+        services.AddSingleton<IStorageService>(new LocalFileStorage(basePath, baseUrl));
+        return services;
+    }
+
     public static IServiceCollection AddMarventaMongoDB(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration["MongoDB:ConnectionString"] ?? "mongodb://localhost:27017";
@@ -210,11 +179,56 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-}
 
-public enum CacheType
-{
-    InMemory,
-    Redis,
-    Hybrid
+    public static IServiceCollection AddMarventaMassTransit(this IServiceCollection services, IConfiguration configuration)
+    {
+        var rabbitMqHost = configuration["RabbitMQ:Host"] ?? "localhost";
+        var rabbitMqVirtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/";
+        var rabbitMqUsername = configuration["RabbitMQ:Username"] ?? "guest";
+        var rabbitMqPassword = configuration["RabbitMQ:Password"] ?? "guest";
+
+        services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(rabbitMqHost, rabbitMqVirtualHost, h =>
+                {
+                    h.Username(rabbitMqUsername);
+                    h.Password(rabbitMqPassword);
+                });
+
+                cfg.ConfigureEndpoints(context);
+            });
+        });
+
+        return services;
+    }
+
+    public static IServiceCollection AddMarventaHealthChecks(this IServiceCollection services, IConfiguration configuration)
+    {
+        var healthChecks = services.AddHealthChecks();
+
+        // Add database health check if connection string exists
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (!string.IsNullOrEmpty(connectionString))
+        {
+            healthChecks.AddSqlServer(connectionString, name: "database");
+        }
+
+        // Add Redis health check if configured
+        var redisConnection = configuration["Redis:ConnectionString"];
+        if (!string.IsNullOrEmpty(redisConnection))
+        {
+            healthChecks.AddRedis(redisConnection, name: "redis");
+        }
+
+        // Add RabbitMQ health check if configured
+        var rabbitMqHost = configuration["RabbitMQ:Host"];
+        if (!string.IsNullOrEmpty(rabbitMqHost))
+        {
+            healthChecks.AddCheck<HealthChecks.RabbitMqHealthCheck>("rabbitmq");
+        }
+
+        return services;
+    }
 }
