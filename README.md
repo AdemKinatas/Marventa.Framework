@@ -259,7 +259,8 @@ public class ApplicationDbContext : BaseDbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork<ApplicationDbContext>>();
+builder.Services.AddScoped<IUnitOfWork>(sp =>
+    new UnitOfWork(sp.GetRequiredService<ApplicationDbContext>()));
 ```
 
 **appsettings.json:**
@@ -795,13 +796,13 @@ public async Task<IActionResult> Create([FromBody] CreateProductCommand command)
 {
   "RateLimiting": {
     "Strategy": "IpAddress",
-    "RequestsPerMinute": 100,
-    "Enabled": true
+    "RequestLimit": 100,
+    "TimeWindowSeconds": 60
   }
 }
 ```
 
-**Purpose:** Automatically limits to 100 requests/minute per IP.
+**Purpose:** Automatically limits to 100 requests per 60 seconds per IP.
 
 **Response Headers:**
 ```
@@ -910,8 +911,8 @@ throw new UnauthorizedException("Invalid credentials");
 
   "RateLimiting": {
     "Strategy": "IpAddress",
-    "RequestsPerMinute": 100,
-    "Enabled": true
+    "RequestLimit": 100,
+    "TimeWindowSeconds": 60
   },
 
   "RabbitMQ": {
