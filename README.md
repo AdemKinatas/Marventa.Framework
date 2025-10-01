@@ -74,21 +74,42 @@ dotnet add package Marventa.Framework
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-// ✨ ONE LINE - All services registered
+// ✨ ONE LINE - All services registered automatically
+// Includes: Controllers, MediatR, FluentValidation, Mapster, CORS, and all configured features
 builder.Services.AddMarventa(builder.Configuration);
-
-builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// ✨ ONE LINE - All middleware configured
+// ✨ ONE LINE - All middleware configured automatically
+// Includes: Exception handling, CORS, Authentication, Authorization, Rate Limiting, and Endpoints
 app.UseMarventa(builder.Configuration);
 
-app.MapControllers();
 app.Run();
 ```
 
-That's it! Now activate features via `appsettings.json`.
+**That's it!** The framework automatically:
+- ✅ Registers controllers and JSON serialization
+- ✅ Scans assemblies for MediatR handlers, FluentValidation validators, and Mapster mappings
+- ✅ Configures middleware pipeline in correct order
+- ✅ Maps controller endpoints and health checks
+- ✅ Activates features based on `appsettings.json`
+
+### Advanced: Specify Assemblies to Scan
+
+```csharp
+// Automatically scans calling assembly (recommended)
+builder.Services.AddMarventa(builder.Configuration);
+
+// Or explicitly specify assemblies to scan
+builder.Services.AddMarventa(builder.Configuration, typeof(Program).Assembly);
+
+// Or scan multiple assemblies
+builder.Services.AddMarventa(
+    builder.Configuration,
+    typeof(Program).Assembly,
+    typeof(SomeOtherClass).Assembly
+);
+```
 
 ---
 
@@ -888,6 +909,10 @@ throw new UnauthorizedException("Invalid credentials");
     "DefaultConnection": "Server=localhost;Database=MyDb;Trusted_Connection=true;"
   },
 
+  "Cors": {
+    "AllowedOrigins": ["http://localhost:3000", "https://myapp.com"]
+  },
+
   "Jwt": {
     "Secret": "your-super-secret-key-at-least-32-characters-long",
     "Issuer": "MyApp",
@@ -998,13 +1023,21 @@ throw new UnauthorizedException("Invalid credentials");
 Your application now has:
 
 ✅ **Core:** Domain Driven Design (Entity, Aggregate, ValueObject, DomainEvent)
-✅ **Behaviors:** CQRS (MediatR + Validation + Logging + Performance)
+✅ **Behaviors:** CQRS (MediatR + FluentValidation + Mapster + Logging + Performance)
 ✅ **Infrastructure:** Repository Pattern, Unit of Work, Multi-Tenancy, Health Checks
-✅ **Features:** Caching, Event Bus, Storage, Search, Logging
-✅ **Security:** JWT Auth, Permission Authorization, Rate Limiting, Password Hashing
-✅ **Middleware:** Global Exception Handling
+✅ **Features:** Caching, Event Bus (RabbitMQ/Kafka/MassTransit), Storage, Search, Logging
+✅ **Security:** JWT Auth, CORS, Permission Authorization, Rate Limiting, Password Hashing
+✅ **Middleware:** Global Exception Handling with correct pipeline order
 
 **With just 2 lines of setup!** 🚀
+
+### 🆕 What's New in v4.3.0
+
+- **Auto-Registration:** MediatR handlers, FluentValidation validators, and Mapster mappings are automatically discovered
+- **CORS Support:** Configure cross-origin requests via appsettings.json
+- **Complete Setup:** AddControllers, UseEndpoints, and all ASP.NET Core essentials included
+- **Optimized Pipeline:** Middleware executed in correct order for maximum security and performance
+- **Cleaner Code:** Removed unnecessary comments for better readability
 
 ---
 
