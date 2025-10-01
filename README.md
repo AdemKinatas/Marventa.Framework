@@ -1,15 +1,15 @@
-# Marventa.Framework v4.0.1
+# Marventa.Framework v4.0.2
 
 **Enterprise-grade .NET 8.0 & 9.0 framework for building scalable microservices with DDD, CQRS, and Event-Driven Architecture.**
 
 [![NuGet](https://img.shields.io/nuget/v/Marventa.Framework.svg)](https://www.nuget.org/packages/Marventa.Framework/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🎯 Version 4.0.1 - Latest Release ⭐ RECOMMENDED
+## 🎯 Version 4.0.2 - Latest Release ⭐ RECOMMENDED
 
 **Complete architectural redesign with single-package approach!**
 
-> 💡 **We strongly recommend using v4.0.1** for all new projects. This version provides a unified, production-ready architecture with complete feature set, simplified dependency management, and superior performance compared to previous versions.
+> 💡 **We strongly recommend using v4.0.2** for all new projects. This version provides a unified, production-ready architecture with complete feature set, simplified dependency management, and superior performance compared to previous versions.
 
 ### Breaking Changes
 - ⚠️ Complete restructure from multi-project to single-project architecture
@@ -18,7 +18,14 @@
 - ⚠️ Requires .NET 8.0 or .NET 9.0
 - ⚠️ Migration required from v3.x and earlier versions
 
-### What's New in v4.0.1
+### What's New in v4.0.2
+- 📚 **Enhanced Documentation** - Comprehensive usage examples for all features
+- 📚 **API Features Examples** - Detailed examples for validation, error handling, Swagger, versioning, CORS
+- 📚 **Security Examples** - JWT authentication, permission-based authorization, password hashing, AES encryption
+- 📚 **Result Pattern Examples** - Type-safe error handling patterns
+- 📚 **User-Friendly Guide** - Real-world code examples for better developer experience
+
+### Features from v4.0.x
 - ✨ Unified single-package architecture - One package, all features
 - ✨ **Multi-targeting support**: .NET 8.0 (LTS) and .NET 9.0
 - ✨ Simplified dependency management - No more version conflicts
@@ -84,6 +91,7 @@
 - ✅ **FluentValidation** - Request validation
 - ✅ **Swagger/OpenAPI** - API documentation
 - ✅ **API Versioning** - Version management
+- ✅ **CORS** - Cross-Origin Resource Sharing
 
 ### **Multi-Tenancy**
 - ✅ **Tenant Context** - Tenant isolation
@@ -127,7 +135,7 @@ app.Run();
 ### **2. Authentication & Authorization**
 
 ```csharp
-// Add JWT authentication
+// Program.cs - Add JWT authentication
 builder.Services.AddMarventaJwtAuthentication(builder.Configuration);
 
 // appsettings.json
@@ -138,6 +146,90 @@ builder.Services.AddMarventaJwtAuthentication(builder.Configuration);
     "Audience": "YourApp",
     "ExpirationMinutes": 60
   }
+}
+
+// Login endpoint - Generate JWT token
+[HttpPost("login")]
+public async Task<IActionResult> Login(LoginRequest request)
+{
+    var user = await _userRepository.GetByEmailAsync(request.Email);
+    if (user == null || !PasswordHasher.Verify(request.Password, user.PasswordHash))
+    {
+        return Unauthorized(new { message = "Invalid credentials" });
+    }
+
+    var token = _jwtTokenGenerator.GenerateToken(
+        userId: user.Id.ToString(),
+        email: user.Email,
+        roles: user.Roles,
+        claims: new Dictionary<string, string>
+        {
+            { "TenantId", user.TenantId.ToString() },
+            { "FullName", user.FullName }
+        }
+    );
+
+    return Ok(new { token, expiresIn = 3600 });
+}
+
+// Protected endpoint - Require authentication
+[Authorize]
+[HttpGet("profile")]
+public async Task<IActionResult> GetProfile()
+{
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
+    return Ok(user);
+}
+
+// Permission-based authorization
+[Authorize]
+[RequirePermission("products.create")]
+[HttpPost("products")]
+public async Task<IActionResult> CreateProduct(CreateProductCommand command)
+{
+    var result = await _mediator.Send(command);
+    return Ok(result);
+}
+
+// Multiple permissions (user must have ALL)
+[Authorize]
+[RequirePermission("orders.view", "orders.edit")]
+[HttpPut("orders/{id}")]
+public async Task<IActionResult> UpdateOrder(Guid id, UpdateOrderCommand command)
+{
+    var result = await _mediator.Send(command);
+    return Ok(result);
+}
+
+// Role-based authorization
+[Authorize(Roles = "Admin,Manager")]
+[HttpDelete("products/{id}")]
+public async Task<IActionResult> DeleteProduct(Guid id)
+{
+    await _productService.DeleteAsync(id);
+    return NoContent();
+}
+
+// Custom authorization in services
+public class OrderService
+{
+    private readonly IPermissionService _permissionService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public async Task<Result<Order>> CancelOrderAsync(Guid orderId)
+    {
+        var userId = _httpContextAccessor.HttpContext.User
+            .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        // Check if user has permission
+        if (!await _permissionService.HasPermissionAsync(userId, "orders.cancel"))
+        {
+            return Result.Failure<Order>("Insufficient permissions", "FORBIDDEN");
+        }
+
+        // Business logic...
+    }
 }
 ```
 
@@ -331,6 +423,99 @@ public class ProductsController : ControllerBase
 
 ## 🔍 Advanced Features
 
+### **Result Pattern**
+
+```csharp
+// Result Pattern provides type-safe error handling without exceptions
+
+// Success result
+public async Task<Result<Order>> CreateOrderAsync(CreateOrderDto dto)
+{
+    var order = new Order { /* ... */ };
+    await _repository.AddAsync(order);
+    await _unitOfWork.SaveChangesAsync();
+
+    return Result.Success(order);
+}
+
+// Failure result with error message and code
+public async Task<Result<Product>> GetProductAsync(Guid id)
+{
+    var product = await _repository.GetByIdAsync(id);
+    if (product == null)
+    {
+        return Result.Failure<Product>("Product not found", "NOT_FOUND");
+    }
+
+    return Result.Success(product);
+}
+
+// Multiple validation errors
+public async Task<Result<User>> RegisterUserAsync(RegisterDto dto)
+{
+    var errors = new List<string>();
+
+    if (await _userRepository.ExistsAsync(u => u.Email == dto.Email))
+        errors.Add("Email already exists");
+
+    if (dto.Password.Length < 8)
+        errors.Add("Password must be at least 8 characters");
+
+    if (errors.Any())
+    {
+        return Result.Failure<User>(
+            string.Join(", ", errors),
+            "VALIDATION_ERROR"
+        );
+    }
+
+    var user = new User { /* ... */ };
+    await _repository.AddAsync(user);
+
+    return Result.Success(user);
+}
+
+// Handling results in controllers
+[HttpPost]
+public async Task<IActionResult> CreateOrder(CreateOrderCommand command)
+{
+    var result = await _mediator.Send(command);
+
+    if (!result.IsSuccess)
+    {
+        // Log the error
+        _logger.LogWarning("Order creation failed: {Error}", result.ErrorMessage);
+
+        // Return appropriate response
+        var response = ApiResponseFactory.FromResult(result);
+        return result.ErrorCode switch
+        {
+            "NOT_FOUND" => NotFound(response),
+            "VALIDATION_ERROR" => BadRequest(response),
+            "UNAUTHORIZED" => Unauthorized(response),
+            _ => StatusCode(500, response)
+        };
+    }
+
+    return Ok(ApiResponseFactory.FromResult(result));
+}
+
+// Chaining results
+public async Task<Result<OrderConfirmation>> ProcessOrderAsync(Guid orderId)
+{
+    var orderResult = await GetOrderAsync(orderId);
+    if (!orderResult.IsSuccess)
+        return Result.Failure<OrderConfirmation>(orderResult.ErrorMessage, orderResult.ErrorCode);
+
+    var paymentResult = await ProcessPaymentAsync(orderResult.Data);
+    if (!paymentResult.IsSuccess)
+        return Result.Failure<OrderConfirmation>(paymentResult.ErrorMessage, paymentResult.ErrorCode);
+
+    var confirmation = new OrderConfirmation { /* ... */ };
+    return Result.Success(confirmation);
+}
+```
+
 ### **Structured Logging**
 
 ```csharp
@@ -364,6 +549,125 @@ public class OrderService
             throw;
         }
     }
+}
+```
+
+### **Password Hashing & Encryption**
+
+```csharp
+// Password Hashing with BCrypt
+public class UserService
+{
+    // Hash password during registration
+    public async Task<Result<User>> RegisterAsync(RegisterDto dto)
+    {
+        var passwordHash = PasswordHasher.Hash(dto.Password);
+
+        var user = new User
+        {
+            Email = dto.Email,
+            PasswordHash = passwordHash,
+            FullName = dto.FullName
+        };
+
+        await _repository.AddAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return Result.Success(user);
+    }
+
+    // Verify password during login
+    public async Task<Result<string>> LoginAsync(LoginDto dto)
+    {
+        var user = await _repository.GetByEmailAsync(dto.Email);
+        if (user == null)
+        {
+            return Result.Failure<string>("Invalid credentials", "UNAUTHORIZED");
+        }
+
+        // Verify password
+        if (!PasswordHasher.Verify(dto.Password, user.PasswordHash))
+        {
+            return Result.Failure<string>("Invalid credentials", "UNAUTHORIZED");
+        }
+
+        var token = _jwtTokenGenerator.GenerateToken(user.Id.ToString(), user.Email);
+        return Result.Success(token);
+    }
+
+    // Change password
+    public async Task<Result> ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
+    {
+        var user = await _repository.GetByIdAsync(userId);
+
+        // Verify current password
+        if (!PasswordHasher.Verify(dto.CurrentPassword, user.PasswordHash))
+        {
+            return Result.Failure("Current password is incorrect", "VALIDATION_ERROR");
+        }
+
+        // Hash and save new password
+        user.PasswordHash = PasswordHasher.Hash(dto.NewPassword);
+        await _repository.UpdateAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return Result.Success();
+    }
+}
+
+// AES Encryption for sensitive data
+public class PaymentService
+{
+    private readonly string _encryptionKey = "your-32-character-encryption-key!!"; // Store in appsettings
+
+    // Encrypt credit card number before storing
+    public async Task SavePaymentMethodAsync(PaymentMethodDto dto)
+    {
+        var encryptedCardNumber = AesEncryption.Encrypt(dto.CardNumber, _encryptionKey);
+
+        var paymentMethod = new PaymentMethod
+        {
+            UserId = dto.UserId,
+            CardNumberEncrypted = encryptedCardNumber,
+            ExpiryDate = dto.ExpiryDate
+        };
+
+        await _repository.AddAsync(paymentMethod);
+    }
+
+    // Decrypt when needed (e.g., for payment processing)
+    public async Task<string> GetDecryptedCardNumberAsync(Guid paymentMethodId)
+    {
+        var paymentMethod = await _repository.GetByIdAsync(paymentMethodId);
+        return AesEncryption.Decrypt(paymentMethod.CardNumberEncrypted, _encryptionKey);
+    }
+
+    // Encrypt sensitive configuration data
+    public void StoreApiKey(string apiKey)
+    {
+        var encrypted = AesEncryption.Encrypt(apiKey, _encryptionKey);
+        // Store encrypted value in database
+    }
+
+    public string GetApiKey(string encryptedApiKey)
+    {
+        return AesEncryption.Decrypt(encryptedApiKey, _encryptionKey);
+    }
+}
+
+// Best practices
+public class SecurityBestPractices
+{
+    // ✅ DO: Hash passwords (one-way)
+    var passwordHash = PasswordHasher.Hash(password); // Cannot be decrypted
+
+    // ✅ DO: Encrypt sensitive data that needs to be retrieved (two-way)
+    var encrypted = AesEncryption.Encrypt(creditCard, key); // Can be decrypted
+    var decrypted = AesEncryption.Decrypt(encrypted, key);
+
+    // ❌ DON'T: Store passwords in plain text
+    // ❌ DON'T: Store encryption keys in code (use appsettings, Azure Key Vault, etc.)
+    // ❌ DON'T: Use weak passwords or short encryption keys
 }
 ```
 
@@ -564,6 +868,246 @@ builder.Services.AddMarventaOpenTelemetry(builder.Configuration, "MyApp");
 app.UseMarventaRateLimiting(requestLimit: 100, timeWindowSeconds: 60);
 
 // Requests exceeding the limit receive HTTP 429 (Too Many Requests)
+```
+
+### **API Response Examples**
+
+```csharp
+// Standardized API Response
+public class ApiResponse<T>
+{
+    public bool Success { get; set; }
+    public T? Data { get; set; }
+    public string? ErrorCode { get; set; }
+    public string? Message { get; set; }
+    public Dictionary<string, string[]>? Errors { get; set; }
+}
+
+// Usage in Controllers
+[HttpPost]
+public async Task<IActionResult> Create(CreateProductCommand command)
+{
+    var result = await _mediator.Send(command);
+    var response = ApiResponseFactory.FromResult(result);
+    return result.IsSuccess ? Ok(response) : BadRequest(response);
+}
+
+// Success Response (200 OK)
+{
+  "success": true,
+  "data": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "message": null,
+  "errorCode": null,
+  "errors": null
+}
+
+// Error Response (400 Bad Request)
+{
+  "success": false,
+  "data": null,
+  "message": "Product not found",
+  "errorCode": "NOT_FOUND",
+  "errors": null
+}
+```
+
+### **FluentValidation Usage**
+
+```csharp
+// Define validation rules
+public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
+{
+    public CreateProductCommandValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Product name is required")
+            .MaximumLength(200).WithMessage("Product name cannot exceed 200 characters");
+
+        RuleFor(x => x.Price)
+            .GreaterThan(0).WithMessage("Price must be greater than zero");
+
+        RuleFor(x => x.Description)
+            .MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters");
+    }
+}
+
+// Register validators in Program.cs
+builder.Services.AddMarventaValidation(typeof(Program).Assembly);
+
+// Validation happens automatically via MediatR pipeline
+// Validation errors return 400 Bad Request with detailed error messages:
+{
+  "success": false,
+  "data": null,
+  "message": "Validation failed",
+  "errorCode": "VALIDATION_ERROR",
+  "errors": {
+    "Name": ["Product name is required"],
+    "Price": ["Price must be greater than zero"]
+  }
+}
+```
+
+### **Global Exception Handling**
+
+```csharp
+// UseMarventaFramework() automatically adds global exception handling
+app.UseMarventaFramework(app.Environment);
+
+// All unhandled exceptions are caught and returned as standardized responses:
+// Development Environment - Detailed error info
+{
+  "success": false,
+  "data": null,
+  "message": "An error occurred: Division by zero",
+  "errorCode": "INTERNAL_ERROR",
+  "errors": {
+    "StackTrace": ["at MyApp.Services.CalculationService..."]
+  }
+}
+
+// Production Environment - Generic error message
+{
+  "success": false,
+  "data": null,
+  "message": "An internal error occurred",
+  "errorCode": "INTERNAL_ERROR",
+  "errors": null
+}
+```
+
+### **Swagger/OpenAPI Configuration**
+
+```csharp
+// Add Swagger with JWT support
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "My API",
+        Version = "v1",
+        Description = "API documentation with Marventa Framework"
+    });
+
+    // JWT Authentication
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+// Enable Swagger UI
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    });
+}
+
+// Access at: https://localhost:5001/swagger
+```
+
+### **API Versioning**
+
+```csharp
+// Configure API versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = ApiVersionReader.Combine(
+        new UrlSegmentApiVersionReader(),
+        new HeaderApiVersionReader("X-Api-Version"),
+        new QueryStringApiVersionReader("api-version")
+    );
+});
+
+builder.Services.AddVersionedApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+});
+
+// Version 1 Controller
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+public class ProductsV1Controller : ControllerBase
+{
+    [HttpGet]
+    public IActionResult GetProducts()
+    {
+        return Ok(new { version = "1.0", products = new[] { "Product1", "Product2" } });
+    }
+}
+
+// Version 2 Controller
+[ApiController]
+[ApiVersion("2.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+public class ProductsV2Controller : ControllerBase
+{
+    [HttpGet]
+    public IActionResult GetProducts()
+    {
+        return Ok(new { version = "2.0", products = new[] { "Product1", "Product2", "Product3" } });
+    }
+}
+
+// Access endpoints:
+// GET /api/v1/products
+// GET /api/v2/products
+// GET /api/products?api-version=1.0
+// GET /api/products (with header: X-Api-Version: 2.0)
+```
+
+### **CORS Configuration**
+
+```csharp
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+
+    options.AddPolicy("AllowSpecific", builder =>
+    {
+        builder.WithOrigins("https://example.com", "https://app.example.com")
+               .WithMethods("GET", "POST", "PUT", "DELETE")
+               .WithHeaders("Content-Type", "Authorization")
+               .AllowCredentials();
+    });
+});
+
+// Enable CORS
+app.UseCors("AllowSpecific");
 ```
 
 ---
