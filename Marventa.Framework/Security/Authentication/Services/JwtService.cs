@@ -22,6 +22,11 @@ public class JwtService : IJwtService
         _tokenHandler = new JwtSecurityTokenHandler();
 
         var key = Encoding.UTF8.GetBytes(_configuration.Secret);
+        var symmetricKey = new SymmetricSecurityKey(key)
+        {
+            KeyId = "Marventa-JWT-Key" // Set KeyId for kid header
+        };
+
         _validationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -30,7 +35,7 @@ public class JwtService : IJwtService
             ValidateIssuerSigningKey = true,
             ValidIssuer = _configuration.Issuer,
             ValidAudience = _configuration.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
+            IssuerSigningKey = symmetricKey,
             ClockSkew = TimeSpan.Zero
         };
     }
@@ -38,7 +43,10 @@ public class JwtService : IJwtService
     /// <inheritdoc/>
     public string GenerateAccessToken(IEnumerable<Claim> claims)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.Secret));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.Secret))
+        {
+            KeyId = "Marventa-JWT-Key" // Set KeyId for kid header
+        };
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(

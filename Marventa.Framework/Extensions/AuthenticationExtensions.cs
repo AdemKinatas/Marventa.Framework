@@ -50,6 +50,11 @@ public static class AuthenticationExtensions
         var jwtIssuer = configuration.GetRequiredValue(ConfigurationKeys.JwtIssuer);
         var jwtAudience = configuration.GetRequiredValue(ConfigurationKeys.JwtAudience);
 
+        var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+        {
+            KeyId = "Marventa-JWT-Key" // Set KeyId for kid header
+        };
+
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -69,7 +74,7 @@ public static class AuthenticationExtensions
                 ClockSkew = TimeSpan.Zero,
                 ValidIssuer = jwtIssuer,
                 ValidAudience = jwtAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+                IssuerSigningKey = signingKey
             };
 
             // Configure async event handlers for token validation
