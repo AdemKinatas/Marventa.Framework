@@ -47,15 +47,21 @@ public static class CachingExtensions
         this IServiceCollection services,
         IConfiguration? configuration = null)
     {
-        var cacheOptions = configuration?.GetConfigurationSection<MemoryCacheConfiguration>(MemoryCacheConfiguration.SectionName)
-            ?? new MemoryCacheConfiguration();
+        var cacheOptions = configuration?.GetConfigurationSection<MemoryCacheConfiguration>(MemoryCacheConfiguration.SectionName);
 
         services.AddMemoryCache(options =>
         {
-            options.SizeLimit = cacheOptions.SizeLimit;
-            options.CompactionPercentage = cacheOptions.CompactionPercentage;
+            if (cacheOptions?.SizeLimit.HasValue == true)
+            {
+                options.SizeLimit = cacheOptions.SizeLimit.Value;
+            }
 
-            if (cacheOptions.ExpirationScanFrequency.HasValue)
+            if (cacheOptions?.CompactionPercentage.HasValue == true)
+            {
+                options.CompactionPercentage = cacheOptions.CompactionPercentage.Value;
+            }
+
+            if (cacheOptions?.ExpirationScanFrequency.HasValue == true)
             {
                 options.ExpirationScanFrequency = cacheOptions.ExpirationScanFrequency.Value;
             }
@@ -123,10 +129,17 @@ public static class CachingExtensions
 
         services.AddMemoryCache(options =>
         {
-            options.SizeLimit = cacheOptions.SizeLimit;
-            options.CompactionPercentage = cacheOptions.CompactionPercentage;
+            if (cacheOptions?.SizeLimit.HasValue == true)
+            {
+                options.SizeLimit = cacheOptions.SizeLimit.Value;
+            }
 
-            if (cacheOptions.ExpirationScanFrequency.HasValue)
+            if (cacheOptions?.CompactionPercentage.HasValue == true)
+            {
+                options.CompactionPercentage = cacheOptions.CompactionPercentage.Value;
+            }
+
+            if (cacheOptions?.ExpirationScanFrequency.HasValue == true)
             {
                 options.ExpirationScanFrequency = cacheOptions.ExpirationScanFrequency.Value;
             }
