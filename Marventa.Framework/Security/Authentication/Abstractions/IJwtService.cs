@@ -1,4 +1,3 @@
-using Marventa.Framework.Security.Authentication.Models;
 using System.Security.Claims;
 
 namespace Marventa.Framework.Security.Authentication.Abstractions;
@@ -63,4 +62,10 @@ public interface IJwtService
     /// <param name="token">The JWT token.</param>
     /// <returns>True if the token is expired; otherwise, false.</returns>
     bool IsTokenExpired(string token);
+
+    /// <summary>
+    /// Generates a cryptographically secure refresh token string.
+    /// </summary>
+    /// <returns>A base64-encoded secure random token string.</returns>
+    string GenerateRefreshToken();
 }

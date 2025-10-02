@@ -1,5 +1,4 @@
 using Marventa.Framework.Security.Authentication.Abstractions;
-using Marventa.Framework.Security.Authentication.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -168,5 +167,13 @@ public class JwtService : IJwtService
         {
             return true;
         }
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var randomBytes = new byte[64];
+        using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
     }
 }

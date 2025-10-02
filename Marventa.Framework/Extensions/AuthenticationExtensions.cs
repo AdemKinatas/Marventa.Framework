@@ -44,7 +44,6 @@ public static class AuthenticationExtensions
         // Register security services
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IPasswordService, PasswordService>();
-        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
         // Configure JWT Bearer authentication
         var jwtSecret = configuration.GetRequiredValue(ConfigurationKeys.JwtSecret);
