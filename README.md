@@ -901,11 +901,7 @@ _logger.LogError(ex, "Failed to create product");
     "Secret": "your-super-secret-key-at-least-32-characters",
     "Issuer": "MyApp",
     "Audience": "MyApp",
-    "ExpirationMinutes": 60,
-    "RefreshTokenExpirationDays": 7,
-    "EnableTokenRotation": true,
-    "MaxRefreshTokensPerUser": 5,
-    "ValidateIpAddress": false
+    "ExpirationMinutes": 60
   }
 }
 ```
@@ -959,97 +955,106 @@ var isExpired = _jwtService.IsTokenExpired(token);
 var remainingTime = _jwtService.GetTokenRemainingLifetime(token);
 ```
 
-### 11.2. Refresh Token Service
+### 11.2. Refresh Token Generation
 
-**Purpose:** Securely manage refresh tokens with rotation and revocation support.
+**Purpose:** Generate cryptographically secure refresh token strings.
 
-**Generate and Use Refresh Token:**
+**Important:** The framework only provides token generation. You must implement your own:
+- RefreshToken entity in your domain model
+- Repository for database storage
+- Validation, rotation, and revocation logic
+
+**Generate Refresh Token:**
 ```csharp
 using Marventa.Framework.Security.Authentication.Abstractions;
 
 public class AuthService
 {
     private readonly IJwtService _jwtService;
-    private readonly IRefreshTokenService _refreshTokenService;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public async Task<TokenResponse> LoginAsync(string email, string password)
+    public async Task<LoginResponse> LoginAsync(string email, string password)
     {
         // Validate user credentials...
 
+        // Generate tokens
         var accessToken = _jwtService.GenerateAccessToken(user.Id.ToString(), user.Email);
-        var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(
-            userId: user.Id.ToString(),
-            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString()
-        );
+        var refreshTokenString = _jwtService.GenerateRefreshToken();
 
-        return new TokenResponse
+        // Create your own domain entity
+        var refreshToken = new Domain.Entities.RefreshToken
+        {
+            Token = refreshTokenString,
+            UserId = user.Id,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedByIp = HttpContext.Connection.RemoteIpAddress?.ToString()
+        };
+
+        // Save to your database
+        await _refreshTokenRepository.AddAsync(refreshToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        return new LoginResponse
         {
             AccessToken = accessToken,
-            RefreshToken = refreshToken.Token,
+            RefreshToken = refreshTokenString,
             ExpiresAt = refreshToken.ExpiresAt
         };
     }
 
-    public async Task<TokenResponse> RefreshTokenAsync(string refreshToken, string ipAddress)
+    public async Task<LoginResponse> RefreshTokenAsync(string refreshToken)
     {
-        // Validate refresh token
-        var validToken = await _refreshTokenService.ValidateRefreshTokenAsync(refreshToken);
-        if (validToken == null || !validToken.IsActive)
+        // Validate from your database
+        var token = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
+        if (token == null || token.IsExpired || token.IsRevoked)
         {
-            throw new UnauthorizedException("Invalid or expired refresh token");
+            throw new UnauthorizedException("Invalid refresh token");
         }
 
-        // Rotate refresh token (old token auto-revoked)
-        var newRefreshToken = await _refreshTokenService.RotateRefreshTokenAsync(
-            oldToken: refreshToken,
-            ipAddress: ipAddress
-        );
+        // Optional: Implement token rotation
+        token.RevokedAt = DateTime.UtcNow;
+        await _refreshTokenRepository.UpdateAsync(token);
 
-        // Generate new access token
-        var accessToken = _jwtService.GenerateAccessToken(newRefreshToken.UserId, "user@example.com");
+        // Generate new tokens
+        var accessToken = _jwtService.GenerateAccessToken(token.UserId.ToString(), user.Email);
+        var newRefreshTokenString = _jwtService.GenerateRefreshToken();
 
-        return new TokenResponse
+        var newRefreshToken = new Domain.Entities.RefreshToken
+        {
+            Token = newRefreshTokenString,
+            UserId = token.UserId,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            ReplacedByToken = token.Token
+        };
+
+        await _refreshTokenRepository.AddAsync(newRefreshToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        return new LoginResponse
         {
             AccessToken = accessToken,
-            RefreshToken = newRefreshToken.Token,
+            RefreshToken = newRefreshTokenString,
             ExpiresAt = newRefreshToken.ExpiresAt
         };
-    }
-
-    public async Task<bool> LogoutAsync(string refreshToken, string ipAddress)
-    {
-        return await _refreshTokenService.RevokeRefreshTokenAsync(
-            token: refreshToken,
-            ipAddress: ipAddress,
-            reason: "User logout"
-        );
-    }
-
-    public async Task<bool> LogoutAllDevicesAsync(string userId, string ipAddress)
-    {
-        var revokedCount = await _refreshTokenService.RevokeAllUserTokensAsync(
-            userId: userId,
-            ipAddress: ipAddress,
-            reason: "Logout from all devices"
-        );
-
-        return revokedCount > 0;
-    }
-
-    public async Task<IEnumerable<RefreshToken>> GetUserActiveSessionsAsync(string userId)
-    {
-        return await _refreshTokenService.GetUserActiveTokensAsync(userId);
     }
 }
 ```
 
-**Token Response Model:**
+**Your Domain Entity Example:**
 ```csharp
-public class TokenResponse
+public class RefreshToken : Entity<Guid>
 {
-    public string AccessToken { get; set; }
-    public string RefreshToken { get; set; }
+    public string Token { get; set; }
+    public Guid UserId { get; set; }
     public DateTime ExpiresAt { get; set; }
+    public DateTime? RevokedAt { get; set; }
+    public string? CreatedByIp { get; set; }
+    public string? ReplacedByToken { get; set; }
+
+    public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
+    public bool IsRevoked => RevokedAt != null;
+    public bool IsActive => !IsExpired && !IsRevoked;
 }
 ```
 
@@ -1417,11 +1422,7 @@ throw new UnauthorizedException("Invalid credentials");
     "Secret": "your-super-secret-key-at-least-32-characters-long",
     "Issuer": "MyApp",
     "Audience": "MyApp",
-    "ExpirationMinutes": 60,
-    "RefreshTokenExpirationDays": 7,
-    "EnableTokenRotation": true,
-    "MaxRefreshTokensPerUser": 5,
-    "ValidateIpAddress": false
+    "ExpirationMinutes": 60
   },
 
   "Caching": {
@@ -1550,28 +1551,34 @@ Your application now has:
 
 **With just 2 lines of setup!** 🚀
 
-### 🆕 What's New in v4.5.0
+### 🆕 What's New in v4.5.3
 
-- **Security Services Refactored:**
-  - `IJwtService` with comprehensive token management (replaced `IJwtTokenGenerator`)
-  - `IPasswordService` with strength validation and secure password generation (replaced `IPasswordHasher`)
-  - `IRefreshTokenService` with token rotation and revocation support
-  - Modern, industry-standard naming conventions
+- **RefreshToken Architecture Fixed:**
+  - Removed cache-based `IRefreshTokenService` (not suitable for multi-server environments)
+  - Added `GenerateRefreshToken()` to `IJwtService` for secure token generation
+  - RefreshToken storage is now project's responsibility (database-backed)
+  - Framework only provides cryptographically secure token generation utility
+
+- **Cache Reliability:**
+  - Optional `MemoryCache` SizeLimit (nullable properties)
+  - HybridCache gracefully handles Redis connection failures
+  - Automatic fallback to InMemory when Redis is unavailable
+  - Application continues working without Redis
+
+- **Security Services:**
+  - `IJwtService` with comprehensive token management
+  - `IPasswordService` with BCrypt hashing and strength validation
+  - Simplified JWT configuration (removed refresh token settings)
 
 - **Memory Cache Configuration:**
-  - Configurable `MemoryCache` options (SizeLimit, CompactionPercentage, ExpirationScanFrequency)
-  - ASP.NET Core 7+ `OutputCache` support with flexible policies
+  - Configurable options (SizeLimit, CompactionPercentage, ExpirationScanFrequency)
+  - ASP.NET Core 7+ `OutputCache` support
   - Full control over cache behavior via appsettings.json
 
 - **Modular Architecture:**
   - Separated concerns into focused extension files
-  - ConfigurationExtensions made public for NuGet consumers
+  - ConfigurationExtensions public for NuGet consumers
   - Better maintainability and discoverability
-
-- **Enhanced Caching:**
-  - Three strategies: InMemory, Redis, Hybrid (L1 + L2)
-  - Configurable memory cache options
-  - Output cache middleware for HTTP response caching
 
 ### 🆕 What's in v4.4.0
 
