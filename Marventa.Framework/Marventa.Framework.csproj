@@ -8,12 +8,12 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>Marventa.Framework</PackageId>
-    <Version>4.4.0</Version>
+    <Version>4.5.0</Version>
     <Authors>Adem Kinatas</Authors>
     <Company>Marventa</Company>
     <Product>Marventa Framework</Product>
-    <Description>Enterprise-grade framework for microservices architecture with CQRS, Event Sourcing, and DDD support. Ultra-simplified with Convention over Configuration. Includes Swagger/OpenAPI, API Versioning, and Data Seeding. Supports both .NET 8.0 (LTS) and .NET 9.0</Description>
-    <PackageTags>microservices;cqrs;event-sourcing;ddd;enterprise;architecture;dotnet;net8;net9;convention-over-configuration;swagger;api-versioning</PackageTags>
+    <Description>Enterprise-grade framework for microservices architecture with CQRS, Event Sourcing, and DDD support. Ultra-simplified with Convention over Configuration. v4.5.0: Refactored security services (IJwtService, IPasswordService, IRefreshTokenService), configurable memory cache, output cache support, and modular architecture. Supports both .NET 8.0 (LTS) and .NET 9.0</Description>
+    <PackageTags>microservices;cqrs;event-sourcing;ddd;enterprise;architecture;dotnet;net8;net9;convention-over-configuration;swagger;api-versioning;jwt;refresh-token;caching;security</PackageTags>
     <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

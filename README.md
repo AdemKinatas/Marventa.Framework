@@ -507,10 +507,22 @@ public class ProductsController : ControllerBase
 
 ## 6. Features - Caching
 
+**Purpose:** Framework supports three caching strategies: InMemory, Redis, and Hybrid (two-level cache).
+
 ### 6.1. InMemory Cache
 
-**Purpose:** Default cache, no configuration required.
+**Configuration (appsettings.json):**
+```json
+{
+  "MemoryCache": {
+    "SizeLimit": 1024,
+    "CompactionPercentage": 0.25,
+    "ExpirationScanFrequency": "00:01:00"
+  }
+}
+```
 
+**Usage:**
 ```csharp
 using Marventa.Framework.Features.Caching.Abstractions;
 
@@ -522,18 +534,75 @@ public class ProductService
     {
         var cacheKey = $"product:{id}";
 
+        // Try get from cache
         var cached = await _cache.GetAsync<Product>(cacheKey);
         if (cached != null) return cached;
 
+        // Get from database
         var product = await _repository.GetByIdAsync(id);
+
+        // Set cache with expiration
         await _cache.SetAsync(cacheKey, product, TimeSpan.FromHours(1));
 
         return product;
     }
+
+    public async Task RemoveProductCacheAsync(Guid id)
+    {
+        await _cache.RemoveAsync($"product:{id}");
+    }
 }
 ```
 
-### 6.2. Redis Cache
+### 6.2. Output Cache
+
+**Purpose:** ASP.NET Core 7+ output caching for HTTP responses.
+
+**Configuration:**
+```json
+{
+  "OutputCache": {
+    "Enabled": true,
+    "DefaultExpirationSeconds": 60,
+    "VaryByQuery": true,
+    "VaryByHeader": false,
+    "VaryByHeaderNames": []
+  }
+}
+```
+
+**Add to Program.cs:**
+```csharp
+builder.Services.AddMarventaOutputCache(builder.Configuration);
+```
+
+**Usage in Controllers:**
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController : ControllerBase
+{
+    // Cache response for 60 seconds (from configuration)
+    [OutputCache]
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var products = await _mediator.Send(new GetAllProductsQuery());
+        return Ok(products);
+    }
+
+    // Custom cache duration
+    [OutputCache(Duration = 300)]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var product = await _mediator.Send(new GetProductByIdQuery(id));
+        return Ok(product);
+    }
+}
+```
+
+### 6.3. Redis Cache
 
 **Configuration (appsettings.json):**
 ```json
@@ -546,21 +615,49 @@ public class ProductService
 }
 ```
 
-**Usage:** Same interface as InMemory (`ICacheService`).
+**Usage:** Same interface as InMemory (`ICacheService`). Framework automatically switches based on configuration.
 
-### 6.3. Hybrid Cache
+### 6.4. Hybrid Cache
 
-**Purpose:** Reads from InMemory first, then Redis.
+**Purpose:** Two-level caching - reads from InMemory (L1) first, then Redis (L2). Best of both worlds!
 
 **Configuration:**
 ```json
 {
   "Caching": { "Type": "Hybrid" },
+  "MemoryCache": {
+    "SizeLimit": 1024,
+    "CompactionPercentage": 0.25
+  },
   "Redis": {
     "ConnectionString": "localhost:6379",
     "InstanceName": "MyApp:"
   }
 }
+```
+
+**How it works:**
+- **Get**: Checks InMemory first, then Redis if not found
+- **Set**: Writes to both InMemory and Redis
+- **Remove**: Removes from both caches
+
+**Usage:** Same `ICacheService` interface - completely transparent!
+
+### 6.5. Modular Caching Setup
+
+**Add specific cache type:**
+```csharp
+// Add InMemory cache only
+builder.Services.AddInMemoryCaching(builder.Configuration);
+
+// Add Redis cache only
+builder.Services.AddRedisCaching(builder.Configuration);
+
+// Add Hybrid cache
+builder.Services.AddHybridCaching(builder.Configuration);
+
+// Auto-detect from configuration (used by AddMarventa)
+builder.Services.AddMarventaCaching(builder.Configuration);
 ```
 
 ---
@@ -795,7 +892,7 @@ _logger.LogError(ex, "Failed to create product");
 
 ## 11. Security - Authentication
 
-### 11.1. JWT Token Generator
+### 11.1. JWT Authentication Service
 
 **Configuration:**
 ```json
@@ -804,42 +901,245 @@ _logger.LogError(ex, "Failed to create product");
     "Secret": "your-super-secret-key-at-least-32-characters",
     "Issuer": "MyApp",
     "Audience": "MyApp",
-    "ExpirationMinutes": 60
+    "ExpirationMinutes": 60,
+    "RefreshTokenExpirationDays": 7,
+    "EnableTokenRotation": true,
+    "MaxRefreshTokensPerUser": 5,
+    "ValidateIpAddress": false
   }
 }
 ```
 
-**Usage:**
+**Generate Access Token:**
 ```csharp
-var token = _jwtTokenGenerator.GenerateToken(
-    userId: user.Id.ToString(),
-    email: user.Email,
-    roles: new[] { "Admin" },
-    permissions: new[] { "products.read", "products.write" }
-);
+using Marventa.Framework.Security.Authentication.Abstractions;
+
+public class AuthService
+{
+    private readonly IJwtService _jwtService;
+
+    // Simple usage
+    public string Login(User user)
+    {
+        var token = _jwtService.GenerateAccessToken(
+            userId: user.Id.ToString(),
+            email: user.Email,
+            roles: new[] { "Admin" },
+            additionalClaims: new Dictionary<string, string>
+            {
+                ["department"] = "IT",
+                ["permission"] = "products.write"
+            }
+        );
+
+        return token;
+    }
+}
 ```
 
-### 11.2. Password Hasher
-
+**Validate and Extract Claims:**
 ```csharp
-// Hash
-var hashedPassword = _passwordHasher.HashPassword("password123");
+// Validate token
+var principal = _jwtService.ValidateAccessToken(token);
+if (principal == null)
+{
+    // Token invalid or expired
+}
 
-// Verify
-bool isValid = _passwordHasher.VerifyPassword("password123", hashedPassword);
+// Get user ID from token
+var userId = _jwtService.GetUserIdFromToken(token);
+
+// Get all claims
+var claims = _jwtService.GetClaimsFromToken(token);
+
+// Check if token expired
+var isExpired = _jwtService.IsTokenExpired(token);
+
+// Get remaining lifetime
+var remainingTime = _jwtService.GetTokenRemainingLifetime(token);
 ```
 
-### 11.3. AES Encryption
+### 11.2. Refresh Token Service
+
+**Purpose:** Securely manage refresh tokens with rotation and revocation support.
+
+**Generate and Use Refresh Token:**
+```csharp
+using Marventa.Framework.Security.Authentication.Abstractions;
+
+public class AuthService
+{
+    private readonly IJwtService _jwtService;
+    private readonly IRefreshTokenService _refreshTokenService;
+
+    public async Task<TokenResponse> LoginAsync(string email, string password)
+    {
+        // Validate user credentials...
+
+        var accessToken = _jwtService.GenerateAccessToken(user.Id.ToString(), user.Email);
+        var refreshToken = await _refreshTokenService.GenerateRefreshTokenAsync(
+            userId: user.Id.ToString(),
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString()
+        );
+
+        return new TokenResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken.Token,
+            ExpiresAt = refreshToken.ExpiresAt
+        };
+    }
+
+    public async Task<TokenResponse> RefreshTokenAsync(string refreshToken, string ipAddress)
+    {
+        // Validate refresh token
+        var validToken = await _refreshTokenService.ValidateRefreshTokenAsync(refreshToken);
+        if (validToken == null || !validToken.IsActive)
+        {
+            throw new UnauthorizedException("Invalid or expired refresh token");
+        }
+
+        // Rotate refresh token (old token auto-revoked)
+        var newRefreshToken = await _refreshTokenService.RotateRefreshTokenAsync(
+            oldToken: refreshToken,
+            ipAddress: ipAddress
+        );
+
+        // Generate new access token
+        var accessToken = _jwtService.GenerateAccessToken(newRefreshToken.UserId, "user@example.com");
+
+        return new TokenResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = newRefreshToken.Token,
+            ExpiresAt = newRefreshToken.ExpiresAt
+        };
+    }
+
+    public async Task<bool> LogoutAsync(string refreshToken, string ipAddress)
+    {
+        return await _refreshTokenService.RevokeRefreshTokenAsync(
+            token: refreshToken,
+            ipAddress: ipAddress,
+            reason: "User logout"
+        );
+    }
+
+    public async Task<bool> LogoutAllDevicesAsync(string userId, string ipAddress)
+    {
+        var revokedCount = await _refreshTokenService.RevokeAllUserTokensAsync(
+            userId: userId,
+            ipAddress: ipAddress,
+            reason: "Logout from all devices"
+        );
+
+        return revokedCount > 0;
+    }
+
+    public async Task<IEnumerable<RefreshToken>> GetUserActiveSessionsAsync(string userId)
+    {
+        return await _refreshTokenService.GetUserActiveTokensAsync(userId);
+    }
+}
+```
+
+**Token Response Model:**
+```csharp
+public class TokenResponse
+{
+    public string AccessToken { get; set; }
+    public string RefreshToken { get; set; }
+    public DateTime ExpiresAt { get; set; }
+}
+```
+
+### 11.3. Password Service
+
+**Purpose:** Secure password hashing with BCrypt and strength validation.
 
 ```csharp
+using Marventa.Framework.Security.Encryption.Abstractions;
+
+public class UserService
+{
+    private readonly IPasswordService _passwordService;
+
+    // Hash password
+    public async Task RegisterAsync(string email, string password)
+    {
+        // Validate password strength
+        var (isValid, errorMessage) = _passwordService.ValidatePasswordStrength(
+            password: password,
+            minLength: 8,
+            requireUppercase: true,
+            requireLowercase: true,
+            requireDigit: true,
+            requireSpecialChar: true
+        );
+
+        if (!isValid)
+        {
+            throw new BusinessException($"Weak password: {errorMessage}");
+        }
+
+        var hashedPassword = _passwordService.HashPassword(password);
+
+        // Save user with hashed password...
+    }
+
+    // Verify password
+    public async Task<bool> LoginAsync(string email, string password)
+    {
+        var user = await _userRepository.GetByEmailAsync(email);
+        if (user == null)
+            return false;
+
+        var isValid = _passwordService.VerifyPassword(password, user.PasswordHash);
+
+        // Check if password hash needs rehashing (BCrypt cost updated)
+        if (isValid && _passwordService.NeedsRehash(user.PasswordHash))
+        {
+            user.PasswordHash = _passwordService.HashPassword(password);
+            await _userRepository.UpdateAsync(user);
+        }
+
+        return isValid;
+    }
+
+    // Generate secure random password
+    public string GenerateTemporaryPassword()
+    {
+        return _passwordService.GenerateSecurePassword(
+            length: 16,
+            includeSpecialCharacters: true
+        );
+    }
+}
+```
+
+### 11.4. AES Encryption
+
+**Purpose:** Symmetric encryption for sensitive data.
+
+```csharp
+using Marventa.Framework.Security.Encryption;
+
 var encryption = new AesEncryption(
     key: "your-32-character-secret-key!",
     iv: "your-16-char-iv"
 );
 
+// Encrypt sensitive data
 var encrypted = encryption.Encrypt("sensitive data");
+
+// Decrypt
 var decrypted = encryption.Decrypt(encrypted);
 ```
+
+**Use Cases:**
+- Encrypting database connection strings
+- Storing sensitive configuration values
+- Protecting PII (Personal Identifiable Information)
 
 ---
 
@@ -1117,11 +1417,29 @@ throw new UnauthorizedException("Invalid credentials");
     "Secret": "your-super-secret-key-at-least-32-characters-long",
     "Issuer": "MyApp",
     "Audience": "MyApp",
-    "ExpirationMinutes": 60
+    "ExpirationMinutes": 60,
+    "RefreshTokenExpirationDays": 7,
+    "EnableTokenRotation": true,
+    "MaxRefreshTokensPerUser": 5,
+    "ValidateIpAddress": false
   },
 
   "Caching": {
     "Type": "Hybrid"
+  },
+
+  "MemoryCache": {
+    "SizeLimit": 1024,
+    "CompactionPercentage": 0.25,
+    "ExpirationScanFrequency": "00:01:00"
+  },
+
+  "OutputCache": {
+    "Enabled": true,
+    "DefaultExpirationSeconds": 60,
+    "VaryByQuery": true,
+    "VaryByHeader": false,
+    "VaryByHeaderNames": []
   },
 
   "Redis": {
@@ -1232,13 +1550,35 @@ Your application now has:
 
 **With just 2 lines of setup!** 🚀
 
-### 🆕 What's New in v4.4.0
+### 🆕 What's New in v4.5.0
+
+- **Security Services Refactored:**
+  - `IJwtService` with comprehensive token management (replaced `IJwtTokenGenerator`)
+  - `IPasswordService` with strength validation and secure password generation (replaced `IPasswordHasher`)
+  - `IRefreshTokenService` with token rotation and revocation support
+  - Modern, industry-standard naming conventions
+
+- **Memory Cache Configuration:**
+  - Configurable `MemoryCache` options (SizeLimit, CompactionPercentage, ExpirationScanFrequency)
+  - ASP.NET Core 7+ `OutputCache` support with flexible policies
+  - Full control over cache behavior via appsettings.json
+
+- **Modular Architecture:**
+  - Separated concerns into focused extension files
+  - ConfigurationExtensions made public for NuGet consumers
+  - Better maintainability and discoverability
+
+- **Enhanced Caching:**
+  - Three strategies: InMemory, Redis, Hybrid (L1 + L2)
+  - Configurable memory cache options
+  - Output cache middleware for HTTP response caching
+
+### 🆕 What's in v4.4.0
 
 - **Swagger/OpenAPI:** Auto-configured with JWT integration and environment-based restrictions
 - **API Versioning:** Flexible versioning (URL/Query/Header/MediaType) with Swagger integration
 - **Data Seeding:** Infrastructure for seeding initial data with execution order control
 - **Environment Helpers:** Utilities for environment-based feature configuration
-- **Enhanced Documentation:** Comprehensive examples for all new features
 
 ---
 
