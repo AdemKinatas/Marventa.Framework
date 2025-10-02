@@ -63,7 +63,12 @@ public class RateLimiterMiddleware
             return;
         }
 
-        _cache.Set(cacheKey, requestCount + 1, timeWindow);
+        var cacheEntryOptions = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = timeWindow,
+            Size = 1 // Required when SizeLimit is set
+        };
+        _cache.Set(cacheKey, requestCount + 1, cacheEntryOptions);
         await _next(context);
     }
 

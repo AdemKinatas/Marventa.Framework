@@ -8,7 +8,7 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>Marventa.Framework</PackageId>
-    <Version>4.5.0</Version>
+    <Version>4.5.1</Version>
     <Authors>Adem Kinatas</Authors>
     <Company>Marventa</Company>
     <Product>Marventa Framework</Product>

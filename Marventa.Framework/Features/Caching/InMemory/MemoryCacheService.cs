@@ -21,7 +21,10 @@ public class MemoryCacheService : ICacheService
 
     public Task SetAsync<T>(string key, T value, CacheOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var cacheOptions = new MemoryCacheEntryOptions();
+        var cacheOptions = new MemoryCacheEntryOptions
+        {
+            Size = 1 // Required when SizeLimit is set
+        };
 
         if (options?.AbsoluteExpiration.HasValue == true)
         {
