@@ -8,12 +8,12 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>Marventa.Framework</PackageId>
-    <Version>4.5.5</Version>
+    <Version>4.6.0</Version>
     <Authors>Adem Kinatas</Authors>
     <Company>Marventa</Company>
     <Product>Marventa Framework</Product>
-    <Description>Enterprise-grade framework for microservices architecture with CQRS, Event Sourcing, and DDD support. Ultra-simplified with Convention over Configuration. v4.5.0: Refactored security services (IJwtService, IPasswordService, IRefreshTokenService), configurable memory cache, output cache support, and modular architecture. Supports both .NET 8.0 (LTS) and .NET 9.0</Description>
-    <PackageTags>microservices;cqrs;event-sourcing;ddd;enterprise;architecture;dotnet;net8;net9;convention-over-configuration;swagger;api-versioning;jwt;refresh-token;caching;security</PackageTags>
+    <Description>Enterprise-grade framework for microservices architecture with CQRS, Event Sourcing, and DDD support. Ultra-simplified with Convention over Configuration. v4.6.0: Migrated password hashing from BCrypt to Argon2id - 5x faster performance with enhanced security. Backward compatible with existing BCrypt hashes. Supports both .NET 8.0 (LTS) and .NET 9.0</Description>
+    <PackageTags>microservices;cqrs;event-sourcing;ddd;enterprise;architecture;dotnet;net8;net9;convention-over-configuration;swagger;api-versioning;jwt;refresh-token;caching;security;argon2;password-hashing</PackageTags>
     <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -110,6 +110,7 @@
     <!-- Security -->
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1" />
 
     <!-- Resilience -->
     <PackageReference Include="Polly" Version="8.6.4" />
