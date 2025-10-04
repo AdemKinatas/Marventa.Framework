@@ -1,9 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Marventa.Framework.Security.Authentication;
 
 /// <summary>
 /// Configuration options for JWT token generation and validation.
 /// </summary>
-public class JwtConfiguration
+public class JwtConfiguration : IValidatableObject
 {
     /// <summary>
     /// Gets or sets the secret key used for signing JWT tokens.
@@ -29,4 +31,48 @@ public class JwtConfiguration
     /// Recommended: 15-60 minutes for security.
     /// </summary>
     public int ExpirationMinutes { get; set; } = 60;
+
+    /// <inheritdoc/>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrWhiteSpace(Secret))
+        {
+            yield return new ValidationResult(
+                "JWT Secret cannot be null or empty.",
+                new[] { nameof(Secret) });
+        }
+        else if (Secret.Length < 32)
+        {
+            yield return new ValidationResult(
+                "JWT Secret must be at least 32 characters (256 bits) for HS256 algorithm.",
+                new[] { nameof(Secret) });
+        }
+
+        if (string.IsNullOrWhiteSpace(Issuer))
+        {
+            yield return new ValidationResult(
+                "JWT Issuer cannot be null or empty.",
+                new[] { nameof(Issuer) });
+        }
+
+        if (string.IsNullOrWhiteSpace(Audience))
+        {
+            yield return new ValidationResult(
+                "JWT Audience cannot be null or empty.",
+                new[] { nameof(Audience) });
+        }
+
+        if (ExpirationMinutes <= 0)
+        {
+            yield return new ValidationResult(
+                "JWT ExpirationMinutes must be greater than 0.",
+                new[] { nameof(ExpirationMinutes) });
+        }
+        else if (ExpirationMinutes > 1440) // 24 hours
+        {
+            yield return new ValidationResult(
+                "JWT ExpirationMinutes should not exceed 1440 minutes (24 hours) for security reasons.",
+                new[] { nameof(ExpirationMinutes) });
+        }
+    }
 }

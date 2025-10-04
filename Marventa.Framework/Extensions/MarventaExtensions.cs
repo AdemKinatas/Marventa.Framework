@@ -107,6 +107,9 @@ public static class MarventaExtensions
             app.UseCors();
         }
 
+        // Performance tracking
+        app.UseMiddleware<Middleware.PerformanceMiddleware>();
+
         // Authentication
         if (configuration.HasSection(ConfigurationKeys.Jwt))
         {

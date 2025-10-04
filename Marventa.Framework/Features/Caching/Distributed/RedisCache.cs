@@ -1,16 +1,27 @@
 using Marventa.Framework.Features.Caching.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
 using System.Text.Json;
 
 namespace Marventa.Framework.Features.Caching.Distributed;
 
+/// <summary>
+/// Redis-based implementation of the cache service.
+/// </summary>
 public class RedisCache : ICacheService
 {
     private readonly IDistributedCache _cache;
+    private readonly IConnectionMultiplexer? _connectionMultiplexer;
 
-    public RedisCache(IDistributedCache cache)
+    /// <summary>
+    /// Initializes a new instance of the RedisCache class.
+    /// </summary>
+    /// <param name="cache">The distributed cache instance.</param>
+    /// <param name="connectionMultiplexer">Optional Redis connection multiplexer for advanced operations.</param>
+    public RedisCache(IDistributedCache cache, IConnectionMultiplexer? connectionMultiplexer = null)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        _connectionMultiplexer = connectionMultiplexer;
     }
 
     public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
@@ -48,10 +59,56 @@ public class RedisCache : ICacheService
         return value != null;
     }
 
+    /// <summary>
+    /// Removes all cache entries with keys starting with the specified prefix.
+    /// Requires IConnectionMultiplexer to be injected for server-side operations.
+    /// </summary>
+    /// <param name="prefix">The key prefix to match.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     public async Task RemoveByPrefixAsync(string prefix, CancellationToken cancellationToken = default)
     {
-        // Redis prefix removal requires server-side operations
-        // This is a simplified implementation
-        await Task.CompletedTask;
+        if (string.IsNullOrWhiteSpace(prefix))
+            throw new ArgumentException("Prefix cannot be null or empty.", nameof(prefix));
+
+        if (_connectionMultiplexer == null)
+        {
+            // If ConnectionMultiplexer is not available, log a warning or throw
+            // For now, we'll silently return to maintain backward compatibility
+            return;
+        }
+
+        try
+        {
+            var endpoints = _connectionMultiplexer.GetEndPoints();
+
+            foreach (var endpoint in endpoints)
+            {
+                var server = _connectionMultiplexer.GetServer(endpoint);
+
+                // Skip replica servers to avoid errors
+                if (server.IsReplica)
+                    continue;
+
+                // Get all keys matching the pattern
+                var keys = server.Keys(pattern: $"{prefix}*", pageSize: 1000);
+
+                if (keys == null)
+                    continue;
+
+                var database = _connectionMultiplexer.GetDatabase();
+                var keysToDelete = keys.Select(k => (RedisKey)k.ToString()).ToArray();
+
+                if (keysToDelete.Length > 0)
+                {
+                    await database.KeyDeleteAsync(keysToDelete);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log the exception in production
+            // For now, we'll rethrow to make the caller aware
+            throw new InvalidOperationException($"Failed to remove keys with prefix '{prefix}'.", ex);
+        }
     }
 }

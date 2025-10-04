@@ -1,5 +1,5 @@
 using Marventa.Framework.Configuration;
-
+using Marventa.Framework.Core.Shared;
 using Marventa.Framework.Infrastructure.Environment;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -182,11 +182,22 @@ public static class ApiExtensions
         {
             options.AddDefaultPolicy(policyBuilder =>
             {
-                policyBuilder
-                    .WithOrigins(allowedOrigins)
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials();
+                // "*" için AllowAnyOrigin kullan (AllowCredentials ile çakışır)
+                if (allowedOrigins.Length == 1 && allowedOrigins[0] == CorsConstants.AllowAllOrigins)
+                {
+                    policyBuilder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                }
+                else
+                {
+                    policyBuilder
+                        .WithOrigins(allowedOrigins)
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+                }
             });
         });
 

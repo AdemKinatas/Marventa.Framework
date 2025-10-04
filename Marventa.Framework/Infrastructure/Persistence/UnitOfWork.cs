@@ -56,9 +56,14 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
+    /// <summary>
+    /// Disposes the unit of work resources.
+    /// Note: DbContext is managed by DI container and should not be manually disposed.
+    /// Only the transaction is disposed here.
+    /// </summary>
     public void Dispose()
     {
         _transaction?.Dispose();
-        _context.Dispose();
+        // DbContext is managed by DI container - do not dispose manually
     }
 }

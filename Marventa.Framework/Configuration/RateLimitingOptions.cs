@@ -1,6 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Marventa.Framework.Configuration;
 
-public class RateLimitingOptions
+/// <summary>
+/// Configuration options for rate limiting.
+/// </summary>
+public class RateLimitingOptions : IValidatableObject
 {
     public const string SectionName = "RateLimiting";
 
@@ -13,6 +18,31 @@ public class RateLimitingOptions
     public string? CustomHeaderName { get; set; }
     public bool ReturnRateLimitHeaders { get; set; } = true;
     public string? CustomErrorMessage { get; set; }
+
+    /// <inheritdoc/>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (RequestLimit <= 0)
+        {
+            yield return new ValidationResult(
+                "Rate limit RequestLimit must be greater than 0.",
+                new[] { nameof(RequestLimit) });
+        }
+
+        if (TimeWindowSeconds <= 0)
+        {
+            yield return new ValidationResult(
+                "Rate limit TimeWindowSeconds must be greater than 0.",
+                new[] { nameof(TimeWindowSeconds) });
+        }
+
+        if (Strategy == RateLimitStrategy.CustomHeader && string.IsNullOrWhiteSpace(CustomHeaderName))
+        {
+            yield return new ValidationResult(
+                "CustomHeaderName is required when using CustomHeader strategy.",
+                new[] { nameof(CustomHeaderName) });
+        }
+    }
 }
 
 public enum RateLimitStrategy

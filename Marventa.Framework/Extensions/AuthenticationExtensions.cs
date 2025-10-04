@@ -38,17 +38,25 @@ public static class AuthenticationExtensions
             return services;
         }
 
-        // Register JWT configuration
-        services.Configure<JwtConfiguration>(configuration.GetSection(ConfigurationKeys.Jwt));
+        // Register JWT configuration with validation
+        services.AddOptions<JwtConfiguration>()
+            .Bind(configuration.GetSection(ConfigurationKeys.Jwt))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         // Register security services
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddHttpContextAccessor();
 
         // Configure JWT Bearer authentication
         var jwtSecret = configuration.GetRequiredValue(ConfigurationKeys.JwtSecret);
         var jwtIssuer = configuration.GetRequiredValue(ConfigurationKeys.JwtIssuer);
         var jwtAudience = configuration.GetRequiredValue(ConfigurationKeys.JwtAudience);
+
+        // Validate JWT secret
+        ValidateJwtSecret(jwtSecret);
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         {
@@ -134,5 +142,33 @@ public static class AuthenticationExtensions
         services.AddMarventaAuthorization();
 
         return services;
+    }
+
+    /// <summary>
+    /// Validates the JWT secret meets security requirements.
+    /// </summary>
+    /// <param name="secret">The JWT secret to validate.</param>
+    /// <exception cref="InvalidOperationException">Thrown when secret is invalid.</exception>
+    private static void ValidateJwtSecret(string secret)
+    {
+        if (string.IsNullOrWhiteSpace(secret))
+        {
+            throw new InvalidOperationException(
+                "JWT secret cannot be null or empty. Please configure a valid JWT secret in your application settings.");
+        }
+
+        if (secret.Length < 32)
+        {
+            throw new InvalidOperationException(
+                $"JWT secret must be at least 32 characters long for security. Current length: {secret.Length}. " +
+                "Please use a longer, cryptographically secure random string.");
+        }
+
+        // Check if the secret is too simple (all same characters, sequential, etc.)
+        if (secret.Distinct().Count() < 8)
+        {
+            throw new InvalidOperationException(
+                "JWT secret appears to be too simple. Please use a complex, cryptographically secure random string with varied characters.");
+        }
     }
 }

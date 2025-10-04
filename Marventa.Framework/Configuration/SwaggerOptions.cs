@@ -1,6 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Marventa.Framework.Configuration;
 
-public class SwaggerOptions
+/// <summary>
+/// Configuration options for Swagger/OpenAPI documentation.
+/// </summary>
+public class SwaggerOptions : IValidatableObject
 {
     public const string SectionName = "Swagger";
 
@@ -12,6 +17,24 @@ public class SwaggerOptions
     public string[] EnvironmentRestriction { get; set; } = new[] { "Development" };
     public ContactInfo? Contact { get; set; }
     public LicenseInfo? License { get; set; }
+
+    /// <inheritdoc/>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrWhiteSpace(Title))
+        {
+            yield return new ValidationResult(
+                "Swagger Title cannot be null or empty.",
+                new[] { nameof(Title) });
+        }
+
+        if (string.IsNullOrWhiteSpace(Version))
+        {
+            yield return new ValidationResult(
+                "Swagger Version cannot be null or empty.",
+                new[] { nameof(Version) });
+        }
+    }
 
     public class ContactInfo
     {

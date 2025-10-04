@@ -8,12 +8,12 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>Marventa.Framework</PackageId>
-    <Version>4.6.0</Version>
+    <Version>5.0.0</Version>
     <Authors>Adem Kinatas</Authors>
     <Company>Marventa</Company>
     <Product>Marventa Framework</Product>
-    <Description>Enterprise-grade framework for microservices architecture with CQRS, Event Sourcing, and DDD support. Ultra-simplified with Convention over Configuration. v4.6.0: Migrated password hashing from BCrypt to Argon2id - 5x faster performance with enhanced security. Backward compatible with existing BCrypt hashes. Supports both .NET 8.0 (LTS) and .NET 9.0</Description>
-    <PackageTags>microservices;cqrs;event-sourcing;ddd;enterprise;architecture;dotnet;net8;net9;convention-over-configuration;swagger;api-versioning;jwt;refresh-token;caching;security;argon2;password-hashing</PackageTags>
+    <Description>Enterprise-grade framework for microservices architecture with CQRS, Event Sourcing, and DDD support. Ultra-simplified with Convention over Configuration. v5.0.0: MAJOR SECURITY AND ARCHITECTURE UPDATE - Fixed AES-GCM encryption with random nonce, corrected entity equality implementation, added domain events transaction safety, implemented repository pagination with eager loading, soft delete global filters, ICurrentUserService, Redis prefix removal, JWT secret validation. NEW PATTERNS: Transactional Outbox Pattern, Repository Specification Pattern, Idempotency Pattern with distributed caching, Circuit Breaker with Polly, API Key Authentication with role-based authorization, Request/Response Logging with sensitive data masking, Configuration validation. Production-ready release with comprehensive code quality improvements. Supports both .NET 8.0 (LTS) and .NET 9.0</Description>
+    <PackageTags>microservices;cqrs;event-sourcing;ddd;enterprise;architecture;dotnet;net8;net9;convention-over-configuration;swagger;api-versioning;jwt;refresh-token;caching;security;argon2;password-hashing;performance;cors;outbox-pattern;specification-pattern;idempotency;circuit-breaker;api-key-auth;request-logging;polly;resilience</PackageTags>
     <PackageProjectUrl>https://github.com/AdemKinatas/Marventa.Framework</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AdemKinatas/Marventa.Framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -136,8 +136,6 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.10.0-beta.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.12.0-beta.1" />
 
     <!-- Utilities -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

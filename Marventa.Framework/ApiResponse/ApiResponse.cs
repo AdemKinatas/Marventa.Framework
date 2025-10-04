@@ -6,6 +6,7 @@ public class ApiResponse<T>
     public string Message { get; set; } = string.Empty;
     public T? Data { get; set; }
     public Dictionary<string, string[]>? Errors { get; set; }
+    public long ResponseTimeMs { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     public static ApiResponse<T> SuccessResponse(T data, string message = "Success")
@@ -34,6 +35,7 @@ public class ApiResponse
     public bool Success { get; set; }
     public string Message { get; set; } = string.Empty;
     public Dictionary<string, string[]>? Errors { get; set; }
+    public long ResponseTimeMs { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     public static ApiResponse SuccessResponse(string message = "Success")

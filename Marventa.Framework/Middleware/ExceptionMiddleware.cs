@@ -32,7 +32,7 @@ public class ExceptionMiddleware
         {
             if (_options.LogExceptions)
             {
-                _logger.LogError(ex, "An unhandled exception occurred");
+                _logger.LogError(ex, LogMessages.UnhandledExceptionOccurred);
             }
             await HandleExceptionAsync(context, ex);
         }
@@ -85,7 +85,7 @@ public class ExceptionMiddleware
         var response = CreateErrorResponse(message, errors, exception);
         var result = JsonSerializer.Serialize(response);
 
-        context.Response.ContentType = "application/json";
+        context.Response.ContentType = LogMessages.ApplicationJson;
         context.Response.StatusCode = (int)statusCode;
 
         return context.Response.WriteAsync(result);

@@ -58,7 +58,15 @@
 16. [Infrastructure - API Versioning](#16-infrastructure---api-versioning)
 17. [Infrastructure - Swagger/OpenAPI](#17-infrastructure---swaggeropenapi)
 18. [Middleware - Exception Handling](#18-middleware---exception-handling)
-19. [Configuration - appsettings.json](#19-configuration---appsettingsjson)
+19. [Enterprise Patterns](#19-enterprise-patterns)
+    - 19.1. [Transactional Outbox Pattern](#191-transactional-outbox-pattern)
+    - 19.2. [Repository Specification Pattern](#192-repository-specification-pattern)
+    - 19.3. [Idempotency Pattern](#193-idempotency-pattern)
+    - 19.4. [Circuit Breaker & Resilience](#194-circuit-breaker--resilience)
+20. [Advanced Security](#20-advanced-security)
+    - 20.1. [API Key Authentication](#201-api-key-authentication)
+    - 20.2. [Request/Response Logging](#202-requestresponse-logging)
+21. [Configuration - appsettings.json](#21-configuration---appsettingsjson)
 
 ---
 
@@ -1406,7 +1414,296 @@ throw new UnauthorizedException("Invalid credentials");
 
 ---
 
-## 19. Configuration - appsettings.json
+## 19. Enterprise Patterns
+
+### 19.1. Transactional Outbox Pattern
+
+The Outbox Pattern ensures reliable event publishing by storing events in the database in the same transaction as business data.
+
+**Setup:**
+
+```csharp
+// Program.cs
+builder.Services.AddDbContext<YourDbContext>();
+builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<YourDbContext>());
+builder.Services.AddOutbox(); // Registers outbox services and background processor
+```
+
+**Usage:**
+
+```csharp
+// Domain Entity
+public class Product : Entity<Guid>, IHasDomainEvents
+{
+    public void Create()
+    {
+        AddDomainEvent(new ProductCreatedEvent(Id, Name, Price));
+    }
+}
+
+// Event Handler
+public class ProductCreatedEventHandler : INotificationHandler<ProductCreatedEvent>
+{
+    public async Task Handle(ProductCreatedEvent notification, CancellationToken cancellationToken)
+    {
+        // Event will be published reliably via outbox
+        await _eventBus.PublishAsync(notification);
+    }
+}
+```
+
+**How it works:**
+1. Domain events saved to `OutboxMessages` table in same transaction
+2. Background `OutboxProcessor` polls every 30 seconds
+3. Processes pending messages and publishes events
+4. Marks messages as processed
+5. Cleans up old messages (7-day retention)
+
+---
+
+### 19.2. Repository Specification Pattern
+
+Build reusable, composable query specifications for complex queries.
+
+**Create Specification:**
+
+```csharp
+public class ActiveProductsSpecification : BaseSpecification<Product>
+{
+    public ActiveProductsSpecification()
+    {
+        // Filtering
+        Criteria = p => p.IsActive && !p.IsDeleted;
+
+        // Eager Loading
+        AddInclude(p => p.Category);
+        AddInclude(p => p.Supplier);
+
+        // Ordering
+        AddOrderBy(p => p.Name);
+
+        // Pagination
+        ApplyPaging(0, 20);
+    }
+}
+
+public class ProductsByPriceRangeSpec : BaseSpecification<Product>
+{
+    public ProductsByPriceRangeSpec(decimal minPrice, decimal maxPrice)
+    {
+        Criteria = p => p.Price >= minPrice && p.Price <= maxPrice;
+        AddOrderByDescending(p => p.Price);
+    }
+}
+```
+
+**Use Specification:**
+
+```csharp
+// In Repository or Command Handler
+var spec = new ActiveProductsSpecification();
+var products = await _repository.FindAsync(spec);
+
+var priceSpec = new ProductsByPriceRangeSpec(50m, 200m);
+var filteredProducts = await _repository.FindAsync(priceSpec);
+```
+
+**Available Methods:**
+- `Criteria` - WHERE clause filter
+- `AddInclude()` / `AddInclude(string)` - Eager loading
+- `AddOrderBy()` / `AddOrderByDescending()` - Sorting
+- `ApplyPaging(skip, take)` - Pagination
+
+---
+
+### 19.3. Idempotency Pattern
+
+Prevent duplicate request processing with distributed caching.
+
+**Setup:**
+
+```csharp
+// Program.cs
+builder.Services.AddDistributedMemoryCache(); // or AddStackExchangeRedisCache
+builder.Services.AddIdempotency();
+
+var app = builder.Build();
+app.UseRouting();
+app.UseIdempotency(); // Must be after UseRouting()
+```
+
+**Usage:**
+
+```csharp
+// Client sends Idempotency-Key header
+POST /api/orders
+Headers:
+  Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+
+Body: { "productId": "123", "quantity": 2 }
+```
+
+**How it works:**
+1. Middleware detects `Idempotency-Key` header
+2. Checks cache for existing response
+3. If found, returns cached response (duplicate detected)
+4. If not found, processes request and caches response
+5. Default 24-hour expiration
+6. Only caches successful responses (2xx status codes)
+
+---
+
+### 19.4. Circuit Breaker & Resilience
+
+Add resilience to HTTP clients with Polly integration.
+
+**Setup:**
+
+```csharp
+// Program.cs
+builder.Services.AddResilientHttpClient("PaymentService", "https://api.payment.com")
+    .AddHttpMessageHandler(() => new AuthHeaderHandler());
+
+// Or configure manually
+builder.Services.AddHttpClient("OrderService")
+    .AddPolicyHandler(ResilienceExtensions.GetRetryPolicy(3))
+    .AddPolicyHandler(ResilienceExtensions.GetCircuitBreakerPolicy(5, TimeSpan.FromSeconds(30)));
+```
+
+**Usage:**
+
+```csharp
+public class PaymentService
+{
+    private readonly IHttpClientFactory _httpClientFactory;
+
+    public async Task<bool> ProcessPayment(PaymentRequest request)
+    {
+        var client = _httpClientFactory.CreateClient("PaymentService");
+        var response = await client.PostAsJsonAsync("/payments", request);
+        return response.IsSuccessStatusCode;
+    }
+}
+```
+
+**Policies:**
+- **Retry Policy:** 3 retries with exponential backoff (2s, 4s, 8s)
+- **Circuit Breaker:** Opens after 5 consecutive failures, stays open for 30s
+- **Timeout:** Configurable per request
+
+---
+
+## 20. Advanced Security
+
+### 20.1. API Key Authentication
+
+Header-based authentication with role support.
+
+**Setup:**
+
+```csharp
+// Program.cs
+builder.Services.AddApiKeyAuthentication();
+
+// appsettings.json
+{
+  "Authentication": {
+    "ApiKeys": [
+      {
+        "Key": "your-api-key-12345",
+        "Owner": "MobileApp",
+        "Roles": "User,Customer"
+      },
+      {
+        "Key": "admin-key-67890",
+        "Owner": "BackofficeAdmin",
+        "Roles": "Admin,User"
+      }
+    ]
+  }
+}
+```
+
+**Usage:**
+
+```csharp
+[Authorize(AuthenticationSchemes = "ApiKey")]
+[ApiController]
+public class ProductsController : ControllerBase
+{
+    [HttpGet]
+    [Authorize(Roles = "User")] // Requires User role
+    public async Task<IActionResult> GetProducts() { }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")] // Requires Admin role
+    public async Task<IActionResult> DeleteProduct(Guid id) { }
+}
+
+// Client Request
+GET /api/products
+Headers:
+  X-API-Key: your-api-key-12345
+```
+
+**Features:**
+- Header name: `X-API-Key`
+- Claims-based authentication
+- Role-based authorization
+- API key masking in logs (shows first 4 chars)
+
+---
+
+### 20.2. Request/Response Logging
+
+Comprehensive logging with automatic sensitive data masking.
+
+**Setup:**
+
+```csharp
+// Program.cs
+builder.Services.Configure<LoggingOptions>(builder.Configuration.GetSection("LoggingOptions"));
+
+var app = builder.Build();
+app.UseMiddleware<RequestResponseLoggingMiddleware>(); // Must be early in pipeline
+
+// appsettings.json
+{
+  "LoggingOptions": {
+    "EnableRequestResponseLogging": true,
+    "MaxBodyLogSize": 4096,
+    "LogRequestHeaders": true,
+    "LogRequestBody": true,
+    "LogResponseHeaders": true,
+    "LogResponseBody": true,
+    "SensitiveHeaders": ["Authorization", "X-API-Key", "Cookie"],
+    "SensitiveBodyFields": ["password", "token", "secret", "apikey"]
+  }
+}
+```
+
+**Features:**
+- Automatic header masking (Authorization, X-API-Key, Cookie)
+- Automatic body field masking (password, token, secret, etc.)
+- Configurable max body size
+- JSON field detection and masking
+- Response time tracking
+- Content-type aware (only logs text-based content)
+
+**Example Log Output:**
+
+```
+[INFO] HTTP GET /api/users/login
+Request Headers: {"User-Agent": "PostmanRuntime/7.32.0", "Authorization": "***MASKED***"}
+Request Body: {"username":"john","password":"***MASKED***","apiKey":"***MASKED***"}
+Response Status: 200 OK
+Response Body: {"success":true,"token":"***MASKED***","user":{...}}
+Response Time: 45ms
+```
+
+---
+
+## 21. Configuration - appsettings.json
 
 **Complete configuration example:**
 
@@ -1582,41 +1879,43 @@ Your application now has:
   - Automatic backward compatibility with BCrypt hashes
   - Seamless migration on user login
 
-### 🆕 What's New in v4.5.3
+### 🆕 What's New in v5.0.0 - MAJOR SECURITY AND ARCHITECTURE UPDATE
 
-- **RefreshToken Architecture Fixed:**
-  - Removed cache-based `IRefreshTokenService` (not suitable for multi-server environments)
-  - Added `GenerateRefreshToken()` to `IJwtService` for secure token generation
-  - RefreshToken storage is now project's responsibility (database-backed)
-  - Framework only provides cryptographically secure token generation utility
+**🔒 Critical Security Fixes:**
+- **AES-GCM Encryption with Random Nonce:** Fixed encryption vulnerability by using AES-GCM with cryptographically random nonce for each operation (previously used static IV with CBC mode)
+- **Entity Equality Implementation:** Corrected GetHashCode() for transient entities to prevent hash collisions
+- **JWT Secret Validation:** Added minimum 32-character validation for JWT secrets
+- **Domain Events Transaction Safety:** Events now dispatched AFTER SaveChanges for transaction consistency
 
-- **Cache Reliability:**
-  - Optional `MemoryCache` SizeLimit (nullable properties)
-  - HybridCache gracefully handles Redis connection failures
-  - Automatic fallback to InMemory when Redis is unavailable
-  - Application continues working without Redis
+**🏗️ Repository & Database Enhancements:**
+- **Pagination Support:** Added `GetPagedAsync()` with eager loading support to prevent memory issues
+- **N+1 Query Prevention:** Include/ThenInclude support in all query methods
+- **Soft Delete Global Filters:** Automatic filtering of soft-deleted entities via `ISoftDeletable`
+- **ICurrentUserService:** Claims-based current user service for audit trails
 
-- **Security Services:**
-  - `IJwtService` with comprehensive token management
-  - `IPasswordService` with Argon2id hashing and strength validation
-  - Simplified JWT configuration (removed refresh token settings)
+**📦 New Enterprise Patterns:**
+- **Transactional Outbox Pattern:** Ensures reliable event publishing with background processor
+- **Repository Specification Pattern:** Reusable, composable query specifications with filtering, ordering, and pagination
+- **Idempotency Pattern:** Prevents duplicate request processing with distributed caching
+- **Circuit Breaker with Polly:** Resilient HTTP client with retry and circuit breaker policies
 
-- **Memory Cache Configuration:**
-  - Configurable options (SizeLimit, CompactionPercentage, ExpirationScanFrequency)
-  - ASP.NET Core 7+ `OutputCache` support
-  - Full control over cache behavior via appsettings.json
+**🔐 Advanced Security Features:**
+- **API Key Authentication:** Header-based authentication with role support
+- **Request/Response Logging:** Comprehensive logging with automatic sensitive data masking (passwords, tokens, API keys)
+- **Configuration Validation:** Startup validation for all configuration options
 
-- **Modular Architecture:**
-  - Separated concerns into focused extension files
-  - ConfigurationExtensions public for NuGet consumers
-  - Better maintainability and discoverability
+**🚀 Infrastructure Improvements:**
+- **Redis Prefix Removal:** Efficient `RemoveByPrefixAsync()` implementation
+- **Performance Middleware:** Automatic response time tracking with slow request logging
+- **Code Quality:** Eliminated all magic strings, improved error handling, enhanced XML documentation
 
-### 🆕 What's in v4.4.0
+### 🆕 What's New in v4.6.0
 
-- **Swagger/OpenAPI:** Auto-configured with JWT integration and environment-based restrictions
-- **API Versioning:** Flexible versioning (URL/Query/Header/MediaType) with Swagger integration
-- **Data Seeding:** Infrastructure for seeding initial data with execution order control
-- **Environment Helpers:** Utilities for environment-based feature configuration
+- **Password Hashing Migration:** Migrated from BCrypt to Argon2id for enhanced security
+  - More secure against GPU/ASIC attacks (high memory requirement)
+  - OWASP recommended settings (m=19456, t=2, p=1)
+  - Automatic backward compatibility with BCrypt hashes
+  - Seamless migration on user login
 
 ---
 

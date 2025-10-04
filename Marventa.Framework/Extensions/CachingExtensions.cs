@@ -83,6 +83,12 @@ public static class CachingExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // Register Redis configuration with validation
+        services.AddOptions<RedisCacheConfiguration>()
+            .Bind(configuration.GetSection(ConfigurationKeys.Redis))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         var redisConfig = configuration.GetConfigurationSection<RedisCacheConfiguration>(ConfigurationKeys.Redis);
 
         if (string.IsNullOrWhiteSpace(redisConfig.ConnectionString))
